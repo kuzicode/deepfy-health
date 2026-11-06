@@ -1,0 +1,60 @@
+name: CI
+
+# 只用 pull_request：fork 来的 PR 拿不到写权限和任何 secret。不要改成 pull_request_target。
+# 部署不走 CI，这里也不放线上密钥。
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: kzh
+          POSTGRES_PASSWORD: kzh
+          POSTGRES_DB: kzh_test
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U kzh"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test:db
+      - run: pnpm build
+      - run: pnpm kzh validate
+        env:
+          HEALTH_VAULT_DIR: examples/sample-vault
+
+  dependencies:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.24.3 detect --source /repo --redact --no-banner

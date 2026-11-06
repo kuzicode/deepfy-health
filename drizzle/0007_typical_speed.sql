@@ -1,0 +1,1 @@
+ALTER TABLE "reminder_setting" ALTER COLUMN "enabled" SET DEFAULT true;

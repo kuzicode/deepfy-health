@@ -1,0 +1,10 @@
+family: 示例家庭
+members:
+  - id: kz
+    name: 小K
+    role: admin
+    dir: KZ
+  - id: mom
+    name: 妈妈
+    role: member
+    dir: Mom

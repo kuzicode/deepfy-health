@@ -1,0 +1,20 @@
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+
+# 本地专用：凭据 / 真实健康数据（HM6、DATA1）
+.env*
+!.env.example
+vault/
+*.pdf
+.playwright-mcp/
+
+# 本地附件密文（HM6）
+data/
+
+# agent 的本机设置
+.claude/settings.local.json

@@ -1,0 +1,43 @@
+# 所有端口只绑 127.0.0.1，由宿主机反向代理对外
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    # 资源上限：被压满时只拖慢这个应用，不拖垮同机的其他服务（ISS-013）
+    mem_limit: 768m
+    environment:
+      POSTGRES_USER: kzh
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?需要在 .env 设置 POSTGRES_PASSWORD}
+      POSTGRES_DB: kzh
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kzh"]
+      interval: 5s
+      retries: 10
+
+  app:
+    build: { context: ., target: runner }
+    restart: unless-stopped
+    mem_limit: 1g
+    cpus: 1.5
+    env_file: ${KZ_ENV_FILE:-.env}
+    environment:
+      DATABASE_URL: postgres://kzh:${POSTGRES_PASSWORD}@db:5432/kzh
+    ports: ["127.0.0.1:3100:3000"]
+    volumes: [attachments:/data/attachments]
+    depends_on:
+      db: { condition: service_healthy }
+
+  migrate:
+    build: { context: ., target: builder }
+    profiles: [tools]
+    env_file: ${KZ_ENV_FILE:-.env}
+    environment:
+      DATABASE_URL: postgres://kzh:${POSTGRES_PASSWORD}@db:5432/kzh
+    command: ["pnpm", "db:migrate"]
+    depends_on:
+      db: { condition: service_healthy }
+
+volumes:
+  pgdata:
+  attachments:

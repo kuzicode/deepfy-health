@@ -1,0 +1,48 @@
+/* Mint Glass —— Deepfy 全站设计 token（官网与 App 共用） */
+:root {
+  --bg: #f2f6f5;
+  --surface: #ffffff;
+  --surface-2: #f7faf9;
+  --glass: rgba(255, 255, 255, 0.58);
+  --glass-strong: rgba(255, 255, 255, 0.78);
+  --glass-edge: rgba(255, 255, 255, 0.75);
+  --line: rgba(13, 48, 42, 0.09);
+  --line-strong: rgba(13, 48, 42, 0.16);
+
+  --ink: #0b1f1c;
+  --body: #2b3b38;
+  --muted: #7c8d89;
+  --faint: #a9b7b4;
+  --code: #6f817d;
+  --comment: #aebbb8;
+
+  --brand: #0f766e;
+  --brand-hover: #0b5f58;
+  --mint: #2dd4bf;
+  --mint-deep: #14b8a6;
+  --mint-soft: #ccfbf1;
+  --mint-wash: #e6faf6;
+
+  --high: #e5484d;
+  --high-soft: #feebec;
+  --low: #3e63dd;
+  --low-soft: #edf2fe;
+  --ok: #12a594;
+  --ok-soft: #e0f8f3;
+  --unknown: #8b9a97;
+  --unknown-soft: #eef2f1;
+  --warn: #c2700c;
+  --warn-soft: #fff4e2;
+
+  --sans: "Inter Variable", "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  --serif: "Newsreader Variable", "Newsreader", "Noto Serif SC", "Songti SC", Georgia, serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --r-sm: 10px;
+  --r: 16px;
+  --r-lg: 22px;
+  --shadow-sm: 0 1px 2px rgba(11, 31, 28, 0.04);
+  --shadow: 0 1px 2px rgba(11, 31, 28, 0.04), 0 8px 28px rgba(11, 31, 28, 0.05);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  color-scheme: light;
+}

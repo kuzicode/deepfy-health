@@ -1,0 +1,7 @@
+indicators:
+  - code: NSE
+    name: 神经元特异性烯醇化酶
+    aliases: [NSE]
+    category: 肿瘤标志物
+    unit: ng/mL
+    ref: { high: 16.3 }

@@ -1,0 +1,132 @@
+/* ================= App 表单：快速记录 / 建档 / 档案编辑 / 邮件提醒 / 意见反馈（从 app.css 拆出，在其后加载） ================= */
+
+/* ---------- 快速建档：快速记录 / 新建档案 / 档案编辑 / 日志 ---------- */
+.a-quick-bar { width: 100%; display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 18px; margin: 0 0 18px; border-radius: 999px; border: 1px dashed var(--line-strong); background: var(--surface); color: var(--muted); font: 400 14px/1 var(--sans); cursor: text; text-align: left; transition: border-color 0.2s, color 0.2s; }
+.a-quick-bar:hover { border-color: var(--brand); color: var(--body); }
+.a-quick-bar svg { color: var(--brand); flex: none; }
+.a-quick { padding: 16px 18px 18px; margin: 0 0 18px; }
+.a-quick-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.a-seg { display: inline-flex; padding: 3px; border-radius: 999px; background: rgba(13, 48, 42, 0.06); }
+.a-seg button { border: none; background: none; height: 30px; padding: 0 14px; border-radius: 999px; font: 500 13px/1 var(--sans); color: var(--muted); cursor: pointer; }
+.a-seg button.on { background: #fff; color: var(--ink); box-shadow: var(--shadow-sm); }
+.a-icon-btn { border: none; background: none; color: var(--muted); cursor: pointer; padding: 6px; border-radius: 8px; display: flex; }
+.a-icon-btn:hover { background: var(--surface-2); color: var(--ink); }
+.a-quick-form { display: grid; gap: 10px; }
+.a-quick-form .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.a-quick-form .row.end, .a-profile-form .row.end { justify-content: flex-end; gap: 10px; display: flex; }
+.a-quick-form .field, .a-profile-form .field, .a-newmember .field { min-width: 0; }
+.a-quick-form .field.narrow { flex: 0 1 140px; }
+.a-quick-form .field.area { height: auto; padding: 10px 14px; line-height: 1.55; resize: vertical; }
+.a-quick-form .photos { gap: 8px; }
+.a-quick-form .thumb { position: relative; width: 56px; height: 56px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+.a-quick-form .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.a-quick-form .thumb button { position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%; border: none; background: rgba(11, 31, 28, 0.6); color: #fff; display: grid; place-items: center; cursor: pointer; padding: 0; }
+.a-quick-form .add-photo { display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 999px; border: 1px dashed var(--line-strong); color: var(--brand); font: 500 13px/1 var(--sans); cursor: pointer; }
+.a-quick-form .hint, .a-profile-form .hint { margin: 0; font-size: 12px; color: var(--muted); }
+.a-measure { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+.a-measure label { display: grid; gap: 6px; font-size: 12.5px; color: var(--muted); }
+.a-measure .inp { display: flex; align-items: center; gap: 6px; }
+.a-measure .inp small { font: 400 11.5px var(--mono); color: var(--muted); }
+.a-form-err { margin: 0; flex-basis: 100%; font-size: 13px; color: var(--high); }
+
+.a-onboard { max-width: 760px; }
+.a-onboard h2 { margin: 0 0 6px; font: 500 24px/1.3 var(--serif); color: var(--ink); }
+.a-onboard > p.muted { margin: 0 0 18px; }
+.a-onboard .small { font-size: 12.5px; margin: 16px 0 0; }
+.a-newmember { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: end; }
+.a-newmember .a-date { display: grid; gap: 4px; font-size: 11.5px; color: var(--muted); }
+.a-newmember .btn { height: 42px; }
+.a-add-member { margin-top: 14px; }
+.a-add-member summary { cursor: pointer; color: var(--brand); font: 500 13.5px/1 var(--sans); padding: 8px 2px; list-style: none; }
+.a-add-member summary::-webkit-details-marker { display: none; }
+.a-add-member[open] summary { margin-bottom: 10px; }
+
+.a-profile-form { display: grid; gap: 14px; margin: 0 0 18px; }
+.a-profile-form .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.a-field { display: grid; gap: 5px; font-size: 12px; color: var(--muted); }
+
+.a-subhead { font: 500 15px/1.3 var(--sans); color: var(--ink); margin: 0 0 10px; }
+.a-log { align-items: flex-start; }
+.a-log .when { padding-top: 3px; min-width: 76px; }
+.a-log .title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.a-log .kindtag { font: 500 10.5px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.a-log .sev { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.a-log .sev-1 { background: var(--ok); } .a-log .sev-2 { background: var(--warn); } .a-log .sev-3 { background: var(--high); }
+.a-log .body { display: block; white-space: pre-wrap; line-height: 1.6; margin-top: 4px; }
+.a-log .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.a-log .pics { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.a-log .pics img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); display: block; }
+
+@media (max-width: 720px) {
+  .a-newmember { grid-template-columns: 1fr 1fr; }
+  .a-quick-form .field.narrow { flex: 1 1 120px; }
+}
+
+
+/* ---------- 邮件提醒设置 ---------- */
+.a-remind-status { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.a-remind-status .muted { flex: 1; min-width: 200px; font-size: 13.5px; }
+.a-remind-lead .a-check { flex-basis: auto; margin-right: 8px; }
+.a-form-note { flex-basis: 100%; margin: 0; font-size: 13px; }
+.a-form-note.err { color: var(--high); }
+.a-form-note.ok { color: var(--ok); }
+span.a-form-note { flex-basis: auto; }
+/* 建档：出生日期 / 大概年龄 二选一 */
+.a-birth-mode { display: flex; gap: 2px; }
+.a-birth-mode button { border: none; background: none; padding: 0 6px 0 0; font: inherit; color: var(--muted); cursor: pointer; }
+.a-birth-mode button + button { padding-left: 6px; border-left: 1px solid var(--line); }
+.a-birth-mode button.on { color: var(--brand); font-weight: 600; }
+/* 意见反馈 */
+.a-feedback { display: grid; gap: 12px; }
+.a-feedback .kinds { display: flex; gap: 8px; }
+.a-feedback .kinds .chip { border: none; cursor: pointer; font-size: 13px; padding: 6px 12px; }
+.a-feedback textarea { resize: vertical; min-height: 140px; font: inherit; line-height: 1.6; padding: 12px 14px; }
+.a-feedback .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.a-feedback .small { font-size: 12.5px; }
+
+/* 设置页：预设头像网格 */
+.avatar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 12px; }
+.avatar-grid button { padding: 3px; border-radius: 50%; border: 2px solid transparent; background: none; cursor: pointer; }
+.avatar-grid button.on { border-color: var(--brand); }
+.avatar-grid img { display: block; width: 100%; height: auto; border-radius: 50%; }
+
+/* 家人头像：建档时选、概览标题旁点开换 */
+.a-nm-name { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.a-nm-name .field { flex: 1; }
+.a-av-field, .a-av-edit { position: relative; flex: none; }
+.a-av-trigger { display: inline-flex; align-items: center; gap: 6px; height: 42px; padding: 0 10px 0 6px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--muted); font: 400 12.5px/1 var(--sans); cursor: pointer; }
+.a-av-trigger img { border-radius: 50%; }
+.a-av-edit > button { padding: 0; border: none; background: none; border-radius: 50%; cursor: pointer; display: block; transition: transform 0.15s; }
+.a-av-edit > button:hover { transform: scale(1.04); }
+.a-av-pop { position: absolute; top: calc(100% + 8px); left: 0; z-index: 60; width: min(340px, calc(100vw - 32px)); padding: 12px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 18px 48px -18px rgba(15, 40, 38, 0.35); }
+.a-av-pop .avatar-grid { gap: 8px; }
+.a-title-row { display: inline-flex; align-items: center; gap: 14px; }
+
+/* 用药与补剂 */
+.a-rx-toolbar { display: flex; justify-content: flex-end; margin: -12px 0 14px; }
+.a-rx-add { margin-bottom: 18px; }
+.a-rx-hint { font-size: 13px; margin: -6px 0 12px; }
+.a-rx-list { display: grid; }
+.a-rx { display: grid; gap: 6px; padding: 16px 20px; min-width: 0; }
+.a-rx + .a-rx { border-top: 1px solid var(--line); }
+.a-rx-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.a-rx-head .title { color: var(--ink); font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
+.a-rx .detail { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.55; overflow-wrap: anywhere; }
+.a-rx-links { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 0; }
+.a-rx-care { margin-top: 4px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); font-size: 13px; color: var(--body); }
+.a-rx-care b { font-weight: 500; color: var(--ink); }
+.a-rx-care ul { margin: 4px 0; padding-left: 18px; line-height: 1.6; }
+.a-rx-care small { color: var(--muted); font-size: 11.5px; }
+.a-rx-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
+.a-rx-danger { color: var(--high); }
+.a-rx-form { margin: 8px 0 0; }
+.a-rx-check { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--body); }
+.a-rx-days { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; border: 0; max-height: 180px; overflow-y: auto; }
+.a-rx-days legend { padding: 0; margin-bottom: 6px; font-size: 12px; color: var(--muted); }
+.a-rx-stop { display: grid; gap: 10px; margin-top: 6px; max-width: 420px; }
+.a-rx-stop .row.end { display: flex; justify-content: flex-end; gap: 10px; }
+.a-rx-stopped summary { cursor: pointer; margin-bottom: 12px; font-size: 14px; color: var(--muted); }
+.a-rx-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: -10px 0 22px; padding: 10px 14px; border-radius: 12px; background: var(--surface-2); font-size: 13px; color: var(--body); overflow-wrap: anywhere; }
+.a-rx-summary:hover { color: var(--ink); }
+.a-rx-summary span:last-child { color: var(--muted); }
+.chart-marks { grid-column: 1 / -1; display: grid; gap: 3px; margin: 8px 0 0; font-size: 12px; color: var(--muted); }

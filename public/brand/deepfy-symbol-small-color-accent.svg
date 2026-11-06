@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="title">
+  <title id="title">Deepfy logo (small)</title>
+  <g id="symbol">
+    <g fill="#0F766E">
+    <path d="M 185.26 44.47 A 106.00 106.00 0 1 0 185.26 211.53 A 18.00 18.00 0 1 0 163.10 183.16 A 70.00 70.00 0 1 1 163.10 72.84 A 18.00 18.00 0 1 0 185.26 44.47 Z"/>
+    </g>
+    <g fill="#2DD4BF">
+      <circle cx="216.00" cy="128" r="26"/>
+    </g>
+  </g>
+</svg>
