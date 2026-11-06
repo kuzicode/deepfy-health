@@ -50,18 +50,20 @@ describe.skipIf(!URL)("访问控制与管理后台（需要 KZ_TEST_DATABASE_URL
 
   it("清理未验证账号：只删超过 7 天的，已验证和被拉黑的不动", async () => {
     const old = new Date(Date.now() - 8 * 86_400_000);
-    const ids = { stale: `s-${randomId()}`, recent: `r-${randomId()}`, verified: `v-${randomId()}`, blocked: `b-${randomId()}` };
+    const ids = { stale: `s-${randomId()}`, recent: `r-${randomId()}`, verified: `v-${randomId()}`, blocked: `b-${randomId(), withData: `stale-data-${randomId()}`}` };
     await db.insert(user).values([
       { id: ids.stale, name: "x", email: `${ids.stale}@example.com`, createdAt: old },
       { id: ids.recent, name: "x", email: `${ids.recent}@example.com` },
       { id: ids.verified, name: "x", email: `${ids.verified}@example.com`, emailVerified: true, createdAt: old },
       { id: ids.blocked, name: "x", email: `${ids.blocked}@example.com`, createdAt: old },
+      { id: ids.withData, name: "x", email: `${ids.withData}@example.com`, createdAt: old },
     ]);
+    await db.insert(member).values({ id: randomId(), userId: ids.withData, slug: "m", nameCipher: "x" });
     await db.insert(userStatus).values({ userId: ids.blocked, disabledAt: new Date() });
     expect(await deleteStaleUnverified(db)).toBeGreaterThanOrEqual(1);
     const left = (await db.select({ id: user.id }).from(user)).map((u) => u.id);
     expect(left).not.toContain(ids.stale);
-    expect(left).toEqual(expect.arrayContaining([ids.recent, ids.verified, ids.blocked]));
+    expect(left).toEqual(expect.arrayContaining([ids.recent, ids.verified, ids.blocked, ids.withData]));
     for (const id of Object.values(ids)) await db.delete(user).where(eq(user.id, id));
   });
 
@@ -76,16 +78,6 @@ describe.skipIf(!URL)("访问控制与管理后台（需要 KZ_TEST_DATABASE_URL
     await setDisabled(db, uid, false);
     expect(await userIdForToken(db, `Bearer ${token}`)).toBe(uid);
     expect(await db.select().from(userStatus).where(eq(userStatus.userId, uid))).toEqual([]);
-  });
-
-  it("清理未验证账号时，有档案的账号不动", async () => {
-    const id = `stale-${randomId()}`;
-    const old = new Date(Date.now() - 8 * 86_400_000);
-    await db.insert(user).values({ id, name: id, email: `${id}@example.com`, emailVerified: false, createdAt: old, updatedAt: old });
-    await db.insert(member).values({ id: randomId(), userId: id, slug: "m", nameCipher: "x" });
-    await deleteStaleUnverified(db);
-    expect(await db.select({ id: user.id }).from(user).where(eq(user.id, id))).toHaveLength(1);
-    await db.delete(user).where(eq(user.id, id));
   });
 
   it("停用目标以数据库邮箱为准：管理员和自己不可停用", async () => {

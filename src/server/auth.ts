@@ -38,7 +38,7 @@ const signupsPerIp = createLimiter(5, 86_400_000);
 
 /** 在账号真正创建前才计数：格式不对、密码太短、邮箱已注册或不在名单内的请求都到不了这里，不能用来耗尽全站名额 */
 function assertSignupQuota(req: Request | undefined) {
-  if (!signupsPerIp(req ? clientIp(req) : "local")) throw new APIError("TOO_MANY_REQUESTS", { code: "rate_limited", message: "Too many sign-ups" });
+  if (req && !signupsPerIp(clientIp(req))) throw new APIError("TOO_MANY_REQUESTS", { code: "rate_limited", message: "Too many sign-ups" });
   if (!signupBudget("all")) throw new APIError("TOO_MANY_REQUESTS", { code: "signup_busy", message: "Sign-ups are full today" });
 }
 
