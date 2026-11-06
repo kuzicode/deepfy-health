@@ -17,7 +17,7 @@ Deepfy 健康档案（app.deepfy.si，官网 deepfy.si）：agent-first 的家�
 | 你想做什么 | 去哪里看 | 加载 |
 |---|---|---|
 | 公开路线图、技术债基线 | `ROADMAP.md` | 常读 |
-| 对外的更新记录（每次部署前追加） | `CHANGE.md` | 按需 |
+| 对外的更新记录（每次部署前追加，版本对应 GitHub Release） | `CHANGELOG.md` | 按需 |
 | 公开前的版本说明 | `docs/release-history.md` | 默认不读 |
 | 架构（两种模式、加密、鉴权、路由） | `docs/architecture.md` | 按需 |
 | 贡献流程 / 安全上报 / 品牌素材 | `CONTRIBUTING.md`、`SECURITY.md`、`TRADEMARK.md` | 按需 |

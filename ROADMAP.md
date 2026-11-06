@@ -5,7 +5,7 @@ status: active
 
 # Deepfy Health — 路线图
 
-> 想认领就在对应 Issue 里说一声。已发布的内容见 `CHANGE.md`，踩坑记录见 `docs/issues.md`。跨文件的改动先在 Issue 或 PR 描述里写清问题、方案、影响文件和验收（WF1）。
+> 想认领就在对应 Issue 里说一声。已发布的内容见 `CHANGELOG.md`，踩坑记录见 `docs/issues.md`。跨文件的改动先在 Issue 或 PR 描述里写清问题、方案、影响文件和验收（WF1）。
 
 ## 适合入手
 
