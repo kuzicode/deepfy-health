@@ -7,9 +7,12 @@ const siteHosts = () => (process.env.KZ_SITE_HOSTS ?? "deepfy.si,www.deepfy.si")
 /** App 的地址：生产为 https://app.deepfy.si；本地为空（同源） */
 export const appUrl = (path = "/") => `${process.env.KZ_APP_URL ?? ""}${path}`;
 
+/** 自托管没有单独的官网域名（KZ_SITE_HOSTS=site.invalid），官网页面就在实例自己的 /site 下 */
+const NO_SITE_HOST = "site.invalid";
+
 /** 官网首页：生产为 https://deepfy.si/<locale>；本地为 /site/<locale> 预览 */
 export const siteUrl = (locale: string) =>
-  process.env.KZ_APP_URL ? `https://${siteHosts()[0]}/${locale}` : `/site/${locale}`;
+  process.env.KZ_APP_URL && siteHosts()[0] !== NO_SITE_HOST ? `https://${siteHosts()[0]}/${locale}` : `/site/${locale}`;
 
 /** 官网内部链接前缀：在官网域名下为空，本地预览时为 /site */
 export async function siteBase() {

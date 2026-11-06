@@ -23,7 +23,7 @@
     "hero": {
       "title1": "Built for your health.",
       "title2": "Read by your agents.",
-      "cta": "Request early bird access",
+      "cta": "Get started",
       "counter": "Agent‑ready ← Raw report",
       "saved": "{pct}% fewer",
       "mcpCopy": "Copy MCP setup prompt",
@@ -91,8 +91,8 @@
     },
     "final": {
       "title": "Start with your next checkup report",
-      "lead": "Free during the early bird period. Hand your reports to your agent and it enters the results for you. To run it on your own computer or home network, see self-hosting in the docs.",
-      "cta": "Request early bird access"
+      "lead": "Hand your reports to your agent and it enters the results for you. To run it on your own computer or home network, see self-hosting in the docs.",
+      "cta": "Get started"
     },
     "foot": {
       "rights": "© 2026 Deepfy",
@@ -112,7 +112,7 @@
         "steps": [
           {
             "t": "Request access and sign up",
-            "d": "Choose Request early bird access on the sign-in page and submit your email. You'll get an invitation once it's approved. Then sign up with an email code or Google, agree to the Terms and Privacy Policy, and your account is ready. After that, just sign in. If you'd rather not use the cloud, see Self-hosting below."
+            "d": "On the sign-in page, switch to Early bird access and submit your email. You'll get an invitation once it's approved. Then go back to Sign in, sign up with that email or Google, and agree to the Terms and Privacy Policy. If you'd rather not use the cloud, see Self-hosting below."
           },
           {
             "t": "Add family members",
@@ -994,7 +994,7 @@
     "sent": "Code sent to {email}. Valid for 5 minutes.",
     "resetDone": "Password reset. Sign in with your new password.",
     "errors": {
-      "not_allowed": "This email doesn't have access yet. Submit a request below.",
+      "not_allowed": "This account doesn't have early bird access yet. Submit a request first.",
       "email_not_verified": "This Google account's email isn't verified. Verify it with Google first, or sign in with your email.",
       "signup_disabled": "This account isn't registered yet. Accept the terms below to continue.",
       "INVALID_EMAIL_OR_PASSWORD": "Wrong email or password.",
@@ -1016,16 +1016,13 @@
     "title_setpw": "Set a password",
     "setPassword": "Set a password",
     "setDone": "Password set. You can now sign in with it.",
-    "title_apply": "Request early bird access",
+    "title_apply": "Become an early bird",
     "title_applied": "Request received",
     "apply": {
-      "sub": "We recommend self-hosting Deepfy. If you need it hosted, leave your email and we'll let you know when your early bird request is approved.",
+      "sub": "The hosted app is opening in batches. Leave your email and we'll let you know once you're approved.",
       "email": "Email",
-      "ask": "Don't have access yet?",
-      "haveAccess": "Already have access?",
-      "toLogin": "Sign in",
-      "hasAccount": "This email already has an account. Please sign in.",
-      "canCreate": "This email already has access. Select Continue to create your account.",
+      "hasAccount": "This email already has an account. Sign in instead.",
+      "canCreate": "This email is approved. Choose Continue to set a password.",
       "agents": "Which agents do you use? (optional)",
       "note": "What would you use Deepfy for? One line is fine (optional)",
       "submit": "Request access",
@@ -1038,8 +1035,17 @@
         "workbuddy": "WorkBuddy",
         "hermes-agent": "Hermes Agent",
         "other": "Other"
-      }
-    }
+      },
+      "closedHint": "This email doesn't have an account yet. Submit a request, and you can sign up once it's approved.",
+      "selfHost": "Don't want to wait?",
+      "selfHostLink": "Run it on your own computer",
+      "backToLogin": "Back to sign in"
+    },
+    "tab_login": "Sign in",
+    "tab_apply": "Early bird access",
+    "title_welcome": "Welcome back",
+    "sub_create": "Your early bird access is approved. Set a password to get started.",
+    "backToSite": "Back to website"
   },
   "legal": {
     "back": "Back",

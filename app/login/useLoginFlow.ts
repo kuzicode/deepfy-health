@@ -13,13 +13,13 @@ export type OtpType = "email-verification" | "sign-in" | "forget-password";
 type Result = { error?: { code?: string; message?: string; status?: number } | null } | void;
 type Msg = { kind: "error" | "info"; text: string } | undefined;
 
-export function useLoginFlow(error?: string, canApply = false) {
+export function useLoginFlow({ error, canApply, initialMode }: { error?: string; canApply: boolean; initialMode?: string }) {
   const t = useTranslations("login");
   const errText = (code?: string, message?: string) =>
     code && t.has(`errors.${code}` as "errors.generic") ? t(`errors.${code}` as "errors.generic") : message ?? t("errors.generic");
 
   // Google 账号未开通时直接进申请表，否则这里是死路（ISS-015）
-  const [step, setStep] = useState<Step>(error === "signup_disabled" ? "google-new" : error === "not_allowed" && canApply ? "apply" : "start");
+  const [step, setStep] = useState<Step>(error === "signup_disabled" ? "google-new" : canApply && (error === "not_allowed" || initialMode === "apply") ? "apply" : "start");
   const [msg, setMsg] = useState<Msg>(error && error !== "signup_disabled" ? { kind: "error", text: errText(error) } : undefined);
   const [email, setEmailState] = useState("");
   const emailRef = useRef(""); // 最新输入，用来丢弃过期的查询结果
@@ -42,6 +42,11 @@ export function useLoginFlow(error?: string, canApply = false) {
     return err;
   };
   const go = (s: Step, m?: Msg) => { setStep(s); setMsg(m); setOtp(""); setShowPw(false); };
+  /** 登录和申请是两个入口，切换时邮箱保留，地址同步，刷新和分享都停在当前入口 */
+  const switchTab = (s: "start" | "apply", m?: Msg) => {
+    go(s, m);
+    window.history.replaceState(null, "", s === "apply" ? "/login?mode=apply" : "/login");
+  };
   const home = () => window.location.assign("/");
   // 验证邮箱时服务器会作废验证前的密码（防抢注），这里把用户刚输入的密码设上；失败也不影响登录，之后可在设置页设置
   const afterVerify = () => { void (password ? setInitialPassword(password).catch(() => {}) : Promise.resolve()).then(home); };
@@ -59,14 +64,15 @@ export function useLoginFlow(error?: string, canApply = false) {
     if (!res.ok || !body.next) return { error: { code: body.error ?? "generic" } };
     setPassword("");
     setAgreed(false);
-    go(body.next === "closed" ? "apply" : (body.next as Step)); // 未开通的邮箱 → 申请早鸟资格
+    if (body.next === "closed") return switchTab("apply", { kind: "info", text: t("apply.closedHint") }); // 没有资格的邮箱 → 申请
+    go(body.next as Step);
     if (body.next === "otp") await sendCode("sign-in", asked);
   });
 
   // 申请结果：进了候补 → 完成页；邮箱已开通 → 回到登录，邮箱已填好
   const applyDone = (next: string) => {
     if (next === "closed") go("applied");
-    else go("start", { kind: "info", text: t(next === "create" ? "apply.canCreate" : "apply.hasAccount") });
+    else switchTab("start", { kind: "info", text: t(next === "create" ? "apply.canCreate" : "apply.hasAccount") });
   };
 
   const passwordLogin = async () => {
@@ -81,7 +87,7 @@ export function useLoginFlow(error?: string, canApply = false) {
 
   return {
     t, errText, step, msg, setMsg, email, setEmail, password, setPassword, showPw, setShowPw, otp, setOtp, agreed, setAgreed, busy,
-    run, go, home, afterVerify, sendCode, google, lookup, applyDone, passwordLogin, register, submit, canApply,
+    run, go, switchTab, home, afterVerify, sendCode, google, lookup, applyDone, passwordLogin, register, submit, canApply,
   };
 }
 

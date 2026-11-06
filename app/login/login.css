@@ -4,6 +4,18 @@
 .login-foot { height: 80px; flex: none; align-items: center; display: flex; gap: 12px; font-size: 13px; color: var(--muted); }
 .login-foot a { color: var(--body); text-decoration: underline; text-underline-offset: 3px; }
 
+.login-top a { text-decoration: none; }
+.login-top-right { display: flex; align-items: center; gap: 18px; }
+.login-back { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--body); transition: color 0.15s; }
+.login-back:hover { color: var(--brand); }
+
+/* 登录 / 申请两个入口 */
+.l-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin-bottom: 26px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); }
+.l-tabs button { height: 40px; padding: 0 8px; border: none; border-radius: 999px; background: none; color: var(--body); font: 500 14px/1.2 var(--sans); cursor: pointer; transition: background 0.15s, color 0.15s; }
+.l-tabs button:hover:not(.on) { color: var(--ink); }
+.l-tabs button.on { background: #fff; color: var(--brand); font-weight: 600; box-shadow: 0 1px 3px rgba(13, 48, 42, 0.12); }
+.l-tabs button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
 .l-card { width: 100%; max-width: 400px; margin: auto 0; padding: 36px 32px 30px; border-radius: 24px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
 .l-card h1 { margin: 0; text-align: center; font: 500 28px/1.25 var(--serif); letter-spacing: -0.01em; color: var(--ink); }
 .login[lang="zh"] .l-card h1 { letter-spacing: 0.02em; }
@@ -60,3 +72,7 @@
 .l-note { width: 100%; resize: vertical; min-height: 64px; padding: 12px 18px; border-radius: 20px; border: 1px solid var(--line-strong); background: #fff; font: inherit; font-size: 14px; line-height: 1.5; color: var(--ink); }
 .l-note:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--mint-wash); }
 .l-done { margin: 14px 0 4px; text-align: center; font-size: 14.5px; line-height: 1.65; color: var(--body); }
+.l-done-icon { display: block; margin: 0 auto 14px; color: var(--brand); }
+.l-selfhost { margin: 18px 0 0; text-align: center; font-size: 13px; color: var(--muted); }
+.l-selfhost a { color: var(--brand); font-weight: 500; text-underline-offset: 3px; }
+.l-selfhost a:hover { text-decoration: underline; }
