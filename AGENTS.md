@@ -18,11 +18,13 @@ Deepfy 健康档案（app.deepfy.si，官网 deepfy.si）：agent-first 的家�
 |---|---|---|
 | 公开路线图、技术债基线 | `ROADMAP.md` | 常读 |
 | 对外的更新记录（每次部署前追加） | `CHANGE.md` | 按需 |
+| 公开前的版本说明 | `docs/release-history.md` | 默认不读 |
 | 架构（两种模式、加密、鉴权、路由） | `docs/architecture.md` | 按需 |
 | 贡献流程 / 安全上报 / 品牌素材 | `CONTRIBUTING.md`、`SECURITY.md`、`TRADEMARK.md` | 按需 |
 | 自托管、导出和导入 | `docs/self-hosting.md` | 按需 |
 | MCP 接入：工具、权限、写入记录与还原、报告录入与字典维护 | `docs/mcp.md` | 按需 |
 | 品牌与 logo 资产 | `docs/brand/` | 按需 |
+| README 配图（只用虚构数据） | `docs/images/` | 按需 |
 | 编码约定 / 代码健康阈值 / 安全细则（SEC7） | `docs/conventions.md` | 按需 |
 | 踩坑记录（ISS-XXX） | `docs/issues.md` | 按需 |
 | 已归档的历史 ISS | `docs/issues-archive.md` | 默认不读 |
