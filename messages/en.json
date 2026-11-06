@@ -214,7 +214,7 @@
       "copyMd": "Copy as Markdown",
       "copied": "Copied — paste it to your agent",
       "copyHint": "Rather not read it all? Copy the whole page and send it to your agent — it will walk you through requesting the beta, signing up, setting up profiles and connecting.",
-      "preface": "Below is the guide for Deepfy Health Record ({site}). Read it first, then walk me through it step by step: request the beta and signing up, adding my family members, and connecting Deepfy to you as an MCP server. Tell me one next step at a time; when I need to do something on the website or give you a token, wait for my reply. Treat the token like a password and keep it only in the MCP config.",
+      "preface": "Below is the guide for Deepfy Health Record ({site}). Read it first, then walk me through it step by step: requesting the beta and signing up, adding my family members, and connecting Deepfy to you as an MCP server. Tell me one next step at a time; when I need to do something on the website or give you a token, wait for my reply. Treat the token like a password and keep it only in the MCP config.",
       "links": "Links"
     },
     "why": {
