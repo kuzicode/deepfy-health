@@ -18,7 +18,7 @@ describe("反馈表单与汇总邮件", () => {
 
   it("汇总邮件转义用户写的内容", () => {
     const d: Digest = {
-      since: null, stats: { users: 3, newUsers: 1, waitlistPending: 2 }, resources: { mailWeek: 12, mailPeakDay: 4, mailMonth: 30, attachmentBytes: 0, diskUsedPct: 40, alert: false },
+      since: null, stats: { users: 3, newUsers: 1 }, resources: { mailWeek: 12, mailPeakDay: 4, mailMonth: 30, attachmentBytes: 0, diskUsedPct: 40, alert: false },
       feedback: [{ id: "f", userId: null, email: "a@b.c", kind: "idea", body: "<script>x</script>", page: "/m/<i>", createdAt: new Date(), digestedAt: null }],
       gaps: [{ name: "<b>谷胱甘肽</b>", unit: null, section: null, count: 3, added: 1, isNew: false }],
     };
@@ -30,7 +30,7 @@ describe("反馈表单与汇总邮件", () => {
 
 const URL = process.env.KZ_TEST_DATABASE_URL;
 
-describe.skipIf(!URL)("每周内测汇总（需要 KZ_TEST_DATABASE_URL）", () => {
+describe.skipIf(!URL)("每周汇总（需要 KZ_TEST_DATABASE_URL）", () => {
   let db: DB;
   const uid = `fb-${randomId()}`;
   beforeAll(async () => {

@@ -1,31 +1,26 @@
 import { getTranslations } from "next-intl/server";
 import { getDb } from "@/db/client";
-import { adminEmails } from "@/server/access";
-import { adminStats, envAllowed, listAllowed, listUsers } from "@/server/admin";
+import { registrationRestricted } from "@/server/access";
+import { adminStats, listUsers } from "@/server/admin";
 import { listFeedback } from "@/server/catalog-feedback";
 import { listRecentFeedback } from "@/server/feedback";
 import { PLANS } from "@/server/quota";
 import { requireAdmin } from "@/server/session";
 import { PageHead, SectionHead } from "@/ui/blocks";
-import { removeAllowedAction, setDisabledAction } from "./actions";
-import { AllowForm } from "./AllowForm";
+import { setDisabledAction } from "./actions";
 import { FeedbackSection } from "./FeedbackSection";
 import { GapsSection } from "./GapsSection";
-import { WAITLIST_STATUS, WaitlistSection } from "./WaitlistSection";
 
 export const metadata = { title: "Admin", robots: { index: false } };
 
 const day = (iso: string | null) => (iso ? iso.slice(0, 10) : null);
 const size = (b: number) => (b < 1024 ? `${b} B` : b < 1048576 ? `${(b / 1024).toFixed(0)} KB` : `${(b / 1048576).toFixed(1)} MB`);
 
-export default async function AdminPage({ searchParams }: { searchParams: Promise<{ wl?: string }> }) {
+export default async function AdminPage() {
   const me = await requireAdmin();
   const db = getDb();
   const t = await getTranslations("admin");
-  const { wl } = await searchParams;
-  const filter = WAITLIST_STATUS.find((s) => s === wl);
-  const [users, stats, allowed, gaps, notes] = await Promise.all([listUsers(db), adminStats(db), listAllowed(db), listFeedback(db), listRecentFeedback(db)]);
-  const env = envAllowed();
+  const [users, stats, gaps, notes] = await Promise.all([listUsers(db), adminStats(db), listFeedback(db), listRecentFeedback(db)]);
 
   return (
     <>
@@ -37,7 +32,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
         ))}
       </div>
 
-      <WaitlistSection filter={filter} />
+      <p className="muted" style={{ margin: "12px 0 0", fontSize: 13.5 }}>{t(registrationRestricted() ? "registration.restricted" : "registration.open")}</p>
 
       <section className="a-section">
         <SectionHead title={t("users.title")} />
@@ -76,24 +71,6 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
             </tbody>
           </table>
         </div>
-      </section>
-
-      <section className="a-section">
-        <SectionHead title={t("allow.title")} />
-        <p className="muted" style={{ margin: "-6px 0 12px", fontSize: 13.5 }}>{t("allow.hint")}</p>
-        <div className="a-panel a-rows">
-          {adminEmails().map((e) => <div className="a-row" key={`a-${e}`}><span className="main"><span className="title">{e}</span></span><span className="chip chip-mint">{t("allow.adminTag")}</span></div>)}
-          {env.filter((e) => !adminEmails().includes(e)).map((e) => <div className="a-row" key={`e-${e}`}><span className="main"><span className="title">{e}</span></span><span className="chip chip-unknown">{t("allow.env")}</span></div>)}
-          {allowed.map((a) => (
-            <div className="a-row" key={a.email}>
-              <span className="main"><span className="title">{a.email}</span><span className="detail" style={{ display: "block" }}>{[a.note, day(a.createdAt.toISOString())].filter(Boolean).join(" · ")}</span></span>
-              <span className="chip chip-L">{t("allow.db")}</span>
-              <form action={removeAllowedAction}><input type="hidden" name="email" value={a.email} /><button className="link-danger">{t("allow.remove")}</button></form>
-            </div>
-          ))}
-          {allowed.length === 0 && <div className="a-empty">{t("allow.empty")}</div>}
-        </div>
-        <div className="a-panel a-pad" style={{ marginTop: 12 }}><AllowForm /></div>
       </section>
 
       <FeedbackSection items={notes} />

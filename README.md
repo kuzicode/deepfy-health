@@ -43,16 +43,18 @@ Your health content is encrypted per account on the server. This isn't end-to-en
 
 ## Quick start
 
-**Use the hosted app.** Open **[app.deepfy.si](https://app.deepfy.si)**. It's in early access, so you can request access from the sign-in page.
+**Self-host it (recommended).** Run it on your own server and keep your data there. See [docs/self-hosting.md](docs/self-hosting.md).
 
-**Connect your agent.** Create a token on the **Agents** page, then add the MCP server. For Claude Code:
+**Or try the hosted beta.** Sign up at **[app.deepfy.si](https://app.deepfy.si)**. It's an optional beta, free for now, with 100 MB of attachments per account.
+
+**Connect your agent.** Create a token on the **Agents** page, then add the MCP server. For Claude Code on the hosted beta (on your own instance, use its address):
 
 ```sh
 claude mcp add --transport http deepfy https://app.deepfy.si/mcp \
   --header "Authorization: Bearer kzh_…"
 ```
 
-The **Agents** page has ready-to-copy setups for other agents. Writes are on by default when you create a token. Untick **Allow writes** for read-only access, or change it later.
+The **Agents** page has ready-to-copy setups for other agents. New tokens can write by default. Choose **Read-only** when you create one, or change it later.
 
 ## Run it locally
 
@@ -99,7 +101,7 @@ Run `pnpm kzh --help` for all commands.
 
 ## Self-hosting
 
-The code ships with no user data. You can run your own instance and import your account export from the hosted app. See [docs/self-hosting.md](docs/self-hosting.md) (in Chinese for now).
+This is the recommended way to run Deepfy Health. The code ships with no user data, and you can import your account export from the hosted beta. See [docs/self-hosting.md](docs/self-hosting.md) (in Chinese for now).
 
 ## Contributing
 

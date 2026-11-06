@@ -56,7 +56,13 @@ describe.skipIf(!URL)("lookupEmail（需要 KZ_TEST_DATABASE_URL）", () => {
     expect(await lookupEmail(db, `  ${gg}@EXAMPLE.com `)).toBe("otp");
   });
 
-  it("未注册：在名单内 → create，不在 → closed", async () => {
+  it("未注册：开放注册时都是 create，配了管理员也一样", async () => {
+    process.env.KZ_ADMIN_EMAILS = "boss@example.com";
+    process.env.KZ_ALLOWED_EMAILS = "";
+    expect(await lookupEmail(db, "stranger@example.com")).toBe("create");
+  });
+
+  it("未注册且实例设了名单：在名单内 → create，不在 → closed", async () => {
     process.env.KZ_ADMIN_EMAILS = "boss@example.com";
     process.env.KZ_ALLOWED_EMAILS = "new@example.com";
     expect(await lookupEmail(db, "New@Example.com")).toBe("create");

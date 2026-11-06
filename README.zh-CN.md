@@ -43,16 +43,18 @@
 
 ## 快速开始
 
-**使用官方站点。** 打开 **[app.deepfy.si](https://app.deepfy.si)**。目前是抢先体验阶段，可以在登录页提交申请。
+**自托管（推荐）。** 部署到自己的服务器，数据也留在那里，见 [docs/self-hosting.md](docs/self-hosting.md)。
 
-**接入你的 agent。** 在「Agent 接入」页面创建 token，再添加 MCP 服务器。以 Claude Code 为例：
+**或者试用官方内测。** 在 **[app.deepfy.si](https://app.deepfy.si)** 注册。这是可选的内测服务，目前免费，每个账号 100 MB 附件。
+
+**接入你的 agent。** 在「Agent 接入」页面创建 token，再添加 MCP 服务器。下面以 Claude Code 接入官方内测为例，自托管时换成自己的地址：
 
 ```sh
 claude mcp add --transport http deepfy https://app.deepfy.si/mcp \
   --header "Authorization: Bearer kzh_…"
 ```
 
-其他 agent 的配置可以在「Agent 接入」页面直接复制。创建 token 时默认允许写入。如果只想让 agent 读取，取消勾选即可，之后也可以改。
+其他 agent 的配置可以在「Agent 接入」页面直接复制。新建 token 默认可写入。如果只想让 agent 读取，创建时选「只读」，之后也可以改。
 
 ## 本地运行
 
@@ -99,7 +101,7 @@ pnpm kzh pull --into ./backup/Personal
 
 ## 自托管
 
-代码不带任何用户数据。可以自己部署，再导入从官方站点导出的账号数据，见 [docs/self-hosting.md](docs/self-hosting.md)。
+这是推荐的使用方式。代码不带任何用户数据，也可以导入从官方内测导出的账号数据，见 [docs/self-hosting.md](docs/self-hosting.md)。
 
 ## 参与贡献
 

@@ -23,7 +23,7 @@
     "hero": {
       "title1": "Built for your health.",
       "title2": "Read by your agents.",
-      "cta": "Start your record →",
+      "cta": "Try the hosted beta",
       "counter": "Agent‑ready ← Raw report",
       "saved": "{pct}% fewer",
       "mcpCopy": "Copy MCP setup prompt",
@@ -31,7 +31,8 @@
       "mcpHint": "MCP is live · get a token under Agents after signing in",
       "mcpPrompt": "Please add \"Deepfy Health Record\" as an MCP server so you can read (and, after I confirm, write to) my health record.\n\n- Name: deepfy\n- Type: remote MCP (Streamable HTTP)\n- URL: {url}\n- Header: Authorization: Bearer YOUR_DEEPFY_TOKEN\n\nI create the token by signing in at {app} and opening Agents (it also offers a full prompt with the token filled in). Replace YOUR_DEEPFY_TOKEN with my token; if I haven't given you one yet, remind me to create one first, then finish the setup.\n\nAdd it the way your client supports (CLI command or mcpServers in the config file). Then call list_members to confirm the connection and read deepfy://contract for the data guide and write rules. The token is a password: only put it in the MCP config, never commit it to a git repository or send it anywhere else.",
       "lead1": "Give Deepfy your reports, records and daily metrics.",
-      "lead2": "You see clear health cards;\nyour agent gets structured, encrypted data with reminders."
+      "lead2": "You see clear health cards;\nyour agent gets structured, encrypted data with reminders.",
+      "selfHost": "Self-host it →"
     },
     "flow": {
       "eyebrow": "How it works",
@@ -91,8 +92,8 @@
     },
     "final": {
       "title": "Start with your next checkup report",
-      "lead": "Free during early access. Hand your report to your agent and it will enter it for you.",
-      "cta": "Open Deepfy"
+      "lead": "The code is open source, and we recommend running it on your own server. You can also try the hosted beta, free for now.",
+      "cta": "Try the hosted beta"
     },
     "foot": {
       "rights": "© 2026 Deepfy",
@@ -111,8 +112,8 @@
         "title": "Quick start",
         "steps": [
           {
-            "t": "Apply and sign up",
-            "d": "Deepfy is opening in batches. On the sign-in page, choose Request early access and submit your email. We'll email you an invitation once it's approved. Then sign up with an email code or your Google account and accept the Terms and Privacy Policy. After that, just sign in."
+            "t": "Sign up",
+            "d": "On the sign-in page, continue with Google or your email. The first time, accept the Terms of Service and Privacy Policy; with email, also set a password and enter the code we send. That creates your account, and after that you just sign in."
           },
           {
             "t": "Add family members",
@@ -196,7 +197,7 @@
           },
           {
             "t": "Feedback",
-            "d": "Sign in and choose Feedback in the avatar menu — a few lines is enough. Your sign-in email is attached so we can reply. We read every one during early access."
+            "d": "Sign in and choose Feedback in the avatar menu — a few lines is enough. Your sign-in email is attached so we can reply. We read every one."
           }
         ]
       },
@@ -205,7 +206,7 @@
         "items": [
           "Records, reports and attachments are encrypted on the server (AES-256-GCM) with a separate key per account. This is server-side encryption, not end-to-end.",
           "Export everything from Settings at any time; deleting your account deletes the data and attachments too.",
-          "Every account is free during early access, with up to 6 family members, 500 MB of attachments and 3 agent tokens — see the Terms.",
+          "The hosted app is an optional beta, free for now, with up to 6 family members, 100 MB of attachments and 3 agent tokens — see the Terms. Self-host if you need more space or want to hold your own data.",
           "All analysis is for reference only and is not a substitute for medical advice."
         ]
       },
@@ -690,7 +691,7 @@
       "tokenQuota": "Free plan allows {limit} agent tokens. Remove one you no longer use first.",
       "usage": {
         "title": "Usage",
-        "hint": "All accounts are on the free plan during early access. Items turn amber when nearly full — need more? Tell us via Feedback.",
+        "hint": "All accounts are on the free plan for now. Items turn amber when nearly full — need more? Tell us via Feedback.",
         "members": "Family members",
         "attachments": "Attachment storage",
         "tokens": "Agent tokens",
@@ -751,7 +752,7 @@
         "photo_count": "Up to 6 photos at a time.",
         "not_found": "Profile not found.",
         "generic": "Couldn't save. Please try again.",
-        "quota_attachmentBytes": "Attachment storage is full (free plan: 500 MB). Remove photos you no longer need.",
+        "quota_attachmentBytes": "Attachment storage is full (beta limit: 100 MB). Remove photos you no longer need, or self-host.",
         "quota_members": "Family member limit reached.",
         "quota_attachmentCount": "Attachment limit reached. Remove photos you no longer need.",
         "quota_uploadBytesPerDay": "Today's upload limit is reached. Try again tomorrow.",
@@ -925,7 +926,7 @@
     },
     "feedback": {
       "title": "Feedback",
-      "sub": "We read every note during early access. Write whatever comes to mind — one topic per note is easiest for us.",
+      "sub": "We read every note. Write whatever comes to mind — one topic per note is easiest for us.",
       "placeholder": "What's confusing, broken, or missing…",
       "note": "We attach your sign-in email so we can reply. Please don't include test results or other health details.",
       "submit": "Send",
@@ -949,7 +950,7 @@
     "title_create": "Create your account",
     "title_verify": "Verify your email",
     "title_reset": "Reset password",
-    "sub_start": "Your health record, readable by your agents.",
+    "sub_start": "Continue with Google or your email. New here? We'll create your account.",
     "sub_google": "First time with Google? Please accept the terms.",
     "google": "Continue with Google",
     "googleCreate": "Sign up with Google",
@@ -976,7 +977,7 @@
     "sent": "Code sent to {email}. Valid for 5 minutes.",
     "resetDone": "Password reset. Sign in with your new password.",
     "errors": {
-      "not_allowed": "This email doesn't have access yet. Submit a request below.",
+      "not_allowed": "This instance only accepts specific email addresses. Contact the administrator if you have questions.",
       "email_not_verified": "This Google account's email isn't verified. Verify it with Google first, or sign in with your email.",
       "signup_disabled": "This account isn't registered yet. Accept the terms below to continue.",
       "INVALID_EMAIL_OR_PASSWORD": "Wrong email or password.",
@@ -991,35 +992,13 @@
       "network": "Network error — try again.",
       "generic": "Something went wrong — try again.",
       "disabled": "This account has been disabled. Contact the administrator.",
-      "rate_limited": "Too many attempts. Please try again shortly."
+      "rate_limited": "Too many attempts. Please try again shortly.",
+      "signup_busy": "Email sign-ups are full for today. Try again tomorrow, or sign up with Google.",
+      "account_not_linked": "This email is registered but not verified yet. Sign in with an email code first, then you can link Google."
     },
     "title_setpw": "Set a password",
     "setPassword": "Set a password",
-    "setDone": "Password set. You can now sign in with it.",
-    "title_apply": "Request early access",
-    "title_applied": "You're on the list",
-    "apply": {
-      "sub": "Deepfy is opening in batches. Leave your email and we'll let you know when you're in.",
-      "email": "Email",
-      "ask": "Don't have access yet?",
-      "haveAccess": "Already have access?",
-      "toLogin": "Sign in",
-      "hasAccount": "This email already has an account. Please sign in.",
-      "canCreate": "This email already has access. Select Continue to create your account.",
-      "agents": "Which agents do you use? (optional)",
-      "note": "What would you use Deepfy for? One line is fine (optional)",
-      "submit": "Request access",
-      "done": "We've got your request for {email}. We'll email you when your access is ready.",
-      "agent": {
-        "claude-code": "Claude Code",
-        "codex": "Codex",
-        "gemini-cli": "Gemini CLI",
-        "grokbot": "Grokbot",
-        "workbuddy": "WorkBuddy",
-        "hermes-agent": "Hermes Agent",
-        "other": "Other"
-      }
-    }
+    "setDone": "Password set. You can now sign in with it."
   },
   "legal": {
     "back": "Back",
@@ -1047,64 +1026,20 @@
       "status": "Status",
       "never": "—",
       "active": "Active",
-      "disabled": "Disabled",
+      "disabled": "Blocked",
       "admin": "Admin",
       "you": "You",
-      "disable": "Disable",
-      "enable": "Enable",
+      "disable": "Block",
+      "enable": "Unblock",
       "unverified": "Email not verified",
       "dataSummary": "{members, plural, one {# profile} other {# profiles}} · {docs, plural, one {# doc} other {# docs}} · {size}",
       "tokens": "{n, plural, one {# token} other {# tokens}}",
       "quota": "{plan}: ≤{members} members, ≤{size}, ≤{tokens} tokens",
       "quotaAdmin": "admin: no quota"
     },
-    "allow": {
-      "title": "Allowed emails",
-      "hint": "Only these emails can sign up and sign in; approved applications are added automatically. Sign-up is open when the list is empty and no admin is configured.",
-      "env": "Env",
-      "adminTag": "Admin",
-      "db": "Added here",
-      "note": "Note (optional)",
-      "email": "Email",
-      "add": "Add",
-      "remove": "Remove",
-      "empty": "No emails added here yet.",
-      "invalid": "That email doesn't look right."
-    },
     "errors": {
       "self": "You can't disable your own account.",
       "adminTarget": "Admin accounts can't be disabled."
-    },
-    "waitlist": {
-      "title": "Early access requests",
-      "hint": "Requests submitted on the sign-in page. Approving adds the email to the allowed list and sends an invite; declining sends nothing.",
-      "stats": {
-        "total": "Total",
-        "pending": "Pending",
-        "week": "Last 7 days",
-        "approved": "Approved"
-      },
-      "status": {
-        "pending": "Pending",
-        "approved": "Approved",
-        "declined": "Declined"
-      },
-      "all": "All",
-      "agents": "Agents",
-      "note": "Use case",
-      "applied": "Applied",
-      "approve": "Approve",
-      "decline": "Decline",
-      "empty": "No requests yet.",
-      "agent": {
-        "claude-code": "Claude Code",
-        "codex": "Codex",
-        "gemini-cli": "Gemini CLI",
-        "grokbot": "Grokbot",
-        "workbuddy": "WorkBuddy",
-        "hermes-agent": "Hermes Agent",
-        "other": "Other"
-      }
     },
     "gaps": {
       "title": "Dictionary gaps",
@@ -1123,6 +1058,10 @@
         "bug": "Problem",
         "other": "Other"
       }
+    },
+    "registration": {
+      "open": "Registration: open to everyone.",
+      "restricted": "Registration: limited to KZ_ALLOWED_EMAILS and admins."
     }
   }
 }

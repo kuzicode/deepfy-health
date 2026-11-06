@@ -5,12 +5,12 @@ import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { authClient } from "@/client/auth-client";
 
-// 登录流程的状态与请求（界面在 LoginView）：先邮箱后分流 start → password / otp / create(→verify) / reset / apply(→applied)；
+// 登录流程的状态与请求（界面在 LoginView）：先邮箱后分流 start → password / otp / create(→verify) / reset；
 // Google 新用户走 google-new 勾选同意
 
-export type Step = "start" | "password" | "otp" | "create" | "verify" | "reset" | "setpw" | "google-new" | "apply" | "applied";
+export type Step = "start" | "password" | "otp" | "create" | "verify" | "reset" | "setpw" | "google-new";
 export type OtpType = "email-verification" | "sign-in" | "forget-password";
-type Result = { error?: { code?: string; message?: string } | null } | void;
+type Result = { error?: { code?: string; message?: string; status?: number } | null } | void;
 type Msg = { kind: "error" | "info"; text: string } | undefined;
 
 export function useLoginFlow(error?: string) {
@@ -18,8 +18,7 @@ export function useLoginFlow(error?: string) {
   const errText = (code?: string, message?: string) =>
     code && t.has(`errors.${code}` as "errors.generic") ? t(`errors.${code}` as "errors.generic") : message ?? t("errors.generic");
 
-  // Google 账号未开通时直接进申请表，否则这里是死路（ISS-015）
-  const [step, setStep] = useState<Step>(error === "signup_disabled" ? "google-new" : error === "not_allowed" ? "apply" : "start");
+  const [step, setStep] = useState<Step>(error === "signup_disabled" ? "google-new" : "start");
   const [msg, setMsg] = useState<Msg>(error && error !== "signup_disabled" ? { kind: "error", text: errText(error) } : undefined);
   const [email, setEmailState] = useState("");
   const emailRef = useRef(""); // 最新输入，用来丢弃过期的查询结果
@@ -36,7 +35,8 @@ export function useLoginFlow(error?: string) {
     const res: Result = await fn().catch(() => ({ error: { code: "network" } }));
     setBusy(false);
     const err = (res && res.error) || null;
-    if (err) setMsg({ kind: "error", text: errText(err.code, err.message) });
+    // 限速没有 code，按状态码显示，不把英文原文给用户看
+    if (err) setMsg({ kind: "error", text: errText(err.code ?? (err.status === 429 ? "rate_limited" : undefined), err.message) });
     else onOk?.();
     return err;
   };
@@ -56,17 +56,12 @@ export function useLoginFlow(error?: string) {
     const body = (await res.json().catch(() => ({}))) as { next?: string; error?: string };
     if (emailRef.current !== asked) return;
     if (!res.ok || !body.next) return { error: { code: body.error ?? "generic" } };
+    if (body.next === "closed") return { error: { code: "not_allowed" } }; // 只有设了名单的实例才会到这里
     setPassword("");
     setAgreed(false);
-    go(body.next === "closed" ? "apply" : (body.next as Step)); // 未开通的邮箱 → 申请抢先体验
+    go(body.next as Step);
     if (body.next === "otp") await sendCode("sign-in", asked);
   });
-
-  // 申请结果：进了候补 → 完成页；邮箱已开通 → 回到登录，邮箱已填好
-  const applyDone = (next: string) => {
-    if (next === "closed") go("applied");
-    else go("start", { kind: "info", text: t(next === "create" ? "apply.canCreate" : "apply.hasAccount") });
-  };
 
   const passwordLogin = async () => {
     const err = await run(() => authClient.signIn.email({ email, password }), home);
@@ -80,7 +75,7 @@ export function useLoginFlow(error?: string) {
 
   return {
     t, errText, step, msg, setMsg, email, setEmail, password, setPassword, showPw, setShowPw, otp, setOtp, agreed, setAgreed, busy,
-    run, go, home, afterVerify, sendCode, google, lookup, applyDone, passwordLogin, register, submit,
+    run, go, home, afterVerify, sendCode, google, lookup, passwordLogin, register, submit,
   };
 }
 

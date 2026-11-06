@@ -31,6 +31,7 @@ BETTER_AUTH_URL=https://health.example.com
 KZ_APP_URL=https://health.example.com
 KZ_SITE_HOSTS=site.invalid
 KZ_ADMIN_EMAILS=you@example.com
+KZ_ALLOWED_EMAILS=family@example.com
 KZ_MAIL_CONSOLE=1
 EOT
 chmod 600 .env
@@ -42,7 +43,7 @@ docker compose up -d app
 
 **必须另存 `KZ_MASTER_KEY`：** 丢失后数据无法解密。不要把它和数据库备份放在一起。
 
-**一定要设 `KZ_ADMIN_EMAILS`：** 没有管理员也没有白名单时，实例对所有人开放注册。设了之后，只有管理员和白名单邮箱能注册，管理员也不受免费额度限制。
+**只给自己和家人用，一定要设 `KZ_ALLOWED_EMAILS`（逗号分隔）：** 不设时实例对所有人开放注册，只要能访问到你的地址就能注册。设了之后，只有名单内的邮箱和管理员能注册，已有账号不受影响。`KZ_ADMIN_EMAILS` 只决定谁是管理员（不受免费额度限制，可进入 `/admin` 拉黑账号），不会关闭注册。
 
 ## 注册账号
 

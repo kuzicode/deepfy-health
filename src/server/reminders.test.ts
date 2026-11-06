@@ -6,7 +6,7 @@ import { createDb, type DB } from "@/db/client";
 import { reminderSetting, user, userStatus } from "@/db/schema";
 import { todayCN } from "./cn-time";
 import { newDek, randomId } from "./crypto";
-import { inviteHtml, otpMail, reminderHtml } from "./mail";
+import { otpMail, reminderHtml } from "./mail";
 import { PgRepository } from "./pg-repository";
 import {
   confirmEmailChange, dueItems, getSetting, itemLine, pauseParams, requestEmailChange, runReminderJob, setEnabled, setLeadDays,
@@ -68,18 +68,16 @@ describe("邮件内容", () => {
     expect(html).not.toMatch(HAN);
   });
 
-  it("英文验证码和邀请不含中文；中文版不混英文说明；未指定语言按中文", () => {
+  it("英文验证码不含中文；中文版不混英文说明；未指定语言按中文", () => {
     for (const type of ["sign-in", "email-verification", "forget-password", "change-email"] as const) {
       const m = otpMail("123456", type, "en");
       expect(`${m.subject}${m.html}${m.text}`).not.toMatch(HAN);
       expect(m.subject).toContain("123456");
     }
-    expect(inviteHtml("a@example.com", "en")).not.toMatch(HAN);
     const zh = otpMail("123456", "sign-in");
     expect(zh.subject).toBe("123456 是你的 Deepfy 健康档案登录验证码");
     expect(zh.html).toContain('lang="zh-CN"');
     expect(zh.html).not.toContain("Your code");
-    expect(inviteHtml("a@example.com")).toContain("开始使用");
   });
 
   it("只写称呼、项目名和日期；转义 HTML", () => {
