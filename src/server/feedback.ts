@@ -1,11 +1,11 @@
-import { and, asc, count, desc, eq, gt, inArray, isNull } from "drizzle-orm";
+import { and, asc, count, desc, gt, inArray, isNull } from "drizzle-orm";
 import { z } from "zod";
 import type { DB } from "@/db/client";
-import { catalogFeedback, feedback, user, waitlist } from "@/db/schema";
+import { catalogFeedback, feedback, user } from "@/db/schema";
 import { randomId } from "./crypto";
 import { DISK_ALERT_PCT, MAIL_DAILY_ALERT, MAIL_MONTHLY_ALERT, getState, resourceStats, setState } from "./ops";
 
-// 内测反馈：用户在「意见反馈」页提交；每周把新反馈、字典缺口变化和几项运营数字汇成一封邮件发给管理员。
+// 意见反馈：用户在「意见反馈」页提交；每周把新反馈、字典缺口变化和几项运营数字汇成一封邮件发给管理员。
 // 反馈正文是用户自己写给我们的，附登录邮箱以便回复；页面上提示不要填检查数值等隐私。
 
 const FEEDBACK_KINDS = ["idea", "bug", "other"] as const;
@@ -33,7 +33,7 @@ export interface Digest {
   since: Date | null;
   feedback: (typeof feedback.$inferSelect)[];
   gaps: GapChange[];
-  stats: { users: number; newUsers: number; waitlistPending: number };
+  stats: { users: number; newUsers: number };
   resources: Awaited<ReturnType<typeof resourceStats>> & { alert: boolean };
 }
 
@@ -55,11 +55,10 @@ async function buildDigest(db: DB, now = new Date()): Promise<{ digest: Digest; 
   const weekAgo = new Date(now.getTime() - DIGEST_EVERY_DAYS * 86_400_000);
   const [{ users }] = await db.select({ users: count() }).from(user);
   const [{ newUsers }] = await db.select({ newUsers: count() }).from(user).where(gt(user.createdAt, since ?? weekAgo));
-  const [{ waitlistPending }] = await db.select({ waitlistPending: count() }).from(waitlist).where(eq(waitlist.status, "pending"));
   const res = await resourceStats(db);
   const alert = (res.diskUsedPct ?? 0) >= DISK_ALERT_PCT || res.mailPeakDay >= MAIL_DAILY_ALERT || res.mailMonth >= MAIL_MONTHLY_ALERT;
   return {
-    digest: { since, feedback: pending, gaps: gapChanges(gapRows, prev), stats: { users, newUsers, waitlistPending }, resources: { ...res, alert } },
+    digest: { since, feedback: pending, gaps: gapChanges(gapRows, prev), stats: { users, newUsers }, resources: { ...res, alert } },
     snapshot: Object.fromEntries(gapRows.map((g) => [g.nameNorm, g.count])),
   };
 }

@@ -166,8 +166,8 @@ export const reminderSetting = pgTable("reminder_setting", {
   updatedAt: updated(),
 });
 
-// ---- 管理：白名单与账号状态（不含任何健康内容） ----
-/** 白名单（与环境变量 KZ_ALLOWED_EMAILS 合并）；两者都为空时开放注册 */
+// ---- 管理：账号状态（不含任何健康内容） ----
+/** 待删除（0.19.1）：开放注册后不再使用，保留到上线验证通过，便于回滚 */
 export const allowedEmail = pgTable("allowed_email", {
   email: text("email").primaryKey(),
   note: text("note"),
@@ -175,14 +175,14 @@ export const allowedEmail = pgTable("allowed_email", {
   createdAt: created(),
 });
 
-/** 被停用的账号：不能登录，API token 失效 */
+/** 被拉黑（停用）的账号：不能登录，API token 失效 */
 export const userStatus = pgTable("user_status", {
   userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
   disabledAt: timestamp("disabled_at", { withTimezone: true }),
   reason: text("reason"),
 });
 
-/** 抢先体验申请（候补名单）：只有邮箱与申请人自己填写的说明；审批通过后写入 allowed_email */
+/** 待删除（0.19.1）：开放注册后不再使用，保留到上线验证通过，便于回滚 */
 export const waitlist = pgTable("waitlist", {
   email: text("email").primaryKey(),
   locale: text("locale"),
@@ -195,7 +195,7 @@ export const waitlist = pgTable("waitlist", {
   decidedBy: text("decided_by"),
 }, (t) => [index("waitlist_status_idx").on(t.status, t.createdAt)]);
 
-// ---- 内测反馈（用户主动填写；附登录邮箱以便回复；每周汇总发给管理员） ----
+// ---- 意见反馈（用户主动填写；附登录邮箱以便回复；每周汇总发给管理员） ----
 export const feedback = pgTable("feedback", {
   id: text("id").primaryKey(),
   userId: text("user_id").references(() => user.id, { onDelete: "set null" }),

@@ -3,7 +3,7 @@ import type { DB } from "@/db/client";
 import { accountPlan, agentChange, apiToken, attachment, member, user } from "@/db/schema";
 import { isAdminEmail } from "./access";
 
-// 账号额度（内测期所有人都是 free）：家人数、附件总量、token 数、agent 每日写入、导出次数。
+// 账号额度（目前所有人都是 free）：家人数、附件总量、token 数、agent 每日写入、导出次数。
 // 瓶颈只在磁盘（附件），文字数据一年只有几 MB，不限。
 
 const MB = 1024 * 1024;

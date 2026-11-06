@@ -3,7 +3,7 @@ import { requireUser } from "@/server/session";
 import { PageHead } from "@/ui/blocks";
 import { FeedbackForm } from "./FeedbackForm";
 
-// 意见反馈：内测期收集建议和问题，每周汇总发给维护者
+// 意见反馈：收集建议和问题，每周汇总发给维护者
 
 export default async function FeedbackPage({ searchParams }: { searchParams: Promise<{ from?: string }> }) {
   await requireUser();

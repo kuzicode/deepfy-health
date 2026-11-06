@@ -91,7 +91,7 @@
     },
     "final": {
       "title": "从下一份体检报告开始",
-      "lead": "抢先体验阶段免费使用。把报告交给你的 agent，它会帮你整理录入。",
+      "lead": "目前免费使用。把报告交给你的 agent，它会帮你整理录入。",
       "cta": "进入 Deepfy"
     },
     "foot": {
@@ -111,8 +111,8 @@
         "title": "快速上手",
         "steps": [
           {
-            "t": "申请并注册",
-            "d": "Deepfy 目前分批开放。在登录页点「申请抢先体验」，填写邮箱提交，通过后会收到邀请邮件。然后用邮箱验证码或 Google 账号注册，勾选同意服务协议和隐私政策即可创建账号；之后直接登录。"
+            "t": "注册账号",
+            "d": "在登录页用 Google 账号或邮箱继续。第一次使用时勾选同意服务协议和隐私政策，邮箱注册还要设置密码并输入验证码，账号就建好了；之后直接登录。"
           },
           {
             "t": "为家人建档",
@@ -196,7 +196,7 @@
           },
           {
             "t": "意见反馈",
-            "d": "登录后点头像菜单里的「意见反馈」，写几句就能提交，会附上你的登录邮箱方便回复。内测期间每条都会看。"
+            "d": "登录后点头像菜单里的「意见反馈」，写几句就能提交，会附上你的登录邮箱方便回复。每条都会看。"
           }
         ]
       },
@@ -205,7 +205,7 @@
         "items": [
           "档案、报告和附件在服务器上加密存储（AES-256-GCM），每个账号一把独立密钥。这是服务端加密，不是端到端加密。",
           "随时可以在设置里完整导出；删除账号时，数据和附件会一并删除。",
-          "内测期所有账号免费，额度为 6 位家人、500 MB 附件、3 个 Agent token，详见服务协议。",
+          "目前所有账号免费，额度为 6 位家人、500 MB 附件、3 个 Agent token，详见服务协议。",
           "所有分析仅供参考，不能替代医生诊断。"
         ]
       },
@@ -691,7 +691,7 @@
       "tokenQuota": "已达到免费额度的接入上限（{limit} 个）。删掉不用的接入后再创建。",
       "usage": {
         "title": "用量",
-        "hint": "内测期间所有账号都是免费额度。快用满时这里会变色；需要更多请在「意见反馈」里告诉我们。",
+        "hint": "目前所有账号都是免费额度。快用满时这里会变色；需要更多请在「意见反馈」里告诉我们。",
         "members": "家人档案",
         "attachments": "附件空间",
         "tokens": "Agent 接入",
@@ -915,7 +915,7 @@
     },
     "feedback": {
       "title": "意见反馈",
-      "sub": "内测期间，你的每条建议我们都会看。想到什么写什么，一条写一件事更好处理。",
+      "sub": "你的每条建议我们都会看。想到什么写什么，一条写一件事更好处理。",
       "placeholder": "哪里不好用、缺什么功能、哪里看不懂……",
       "note": "会附上你的登录邮箱，方便我们回复。请不要填写检查数值等健康隐私。",
       "submit": "提交",
@@ -939,7 +939,7 @@
     "title_create": "创建账号",
     "title_verify": "验证邮箱",
     "title_reset": "重置密码",
-    "sub_start": "你的健康档案，Agent 也读得懂。",
+    "sub_start": "第一次使用会自动创建账号。",
     "sub_google": "首次使用 Google 登录，请先同意条款。",
     "google": "使用 Google 账户继续",
     "googleCreate": "使用 Google 创建账号",
@@ -966,7 +966,7 @@
     "sent": "验证码已发送到 {email}，5 分钟内有效。",
     "resetDone": "密码已重置，请用新密码登录。",
     "errors": {
-      "not_allowed": "这个邮箱还没有开通，请在下面提交申请。",
+      "not_allowed": "这个实例只接受指定邮箱注册，如有疑问请联系管理员。",
       "email_not_verified": "这个 Google 账号的邮箱还没有验证。请先在 Google 完成验证，或者改用邮箱登录。",
       "signup_disabled": "这个账号还没有注册。请勾选同意条款后继续。",
       "INVALID_EMAIL_OR_PASSWORD": "邮箱或密码不正确。",
@@ -981,35 +981,12 @@
       "network": "网络异常，请稍后重试。",
       "generic": "操作没有成功，请重试。",
       "disabled": "这个账号已被停用，如有疑问请联系管理员。",
-      "rate_limited": "尝试太频繁，请稍后再试。"
+      "rate_limited": "尝试太频繁，请稍后再试。",
+      "signup_busy": "今天的邮箱注册名额已满，请明天再试，或者用 Google 账号注册。"
     },
     "title_setpw": "设置密码",
     "setPassword": "设置密码",
-    "setDone": "密码已设置，现在可以用密码登录。",
-    "title_apply": "申请抢先体验",
-    "title_applied": "已加入候补名单",
-    "apply": {
-      "sub": "Deepfy 目前分批开放。留下你的邮箱，通过后我们会发邮件通知你。",
-      "email": "邮箱",
-      "ask": "还没有开通？",
-      "haveAccess": "已经开通了？",
-      "toLogin": "去登录",
-      "hasAccount": "这个邮箱已经有账号，请直接登录。",
-      "canCreate": "这个邮箱已经开通，点「继续」创建账号。",
-      "agents": "你在用哪些 agent？（可选）",
-      "note": "想用 Deepfy 做什么？一句话就好（可选）",
-      "submit": "提交申请",
-      "done": "我们已收到 {email} 的申请。审批通过后会给这个邮箱发邀请邮件。",
-      "agent": {
-        "claude-code": "Claude Code",
-        "codex": "Codex",
-        "gemini-cli": "Gemini CLI",
-        "grokbot": "Grokbot",
-        "workbuddy": "WorkBuddy",
-        "hermes-agent": "Hermes Agent",
-        "other": "其他"
-      }
-    }
+    "setDone": "密码已设置，现在可以用密码登录。"
   },
   "legal": {
     "back": "返回",
@@ -1037,68 +1014,24 @@
       "status": "状态",
       "never": "—",
       "active": "正常",
-      "disabled": "已停用",
+      "disabled": "已拉黑",
       "admin": "管理员",
       "you": "你",
-      "disable": "停用",
-      "enable": "启用",
+      "disable": "拉黑",
+      "enable": "解除拉黑",
       "unverified": "邮箱未验证",
       "dataSummary": "{members} 份档案 · {docs} 份文档 · {size}",
       "tokens": "{n} 个 token",
       "quota": "{plan} 档：家人 ≤{members}、附件 ≤{size}、token ≤{tokens}",
       "quotaAdmin": "管理员：不限额度"
     },
-    "allow": {
-      "title": "已开通邮箱",
-      "hint": "只有名单内的邮箱可以注册和登录；审批通过的申请会自动加入。名单为空且没有配置管理员时开放注册。",
-      "env": "环境变量",
-      "adminTag": "管理员",
-      "db": "后台添加",
-      "note": "备注（可选）",
-      "email": "邮箱",
-      "add": "添加",
-      "remove": "移除",
-      "empty": "后台还没有添加邮箱。",
-      "invalid": "邮箱格式不正确。"
-    },
     "errors": {
       "self": "不能停用自己的账号。",
       "adminTarget": "不能停用管理员账号。"
     },
-    "waitlist": {
-      "title": "抢先体验申请",
-      "hint": "用户在登录页提交的申请。通过后会自动加入已开通名单，并给对方发邀请邮件；拒绝不会通知对方。",
-      "stats": {
-        "total": "总申请",
-        "pending": "待审批",
-        "week": "近 7 天",
-        "approved": "已通过"
-      },
-      "status": {
-        "pending": "待审批",
-        "approved": "已通过",
-        "declined": "已拒绝"
-      },
-      "all": "全部",
-      "agents": "在用的 agent",
-      "note": "用途",
-      "applied": "申请时间",
-      "approve": "通过",
-      "decline": "拒绝",
-      "empty": "还没有申请。",
-      "agent": {
-        "claude-code": "Claude Code",
-        "codex": "Codex",
-        "gemini-cli": "Gemini CLI",
-        "grokbot": "Grokbot",
-        "workbuddy": "WorkBuddy",
-        "hermes-agent": "Hermes Agent",
-        "other": "其他"
-      }
-    },
     "gaps": {
       "title": "字典缺口反馈",
-      "hint": "用户在记录页主动反馈的「字典暂未收录」项目名称，按次数排列。只有名称、单位和分组，不含数值，也不关联账号。定期据此扩充内置字典。新增和次数变化会随每周内测汇总发到管理员邮箱。",
+      "hint": "用户在记录页主动反馈的「字典暂未收录」项目名称，按次数排列。只有名称、单位和分组，不含数值，也不关联账号。定期据此扩充内置字典。新增和次数变化会随每周汇总发到管理员邮箱。",
       "count": "{count} 次",
       "last": "最近 {date}",
       "empty": "还没有反馈。"
@@ -1113,6 +1046,10 @@
         "bug": "问题",
         "other": "其他"
       }
+    },
+    "registration": {
+      "open": "注册状态：开放，所有人都能注册。",
+      "restricted": "注册状态：只有 KZ_ALLOWED_EMAILS 里的邮箱和管理员能注册。"
     }
   }
 }

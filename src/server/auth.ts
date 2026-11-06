@@ -28,8 +28,22 @@ const otpChecksPerEmail = createLimiter(300, 86_400_000);
 /** 会发验证码的接口：同一 IP 每天 20 次 */
 const OTP_SEND_RULE = { window: 86_400, max: 20 };
 
+/** 邮箱注册的全站每日上限：每次注册都发一封验证邮件，不能让批量注册把发信额度用光，导致其他人收不到登录验证码。Google 注册不发信，不计入 */
+const signupBudget = createLimiter(Number(process.env.KZ_SIGNUP_DAILY_LIMIT) || 60, 86_400_000);
+
 /** 验证码语言跟用户正在看的页面走；不在请求上下文时（脚本）用中文 */
 const otpLocale = () => resolveLocale().catch(() => "zh" as const);
+
+const signupsPerIp = createLimiter(20, 86_400_000);
+
+/** 只有格式正确、尚未注册的邮箱才计数：否则一个 IP 发垃圾请求就能把全站当天的名额用完 */
+async function assertSignupAllowed(rawEmail: unknown, req: Request | undefined) {
+  const email = String(rawEmail ?? "").trim().toLowerCase();
+  if (!/^\S+@\S+\.\S+$/.test(email)) return;
+  if (await getDb().query.user.findFirst({ where: eq(schema.user.email, email), columns: { id: true } })) return;
+  if (!signupsPerIp(req ? clientIp(req) : "local")) throw new APIError("TOO_MANY_REQUESTS", { code: "rate_limited", message: "Too many sign-ups" });
+  if (!signupBudget("all")) throw new APIError("TOO_MANY_REQUESTS", { code: "signup_busy", message: "Sign-ups are full today" });
+}
 
 function createAuth() {
   const db = getDb();
@@ -38,12 +52,13 @@ function createAuth() {
     advanced: { ipAddress: { ipAddressHeaders: ["x-real-ip"] } },
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
+        if (ctx.path === "/sign-up/email") await assertSignupAllowed(ctx.body?.email, ctx.request);
         if (!OTP_CHECK_PATHS.has(ctx.path)) return;
         const email = String(ctx.body?.email ?? "").trim().toLowerCase();
         if (email && (!otpChecksPerEmailIp(`${email}|${ctx.request ? clientIp(ctx.request) : "local"}`) || !otpChecksPerEmail(email))) throw new APIError("TOO_MANY_REQUESTS", { message: "Too many attempts" });
       }),
     },
-    rateLimit: { customRules: { "/email-otp/send-verification-otp": OTP_SEND_RULE, "/email-otp/request-password-reset": OTP_SEND_RULE, "/forget-password/email-otp": OTP_SEND_RULE } },
+    rateLimit: { customRules: { "/email-otp/send-verification-otp": OTP_SEND_RULE, "/email-otp/request-password-reset": OTP_SEND_RULE, "/forget-password/email-otp": OTP_SEND_RULE, "/sign-up/email": { window: 3600, max: 5 } } },
     database: drizzleAdapter(db, {
       provider: "pg",
       schema: { user: schema.user, session: schema.session, account: schema.account, verification: schema.verification },
@@ -71,10 +86,10 @@ function createAuth() {
       },
     },
     user: {
-      // 白名单：KZ_ALLOWED_EMAILS ∪ 后台维护的 allowed_email ∪ 管理员；都为空时开放注册
+      // 默认开放注册；设了 KZ_ALLOWED_EMAILS 的实例只允许名单内的邮箱和管理员
       validateUserInfo: async ({ user, source }) => {
         if (source.method === "oauth" && user.emailVerified === false) return { error: "email_not_verified" };
-        if (!(await isEmailAllowed(db, String(user.email ?? "")))) return { error: "not_allowed" };
+        if (!isEmailAllowed(String(user.email ?? ""))) return { error: "not_allowed" };
       },
     },
     databaseHooks: {
@@ -86,8 +101,14 @@ function createAuth() {
           },
         },
       },
-      // 被停用的账号不能建立新会话（停用时已删除旧会话）
-      session: { create: { before: async (s) => (await isDisabled(db, s.userId) ? false : undefined) } },
+      // 被拉黑的账号不能建立新会话（拉黑时已删除旧会话）；带上 code，密码、验证码、Google 登录才都能显示正确提示
+      session: {
+        create: {
+          before: async (s) => {
+            if (await isDisabled(db, s.userId)) throw new APIError("FORBIDDEN", { code: "disabled", message: "Account disabled" });
+          },
+        },
+      },
     },
     onAPIError: { errorURL: "/login" },
     // 国内入口二期（需要已备案域名、审核通过的短信签名、微信开放平台网站应用）：
