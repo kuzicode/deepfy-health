@@ -126,7 +126,7 @@ a.a-row:hover { background: var(--surface-2); }
   .a-sched .sched-link { flex-wrap: wrap; gap: 4px 10px; flex-basis: 100%; }
   .sched-act { margin-left: 17px; }
 }
-.a-row .kind { font: 500 10.5px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); width: 54px; flex: none; }
+.a-row .kind { font: 500 10.5px/1 var(--mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); width: 84px; flex: none; }
 .a-row svg.chev { color: var(--faint); flex: none; }
 
 /* ---------- 指标卡 ---------- */
