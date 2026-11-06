@@ -115,10 +115,10 @@ function createAuth() {
       },
     },
     user: {
-      // 默认开放注册；设了 KZ_ALLOWED_EMAILS 的实例只允许名单内的邮箱和管理员
+      // 白名单制（设了 KZ_ALLOWED_EMAILS）：只允许名单内的邮箱、审批通过的申请和管理员；留空是开放注册，只用于自托管
       validateUserInfo: async ({ user, source }) => {
         if (source.method === "oauth" && user.emailVerified === false) return { error: "email_not_verified" };
-        if (!isEmailAllowed(String(user.email ?? ""))) return { error: "not_allowed" };
+        if (!(await isEmailAllowed(db, String(user.email ?? "")))) return { error: "not_allowed" };
       },
     },
     databaseHooks: {

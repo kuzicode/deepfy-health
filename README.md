@@ -41,9 +41,9 @@ Your health content is encrypted per account on the server. This isn't end-to-en
 
 ## Quick start
 
-**Self-host it (recommended).** Run it on your own server and keep your data there. See [docs/self-hosting.md](docs/self-hosting.md).
+**Self-host it (recommended).** Run it on your own server and keep your data there. See [docs/self-hosting.md](docs/self-hosting.md). You're welcome to help build it too: see [Contributing](#contributing).
 
-**Or try the hosted beta.** Sign up at **[app.deepfy.si](https://app.deepfy.si)**. It's an optional beta, free for now, with 100 MB of attachments per account.
+**Need it hosted?** The hosted app at **[app.deepfy.si](https://app.deepfy.si)** is an invite-only beta. Request access on the sign-in page, and you'll get an email once it's approved. It's free for now, with 100 MB of attachments per account.
 
 **Connect your agent.** Create a token on the **Agents** page, then add the MCP server. For Claude Code on the hosted beta (on your own instance, use its address):
 

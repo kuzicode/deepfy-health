@@ -247,6 +247,14 @@ a.a-row:hover { background: var(--surface-2); }
 .a-table .sub { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; color: var(--muted); font-size: 12px; }
 .a-table tr.off td { opacity: 0.55; }
 
+/* 管理后台：内测申请 */
+.wl-agents { display: grid; gap: 8px; margin-top: 12px; }
+.wl-bar { display: grid; grid-template-columns: 120px 1fr 40px; align-items: center; gap: 12px; font-size: 13px; }
+.wl-bar i { display: block; height: 8px; border-radius: 999px; background: linear-gradient(90deg, var(--brand), var(--mint)); min-width: 4px; }
+.wl-bar b { font: 500 12px var(--mono); text-align: right; color: var(--body); }
+.wl-filter { display: flex; gap: 6px; margin: 16px 0 10px; }
+.wl-filter a { padding: 6px 12px; border-radius: 999px; font-size: 13px; color: var(--muted); border: 1px solid transparent; }
+.wl-filter a.on { color: var(--brand); border-color: var(--line-strong); background: var(--surface); }
 
 /* ---------- 健康模板提示（小篇幅） ---------- */
 .a-hints { margin-top: 16px; padding: 12px 18px; border-radius: var(--r); border: 1px dashed var(--line-strong); background: color-mix(in srgb, var(--surface) 70%, transparent); font-size: 13px; }

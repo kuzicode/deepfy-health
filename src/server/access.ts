@@ -1,8 +1,9 @@
 import { and, eq, lt, notExists } from "drizzle-orm";
 import type { DB } from "@/db/client";
-import { member, session, user, userStatus } from "@/db/schema";
+import { allowedEmail, member, session, user, userStatus } from "@/db/schema";
 
-// 访问控制：管理员只来自环境变量（网页上不能提权）；默认开放注册，KZ_ALLOWED_EMAILS 可把实例限制为指定邮箱（自托管用）；被拉黑（停用）的账号不能登录、token 失效
+// 访问控制：管理员只来自环境变量（网页上不能提权）。设了 KZ_ALLOWED_EMAILS 就是白名单制：名单 = 环境变量 ∪ 后台 allowed_email（审批通过的申请）∪ 管理员。
+// 留空是开放注册，只用于自托管，官方实例必须设。被拉黑（停用）的账号不能登录、token 失效
 
 const list = (v: string | undefined) => (v ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
 export const normalizeEmail = (e: string) => e.trim().toLowerCase();
@@ -12,13 +13,14 @@ export const isAdminEmail = (email: string | null | undefined) => !!email && adm
 
 const allowList = () => list(process.env.KZ_ALLOWED_EMAILS);
 
-/** 是否只允许名单内的邮箱注册；官方实例留空，即开放注册 */
+/** 是否是白名单制。官方实例必须设 KZ_ALLOWED_EMAILS（部署脚本会检查） */
 export const registrationRestricted = () => allowList().length > 0;
 
-export function isEmailAllowed(email: string | null | undefined): boolean {
+export async function isEmailAllowed(db: DB, email: string | null | undefined): Promise<boolean> {
   if (!email) return false;
   const e = normalizeEmail(email);
-  return !registrationRestricted() || allowList().includes(e) || isAdminEmail(e);
+  if (!registrationRestricted() || allowList().includes(e) || isAdminEmail(e)) return true;
+  return !!(await db.query.allowedEmail.findFirst({ where: eq(allowedEmail.email, e) }));
 }
 
 export async function isDisabled(db: DB, userId: string): Promise<boolean> {
@@ -44,6 +46,14 @@ export async function disableTarget(db: DB, adminId: string, userId: string) {
   if (!target || target.id === adminId || isAdminEmail(target.email)) return undefined;
   return target;
 }
+
+export async function addAllowedEmail(db: DB, email: string, note: string | undefined, by: string) {
+  const e = normalizeEmail(email);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) throw new Error("invalid_email");
+  await db.insert(allowedEmail).values({ email: e, note: note?.trim() || null, createdBy: by }).onConflictDoNothing();
+}
+
+export const removeAllowedEmail = (db: DB, email: string) => db.delete(allowedEmail).where(eq(allowedEmail.email, normalizeEmail(email)));
 
 const UNVERIFIED_RETENTION_MS = 7 * 86_400_000;
 

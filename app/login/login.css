@@ -38,6 +38,7 @@
 
 .l-row { display: flex; margin: -4px 0 4px 14px; }
 .l-alt { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.l-hint { font-size: 13.5px; color: var(--muted); }
 .l-link { border: none; background: none; padding: 2px 0; color: var(--brand); font: 500 13.5px/1.4 var(--sans); cursor: pointer; }
 .l-link:hover { text-decoration: underline; text-underline-offset: 3px; }
 
@@ -51,3 +52,11 @@
   .l-card { padding: 28px 20px 24px; border: none; box-shadow: none; background: transparent; }
 }
 
+/* 内测申请 */
+.l-chips { border: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.l-chips legend { padding: 0 0 10px 4px; font-size: 13px; color: var(--body); }
+.l-chips button { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 13px; border-radius: 999px; border: 1px solid var(--line-strong); background: #fff; font: 500 13px/1 var(--sans); color: var(--body); cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+.l-chips button.on { border-color: var(--brand); background: var(--mint-wash); color: var(--brand); }
+.l-note { width: 100%; resize: vertical; min-height: 64px; padding: 12px 18px; border-radius: 20px; border: 1px solid var(--line-strong); background: #fff; font: inherit; font-size: 14px; line-height: 1.5; color: var(--ink); }
+.l-note:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--mint-wash); }
+.l-done { margin: 14px 0 4px; text-align: center; font-size: 14.5px; line-height: 1.65; color: var(--body); }

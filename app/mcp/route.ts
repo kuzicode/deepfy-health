@@ -4,6 +4,7 @@ import { createMcpServer } from "@/mcp/server";
 import { masterKey } from "@/server/crypto";
 import { clientIp, createLimiter } from "@/server/login-lookup";
 import { PgRepository } from "@/server/pg-repository";
+import { parseJsonOrUndefined, readBodyLimited } from "@/server/read-body";
 import { createGate } from "@/server/throttle";
 import { tokenAuth, type TokenAuth } from "@/server/tokens";
 
@@ -30,22 +31,24 @@ async function handle(req: Request) {
   if (!auth) return unauthorized();
   const { userId } = auth;
   if (!perUser(userId)) return rpcError(-32002, "Rate limited, retry in a minute", 429);
-  const rejected = await rejectBody(req);
-  if (rejected) return rejected;
+  // 先拿并发名额再读请求体，读取本身也占内存
   if (!gate.enter(userId)) return rpcError(-32002, "Too many concurrent requests, retry shortly", 429);
   try {
-    return await serve(req, auth);
+    const checked = await checkedRequest(req);
+    return checked instanceof Response ? checked : await serve(checked, auth);
   } finally {
     gate.leave(userId);
   }
 }
 
-async function rejectBody(req: Request) {
-  if (req.method !== "POST") return undefined;
-  if (Number(req.headers.get("content-length") ?? 0) > MAX_BODY) return rpcError(-32600, "Request too large", 413);
+/** 检查大小和批量请求；请求体已经读完，要重新包成 Request 交给 MCP SDK */
+async function checkedRequest(req: Request) {
+  if (req.method !== "POST") return req;
+  const text = await readBodyLimited(req, MAX_BODY);
+  if (text === null) return rpcError(-32600, "Request too large", 413);
   // 一个批量请求可以带很多调用，会绕过按次限速。当前 MCP 协议已经不用批量
-  if (Array.isArray(await req.clone().json().catch(() => undefined))) return rpcError(-32600, "Batch requests are not supported", 400);
-  return undefined;
+  if (Array.isArray(parseJsonOrUndefined(text))) return rpcError(-32600, "Batch requests are not supported", 400);
+  return new Request(req.url, { method: "POST", headers: req.headers, body: text });
 }
 
 async function serve(req: Request, auth: TokenAuth) {

@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { createDb, type DB } from "@/db/client";
 import { member, session, user, userStatus } from "@/db/schema";
-import { deleteStaleUnverified, disableTarget, isAdminEmail, isDisabled, isEmailAllowed, registrationRestricted, setDisabled } from "./access";
+import { addAllowedEmail, deleteStaleUnverified, disableTarget, isAdminEmail, isDisabled, isEmailAllowed, registrationRestricted, removeAllowedEmail, setDisabled } from "./access";
 import { listUsers } from "./admin";
 import { randomId } from "./crypto";
 import { createToken, userIdForToken } from "./tokens";
@@ -28,24 +28,26 @@ describe.skipIf(!URL)("访问控制与管理后台（需要 KZ_TEST_DATABASE_URL
     await db.$client.end();
   });
 
-  it("没有设名单时开放注册，配了管理员也一样", () => {
+  it("没有设名单时开放注册（只用于自托管），配了管理员也一样", async () => {
     process.env.KZ_ALLOWED_EMAILS = "";
-    process.env.KZ_ADMIN_EMAILS = "";
-    expect(registrationRestricted()).toBe(false);
-    expect(isEmailAllowed("anyone@example.com")).toBe(true);
     process.env.KZ_ADMIN_EMAILS = "boss@example.com";
-    expect(isEmailAllowed("anyone@example.com")).toBe(true);
-    expect(isEmailAllowed("")).toBe(false);
+    expect(registrationRestricted()).toBe(false);
+    expect(await isEmailAllowed(db, "anyone@example.com")).toBe(true);
+    expect(await isEmailAllowed(db, "")).toBe(false);
   });
 
-  it("设了名单后只允许名单内的邮箱和管理员（大小写不敏感）", () => {
+  it("白名单制：只允许名单、后台添加的邮箱和管理员（大小写不敏感）", async () => {
     process.env.KZ_ADMIN_EMAILS = "Boss@Example.com";
     process.env.KZ_ALLOWED_EMAILS = "family@example.com";
     expect(registrationRestricted()).toBe(true);
     expect(isAdminEmail("boss@example.com")).toBe(true);
-    expect(isEmailAllowed("BOSS@example.com")).toBe(true);
-    expect(isEmailAllowed(" Family@Example.com ")).toBe(true);
-    expect(isEmailAllowed("stranger@example.com")).toBe(false);
+    expect(await isEmailAllowed(db, "BOSS@example.com")).toBe(true);
+    expect(await isEmailAllowed(db, " Family@Example.com ")).toBe(true);
+    expect(await isEmailAllowed(db, "stranger@example.com")).toBe(false);
+    await addAllowedEmail(db, "Stranger@Example.com", undefined, "boss@example.com");
+    const added = await isEmailAllowed(db, "stranger@example.com");
+    await removeAllowedEmail(db, "stranger@example.com");
+    expect([added, await isEmailAllowed(db, "stranger@example.com")]).toEqual([true, false]);
   });
 
   it("清理未验证账号：只删超过 7 天的，已验证和被拉黑的不动", async () => {

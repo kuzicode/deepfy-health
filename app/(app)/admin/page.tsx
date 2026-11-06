@@ -1,25 +1,55 @@
 import { getTranslations } from "next-intl/server";
 import { getDb } from "@/db/client";
-import { registrationRestricted } from "@/server/access";
-import { adminStats, listUsers } from "@/server/admin";
+import { adminEmails, registrationRestricted } from "@/server/access";
+import { adminStats, envAllowed, listAllowed, listUsers } from "@/server/admin";
 import { listFeedback } from "@/server/catalog-feedback";
 import { listRecentFeedback } from "@/server/feedback";
 import { PLANS } from "@/server/quota";
 import { requireAdmin } from "@/server/session";
 import { PageHead, SectionHead } from "@/ui/blocks";
-import { setDisabledAction } from "./actions";
+import { removeAllowedAction, setDisabledAction } from "./actions";
+import { AllowForm } from "./AllowForm";
 import { FeedbackSection } from "./FeedbackSection";
 import { GapsSection } from "./GapsSection";
+import { WAITLIST_STATUS, WaitlistSection } from "./WaitlistSection";
 
 export const metadata = { title: "Admin", robots: { index: false } };
 
 const day = (iso: string | null) => (iso ? iso.slice(0, 10) : null);
 const size = (b: number) => (b < 1024 ? `${b} B` : b < 1048576 ? `${(b / 1024).toFixed(0)} KB` : `${(b / 1048576).toFixed(1)} MB`);
 
-export default async function AdminPage() {
+/** 已开通邮箱：管理员、环境变量、后台添加（含审批通过）三个来源 */
+async function AllowedSection({ t }: { t: Awaited<ReturnType<typeof getTranslations<"admin">>> }) {
+  const allowed = await listAllowed(getDb());
+  const env = envAllowed();
+  return (
+    <section className="a-section">
+      <SectionHead title={t("allow.title")} />
+      <p className="muted" style={{ margin: "-6px 0 12px", fontSize: 13.5 }}>{t("allow.hint")}</p>
+      <div className="a-panel a-rows">
+        {adminEmails().map((e) => <div className="a-row" key={`a-${e}`}><span className="main"><span className="title">{e}</span></span><span className="chip chip-mint">{t("allow.adminTag")}</span></div>)}
+        {env.filter((e) => !adminEmails().includes(e)).map((e) => <div className="a-row" key={`e-${e}`}><span className="main"><span className="title">{e}</span></span><span className="chip chip-unknown">{t("allow.env")}</span></div>)}
+        {allowed.map((a) => (
+          <div className="a-row" key={a.email}>
+            <span className="main"><span className="title">{a.email}</span><span className="detail" style={{ display: "block" }}>{[a.note, day(a.createdAt.toISOString())].filter(Boolean).join(" · ")}</span></span>
+            <span className="chip chip-L">{t("allow.db")}</span>
+            <form action={removeAllowedAction}><input type="hidden" name="email" value={a.email} /><button className="link-danger">{t("allow.remove")}</button></form>
+          </div>
+        ))}
+        {allowed.length === 0 && <div className="a-empty">{t("allow.empty")}</div>}
+      </div>
+      <div className="a-panel a-pad" style={{ marginTop: 12 }}><AllowForm /></div>
+    </section>
+  );
+}
+
+export default async function AdminPage({ searchParams }: { searchParams: Promise<{ wl?: string }> }) {
   const me = await requireAdmin();
   const db = getDb();
   const t = await getTranslations("admin");
+  const { wl } = await searchParams;
+  const filter = WAITLIST_STATUS.find((s) => s === wl);
+  const restricted = registrationRestricted();
   const [users, stats, gaps, notes] = await Promise.all([listUsers(db), adminStats(db), listFeedback(db), listRecentFeedback(db)]);
 
   return (
@@ -32,7 +62,9 @@ export default async function AdminPage() {
         ))}
       </div>
 
-      <p className="muted" style={{ margin: "12px 0 0", fontSize: 13.5 }}>{t(registrationRestricted() ? "registration.restricted" : "registration.open")}</p>
+      <p className="muted" style={{ margin: "12px 0 0", fontSize: 13.5 }}>{t(restricted ? "registration.restricted" : "registration.open")}</p>
+
+      {restricted && <WaitlistSection filter={filter} />}
 
       <section className="a-section">
         <SectionHead title={t("users.title")} />
@@ -72,6 +104,8 @@ export default async function AdminPage() {
           </table>
         </div>
       </section>
+
+      {restricted && <AllowedSection t={t} />}
 
       <FeedbackSection items={notes} />
       <GapsSection gaps={gaps} />

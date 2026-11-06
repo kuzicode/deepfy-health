@@ -21,9 +21,16 @@ interface Ctx {
 
 /** 数据库和备份在同一块盘上：剩余空间不够时停止接收附件，保住数据库 */
 const MIN_FREE_BYTES = 5 * 1024 * 1024 * 1024;
-async function assertDiskRoom(bytes: number) {
+async function hasDiskRoom(bytes: number) {
   const { bavail, bsize } = await fs.statfs(/*turbopackIgnore: true*/ attachmentDir());
-  if (bavail * bsize < MIN_FREE_BYTES + bytes) throw new QuotaExceeded("uploadBytesPerDay", 0);
+  return bavail * bsize >= MIN_FREE_BYTES + bytes;
+}
+
+/** 空间不足时先清理过期的旧文件再复查，否则上传一直失败，清理也一直等不到触发 */
+async function assertDiskRoom(db: DB, bytes: number) {
+  if (await hasDiskRoom(bytes)) return;
+  await gcOrphansThrottled(db);
+  if (!(await hasDiskRoom(bytes))) throw new QuotaExceeded("uploadBytesPerDay", 0);
 }
 
 export class AttachmentStore {
@@ -51,7 +58,7 @@ export class AttachmentStore {
       await consumeUpload(tx, this.ctx.userId, data.length);
       const storageKey = randomId();
       await fs.mkdir(/*turbopackIgnore: true*/ attachmentDir(), { recursive: true });
-      await assertDiskRoom(data.length);
+      await assertDiskRoom(this.ctx.db, data.length);
       await fs.writeFile(path.join(/*turbopackIgnore: true*/ attachmentDir(), storageKey), seal(dek, data, attAad(m.id, relPath)));
       const values = { mime, size: data.length, sha256: hash, storageKey };
       await tx.insert(attachment).values({ id: randomId(), memberId: m.id, relPath, ...values })
@@ -60,7 +67,7 @@ export class AttachmentStore {
     });
     if (unchanged) return { unchanged: true };
     // 旧文件不立即删除：备份先 pg_dump 再打包附件，快照里引用的旧文件必须在打包时仍然存在；由 GC 延迟清理
-    gcOrphansThrottled(this.ctx.db);
+    void gcOrphansThrottled(this.ctx.db);
     return { unchanged: false };
   }
 

@@ -2,6 +2,7 @@
 
 import { Eye, EyeOff } from "lucide-react";
 import { authClient } from "@/client/auth-client";
+import { ApplyForm } from "./ApplyForm";
 import { useLoginFlow, type LoginFlow, type OtpType, type Step } from "./useLoginFlow";
 
 // 登录卡片：各步骤的界面；状态与请求在 useLoginFlow
@@ -79,6 +80,7 @@ function signInViews(f: LoginFlow, u: Fields): Partial<Record<Step, React.ReactN
           <input className="l-input" type="email" autoComplete="email" placeholder={t("email")} value={f.email} readOnly={f.busy} onChange={(e) => f.setEmail(e.target.value.trim())} />
           {u.primary(t("continue"), !/^\S+@\S+\.\S+$/.test(f.email))}
         </form>
+        {f.canApply && <div className="l-alt"><span className="l-hint">{t("apply.ask")}</span>{u.link(t("title_apply"), () => f.go("apply"))}</div>}
       </>
     ),
     password: (
@@ -105,7 +107,7 @@ function signInViews(f: LoginFlow, u: Fields): Partial<Record<Step, React.ReactN
   };
 }
 
-/** 注册、Google 新用户 */
+/** 注册、申请内测、Google 新用户 */
 function signUpViews(f: LoginFlow, u: Fields): Partial<Record<Step, React.ReactNode>> {
   const { t } = f;
   return {
@@ -114,6 +116,18 @@ function signUpViews(f: LoginFlow, u: Fields): Partial<Record<Step, React.ReactN
         {u.emailRO}{u.pwField(t("newPassword"), "new-password")}{u.consent}
         {u.primary(t("continue"), !f.agreed || f.password.length < 8)}
       </form>
+    ),
+    apply: (
+      <>
+        <ApplyForm email={f.email} setEmail={f.setEmail} onDone={f.applyDone} onError={(code) => f.setMsg({ kind: "error", text: f.errText(code) })} />
+        <div className="l-alt"><span className="l-hint">{t("apply.haveAccess")}</span>{u.link(t("apply.toLogin"), () => f.go("start"))}</div>
+      </>
+    ),
+    applied: (
+      <div className="l-form">
+        <p className="l-done">{t("apply.done", { email: f.email })}</p>
+        <div className="l-alt">{u.link(t("back"), () => f.go("start"))}</div>
+      </div>
     ),
     "google-new": (
       <div className="l-form">
@@ -125,10 +139,10 @@ function signUpViews(f: LoginFlow, u: Fields): Partial<Record<Step, React.ReactN
   };
 }
 
-const SUB: Partial<Record<Step, string>> = { start: "sub_start", "google-new": "sub_google" };
+const SUB: Partial<Record<Step, string>> = { start: "sub_start", "google-new": "sub_google", apply: "apply.sub" };
 
-export function LoginView({ error, legal }: { error?: string; legal: Legal }) {
-  const f = useLoginFlow(error);
+export function LoginView({ error, legal, canApply }: { error?: string; legal: Legal; canApply: boolean }) {
+  const f = useLoginFlow(error, canApply);
   const u = useFields(f, legal);
   const { t, step, msg } = f;
   const view = { ...signInViews(f, u), ...signUpViews(f, u) }[step];

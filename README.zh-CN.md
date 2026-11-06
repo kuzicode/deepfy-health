@@ -41,9 +41,9 @@
 
 ## 快速开始
 
-**自托管（推荐）。** 部署到自己的服务器，数据也留在那里，见 [docs/self-hosting.md](docs/self-hosting.md)。
+**自托管（推荐）。** 部署到自己的服务器，数据也留在那里，见 [docs/self-hosting.md](docs/self-hosting.md)。也欢迎一起维护这个项目，见[参与贡献](#参与贡献)。
 
-**或者试用官方内测。** 在 **[app.deepfy.si](https://app.deepfy.si)** 注册。这是可选的内测服务，目前免费，每个账号 100 MB 附件。
+**需要云端托管？** 官方托管的 **[app.deepfy.si](https://app.deepfy.si)** 是白名单制内测。在登录页提交申请，通过后会收到邮件。目前免费，每个账号 100 MB 附件。
 
 **接入你的 agent。** 在「Agent 接入」页面创建 token，再添加 MCP 服务器。下面以 Claude Code 接入官方内测为例，自托管时换成自己的地址：
 

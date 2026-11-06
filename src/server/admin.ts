@@ -1,5 +1,6 @@
-import { sql } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 import type { DB } from "@/db/client";
+import { allowedEmail } from "@/db/schema";
 import { adminEmails } from "./access";
 
 // 管理后台的数据：只有账号元数据与数量。不解密、不返回任何健康内容（成员姓名也是密文，只统计数量）
@@ -55,3 +56,7 @@ export async function adminStats(db: DB) {
       (select coalesce(sum(size), 0)::bigint from attachment) as bytes`);
   return { ...row, bytes: Number(row.bytes) };
 }
+
+export const listAllowed = (db: DB) => db.select().from(allowedEmail).orderBy(desc(allowedEmail.createdAt));
+
+export const envAllowed = () => (process.env.KZ_ALLOWED_EMAILS ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);

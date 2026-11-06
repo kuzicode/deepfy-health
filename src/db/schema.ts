@@ -168,8 +168,8 @@ export const reminderSetting = pgTable("reminder_setting", {
   updatedAt: updated(),
 });
 
-// ---- 管理：账号状态（不含任何健康内容） ----
-/** 待删除（0.19.1）：开放注册后不再使用，保留到上线验证通过，便于回滚 */
+// ---- 管理：白名单与账号状态（不含任何健康内容） ----
+/** 白名单（与环境变量 KZ_ALLOWED_EMAILS 合并）：后台添加或审批通过的邮箱 */
 export const allowedEmail = pgTable("allowed_email", {
   email: text("email").primaryKey(),
   note: text("note"),
@@ -184,7 +184,7 @@ export const userStatus = pgTable("user_status", {
   reason: text("reason"),
 });
 
-/** 待删除（0.19.1）：开放注册后不再使用，保留到上线验证通过，便于回滚 */
+/** 内测申请：只有邮箱与申请人自己填写的说明；审批通过后写入 allowed_email */
 export const waitlist = pgTable("waitlist", {
   email: text("email").primaryKey(),
   locale: text("locale"),

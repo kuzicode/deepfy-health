@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
+import { registrationRestricted } from "@/server/access";
 import { getSession } from "@/server/session";
 import { Wordmark } from "@/ui/Logo";
 import { LocaleToggle } from "@/ui/LocaleToggle";
@@ -23,7 +24,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
     <main className="login" lang={locale}>
       <ClearSignedInMark />
       <header className="login-top"><Wordmark /><LocaleToggle /></header>
-      <LoginView error={error} legal={{ terms: "/legal/terms", privacy: "/legal/privacy" }} />
+      <LoginView error={error} legal={{ terms: "/legal/terms", privacy: "/legal/privacy" }} canApply={registrationRestricted()} />
       <footer className="login-foot">
         <a href="/legal/terms">{t("terms")}</a><span>|</span><a href="/legal/privacy">{t("privacy")}</a>
         {support && <><span>|</span><a href={`mailto:${support}`}>{t("contact")}</a></>}

@@ -15,9 +15,9 @@ status: active
 | `app.deepfy.si` | `(app)` 路由组、`/login`、`/legal/*`、`/api/*` | App；本地也可直接访问 `/site/zh` 预览官网 |
 
 - 语言：next-intl（`src/i18n/`，文案在 `messages/zh.json`、`en.json`）。官网由 URL 决定（proxy 设置 `x-kz-locale` 头）；App 由 cookie `kz_locale` 决定，默认取 Accept-Language。用户写的内容（笔记、健康计划）不翻译；指标英文名在内置字典 `name_en`。
-- 邮件语言：打开 App 时把界面语言同步到 `user.locale`（空值按中文）。提醒邮件读它；验证码跟当前请求；暂停页读它，没有再看浏览器语言。每周汇总只发管理员，保持中文。
+- 邮件语言：打开 App 时把界面语言同步到 `user.locale`（空值按中文）。提醒邮件读它；验证码跟当前请求；邀请用 `waitlist.locale`；暂停页读它，没有再看浏览器语言。每周内测汇总只发管理员，保持中文。
 - 设计：Mint Glass，token 在 `app/styles/tokens.css`，通用样式在 `base.css`；官网 `app/site/site.css`（`s-`/`belt-`/`kc-` 前缀），App `app/(app)/app.css`（`a-` 前缀），登录页 `app/login/login.css`。字体用 Fontsource 自托管。品牌标志「影像环」：组件 `src/ui/Logo.tsx`（< 32px 自动用单环小尺寸版），图标走 Next 文件约定（`app/icon.svg`、`apple-icon.png`、`favicon.ico`、`opengraph-image.png`、`manifest.ts`），原始素材与规范在 `public/brand/`、`docs/brand/logo-kit.md`；邮件模板 `src/server/mail.ts` 引用 `/brand/deepfy-horizontal.png`（这些路径在 `proxy.ts` 中公开）。
-- 登录：`/login` 单卡片、先邮箱后分流（参考 ChatGPT）：Google 或输入邮箱 → `POST /api/login-lookup` 返回 `password` / `otp`（仅 Google 注册过）/ `create` / `closed`（只出现在设了 `KZ_ALLOWED_EMAILS` 的实例，显示错误提示），前端进入对应步骤（`app/login/LoginView.tsx`）。Google 新用户回到 `?error=signup_disabled` 后先勾选同意再创建。手机号、微信登录待定（见 plan backlog）。网页编辑（快速建档、快速记录、档案编辑）走 server action → `PgRepository.applyChanges`：在当前数据上合并单点改动，用 `buildSnapshot` 只校验被改文件，通过后只写改动的文档；日志照片经 `putAttachment` 加密存储，前端先压缩去 EXIF，服务端按魔数只收 jpg/png/webp，经 `/m/[id]/files/*`（需登录）查看。MCP 只读端点 `/mcp`（Streamable HTTP 无状态，Bearer token，`src/mcp/`）。设置 / 修改密码复用 emailOTP `forget-password` + `resetPassword`（无 credential 账号时 better-auth 会新建），入口在登录页验证码步骤与 `/settings`。
+- 登录：`/login` 单卡片、先邮箱后分流（参考 ChatGPT）：Google 或输入邮箱 → `POST /api/login-lookup` 返回 `password` / `otp`（仅 Google 注册过）/ `create` / `closed`（白名单制下不在名单内，转到申请表），前端进入对应步骤（`app/login/LoginView.tsx`）。Google 新用户回到 `?error=signup_disabled` 后先勾选同意再创建。手机号、微信登录待定（见 plan backlog）。网页编辑（快速建档、快速记录、档案编辑）走 server action → `PgRepository.applyChanges`：在当前数据上合并单点改动，用 `buildSnapshot` 只校验被改文件，通过后只写改动的文档；日志照片经 `putAttachment` 加密存储，前端先压缩去 EXIF，服务端按魔数只收 jpg/png/webp，经 `/m/[id]/files/*`（需登录）查看。MCP 只读端点 `/mcp`（Streamable HTTP 无状态，Bearer token，`src/mcp/`）。设置 / 修改密码复用 emailOTP `forget-password` + `resetPassword`（无 credential 账号时 better-auth 会新建），入口在登录页验证码步骤与 `/settings`。
 
 ## 两种运行模式
 
@@ -58,7 +58,7 @@ Obsidian vault (Personal/<Dir>/Health/*.md)
 - 注册：邮箱 + 密码，必须输入邮箱验证码（emailOTP 插件，`overrideDefaultEmailVerification`）才能登录；或 Google（`requestSignUp`，`disableImplicitSignUp`）。两种方式都只在创建账号这一步勾选服务协议与隐私政策（健康数据需单独同意）。
 - 登录：邮箱 + 密码、邮箱验证码免密（只给已注册用户，`disableSignUp`）、Google；同一邮箱自动合并为一个账号（accountLinking）。忘记密码走验证码重置。
 - 发信：`src/server/mail.ts`（Resend HTTP API）；本地未配置 key 时验证码打印在开发服务器控制台，生产必须配置。
-- 注册：默认开放（0.19 起）。设了 `KZ_ALLOWED_EMAILS` 的实例只允许名单内的邮箱和管理员（`src/server/access.ts`，在 `user.validateUserInfo` 里校验），用于自托管；官方实例留空。邮箱注册每个 IP 每小时 5 次，全站每天上限 `KZ_SIGNUP_DAILY_LIMIT`（默认 60，超限返回 `signup_busy`，避免批量注册用光发信额度）。超过 7 天仍未验证的账号由每日任务清理。
+- 注册：设了 `KZ_ALLOWED_EMAILS` 就是白名单制，名单 = 环境变量 ∪ 后台 `allowed_email` 表（后台添加或审批通过）∪ 管理员（`src/server/access.ts`，在 `user.validateUserInfo` 里校验）。官方实例是白名单制：登录页提交申请 → 后台审批 → 发邀请邮件。留空是开放注册，只用于自托管。邮箱注册每个 IP 每天 5 次，全站每天上限 `KZ_SIGNUP_DAILY_LIMIT`（默认 60，超限返回 `signup_busy`，避免批量注册用光发信额度）。超过 7 天仍未验证的账号由每日任务清理。
 - 管理员：只由 `KZ_ADMIN_EMAILS` 指定，且邮箱需已验证；`/admin` 对非管理员返回 404。后台只显示账号元数据与数量（`src/server/admin.ts`），不解密任何健康内容，不提供代登录。
 - 拉黑账号（后台叫「拉黑」，给用户看的提示是「已停用」）：`user_status.disabled_at`；拉黑时删除全部会话，`session.create.before` 抛出 `disabled` 错误拒绝新登录，API token 失效，提醒停发；账号还在，所以这个邮箱不能重新注册；可以解除。
 - `/api/v1/*`：Bearer `kzh_…` token（「Agent 接入」页 `/agents` 创建，可随时再次复制或重新生成）。kzh 与三期 MCP 共用。
@@ -74,8 +74,8 @@ Obsidian vault (Personal/<Dir>/Health/*.md)
 | `/settings`、`/settings/export` | 账号、token、导出 zip、删除账号 |
 | `/reminders`、`/feedback` | 邮件提醒设置、意见反馈（头像菜单） |
 | `/agents`、`/mcp` | Agent 接入（token 管理）、MCP 端点 |
-| `/admin` | 管理后台（仅管理员）：用户与拉黑、注册状态、用户反馈、字典缺口 |
-| `/api/cron/reminders`、`/api/cron/digest` | 每日提醒邮件与未验证账号清理、每周汇总；只由服务器 crontab 调用（Bearer `KZ_CRON_SECRET`，nginx 对外 404） |
+| `/admin` | 管理后台（仅管理员）：用户与拉黑、内测申请审批、已开通邮箱、用户反馈、字典缺口 |
+| `/api/cron/reminders`、`/api/cron/digest` | 每日提醒邮件、未验证账号和附件旧文件清理、每周内测汇总；只由服务器 crontab 调用（Bearer `KZ_CRON_SECRET`，nginx 对外 404） |
 | `/api/reminders/pause` | 邮件里的一键暂停（HMAC 签名，免登录） |
 | `/api/auth/*` | better-auth |
 | `/api/v1/me`、`export`、`import`、`attachments/[member]/[...path]` | kzh push/pull |
