@@ -76,6 +76,8 @@ export const member = pgTable("member", {
   nameCipher: text("name_cipher").notNull(),
   role: text("role").notNull().default("member"),
   dir: text("dir"),
+  /** 用户拖动设置的显示顺序，不含健康内容。没排过的是空，排在最后 */
+  position: integer("position"),
   createdAt: created(),
 }, (t) => [uniqueIndex("member_user_slug_uq").on(t.userId, t.slug)]);
 

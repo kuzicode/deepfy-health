@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { DOC_KINDS, buildSnapshot, type DocKind, type HealthReader, type RawDoc, type RawVault, type VaultSnapshot } from "@/core/bundle";
 import { FamilyMemberSchema } from "@/core/schema";
 import type { DB } from "@/db/client";
@@ -28,7 +28,7 @@ export class PgRepository implements HealthReader {
 
   private async members(q: DB | Tx = this.db) {
     // 稳定顺序：按添加先后（同一次导入里时间相同，再按 slug），否则 Postgres 返回顺序不确定，家人列表会跳动
-    return q.select().from(member).where(eq(member.userId, this.userId)).orderBy(asc(member.createdAt), asc(member.slug));
+    return q.select().from(member).where(eq(member.userId, this.userId)).orderBy(sql`${member.position} asc nulls last`, asc(member.createdAt), asc(member.slug));
   }
 
   /** 同一账号的所有写入串行化（事务级 advisory lock，提交或回滚时自动释放）：读取—合并—写入在锁内完成，避免并发覆盖 */
@@ -71,6 +71,18 @@ export class PgRepository implements HealthReader {
     const s = await this.snapshot();
     const m = s.members.find((x) => x.id === id);
     return m && { member: m, catalog: s.catalog };
+  }
+
+  /** 保存家人的显示顺序。必须正好是这个账号的全部家人，否则不改（页面过期时刷新后重排） */
+  async reorderMembers(slugs: string[]) {
+    await this.db.transaction(async (tx) => {
+      await this.lock(tx);
+      const known = (await this.members(tx)).map((m) => m.slug).sort();
+      if (JSON.stringify([...slugs].sort()) !== JSON.stringify(known)) throw new NotFound();
+      for (const [position, slug] of slugs.entries()) {
+        await tx.update(member).set({ position }).where(and(eq(member.userId, this.userId), eq(member.slug, slug)));
+      }
+    });
   }
 
   /** 整批校验通过才写入；云端版本比本地新时不覆盖（除非 force） */

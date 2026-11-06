@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-11-05
+last_updated: 2026-11-06
 status: active
 ---
 
@@ -48,7 +48,7 @@ Obsidian vault (Personal/<Dir>/Health/*.md)
 
 ## 存储与加密
 
-- 表：better-auth 的 `user / session / account / verification`；`user_key`（包裹后的 DEK）、`household`（家庭名、自定义指标，明文）、`member`（姓名加密）、`doc`（档案 / 记录 / 笔记 / 用药 / 健康计划（care_plan），整份 JSON 加密）、`attachment`（元数据，文件密文在 `KZ_ATTACHMENT_DIR`）、`api_token`（校验用 sha256；明文用账号 DEK 加密存于 `token_cipher`，供「Agent 接入」页再次复制配置；`scope` 只读 / 可写入）、`agent_change`（agent 写入记录：写入前密文 + 前后 sha，可一键还原，保留 90 天）。
+- 表：better-auth 的 `user / session / account / verification`；`user_key`（包裹后的 DEK）、`household`（家庭名、自定义指标，明文）、`member`（姓名加密，`position` 是用户拖动设置的显示顺序）、`doc`（档案 / 记录 / 笔记 / 用药 / 健康计划（care_plan），整份 JSON 加密）、`attachment`（元数据，文件密文在 `KZ_ATTACHMENT_DIR`）、`api_token`（校验用 sha256；明文用账号 DEK 加密存于 `token_cipher`，供「Agent 接入」页再次复制配置；`scope` 只读 / 可写入）、`agent_change`（agent 写入记录：写入前密文 + 前后 sha，可一键还原，保留 90 天）。
 - AES-256-GCM，格式 `v1:nonce:ct:tag`；每个账号一把 DEK，由 `KZ_MASTER_KEY` 包裹。AAD 绑定所属对象（`doc:<memberId>:<kind>:<key>`、`member:<userId>:<slug>`、`att:<memberId>:<path>`、`dek:<userId>`），密文挪到别处无法解密。
 - 服务端加密存储，不是端到端：服务器在请求时于内存中解密，用于展示、分析与将来的 MCP。
 

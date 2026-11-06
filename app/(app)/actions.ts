@@ -1,11 +1,17 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { todayISO } from "@/core/analysis";
 import { ImportRejected } from "@/server/pg-repository";
 import { NewMemberForm, newMemberId, newMemberProfile } from "@/server/quick-entry";
 import { QuotaExceeded } from "@/server/quota";
 import { requireUser, userRepository } from "@/server/session";
+
+export async function reorderMembersAction(ids: string[]) {
+  await (await userRepository()).reorderMembers(ids);
+  revalidatePath("/", "layout");
+}
 
 export async function createMemberAction(_prev: { error?: string }, form: FormData): Promise<{ error?: string }> {
   await requireUser();

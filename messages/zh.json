@@ -318,7 +318,8 @@
       "agents": "Agent 接入",
       "reminders": "邮件提醒",
       "feedback": "意见反馈",
-      "docs": "文档"
+      "docs": "文档",
+      "reorder": "拖动调整顺序"
     },
     "flag": {
       "H": "偏高",

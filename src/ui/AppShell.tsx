@@ -11,6 +11,7 @@ import { clearSignedInMark, setSignedInMark } from "@/client/signed-in-mark";
 import { Avatar } from "./Avatar";
 import { LocaleToggle } from "./LocaleToggle";
 import { Logo, Wordmark } from "./Logo";
+import { Sortable } from "./Sortable";
 import { useDropdown } from "./useDropdown";
 
 export interface ShellMember { id: string; name: string; attention: number; avatar?: string }
@@ -50,7 +51,7 @@ function AccountMenu({ user, path }: { user: ShellUser; path: string }) {
   );
 }
 
-export function AppShell({ members, user, siteHref, children }: { members: ShellMember[]; user?: ShellUser; siteHref: string; children: React.ReactNode }) {
+export function AppShell({ members, user, siteHref, reorderMembers, children }: { members: ShellMember[]; user?: ShellUser; siteHref: string; reorderMembers: (ids: string[]) => Promise<void>; children: React.ReactNode }) {
   const t = useTranslations("app.nav");
   const path = usePathname();
   const currentId = decodeURIComponent(path.match(/^\/m\/([^/]+)/)?.[1] ?? "");
@@ -63,6 +64,11 @@ export function AppShell({ members, user, siteHref, children }: { members: Shell
     [`/m/${current.id}`, t("overview")], [`/m/${current.id}/browse`, t("indicators")], [`/m/${current.id}/records`, t("records")],
     [`/m/${current.id}/regimen`, t("regimen")], [`/m/${current.id}/profile`, t("profile")],
   ] : [];
+  const memberLink = (m: ShellMember) => (
+    <Link href={`/m/${m.id}`} className={m.id === currentId ? "on" : ""}>
+      <Avatar id={m.id} name={m.name} size={22} src={avatarSrc(m.avatar)} />{m.name}{m.attention > 0 && <span className="count">{m.attention}</span>}
+    </Link>
+  );
   const tabOn = (href: string) => path === href || (href.endsWith("/browse") && path.includes("/indicators/"));
 
   return (
@@ -81,11 +87,11 @@ export function AppShell({ members, user, siteHref, children }: { members: Shell
               <div className="a-menu glass" style={{ background: "var(--glass-strong)" }}>
                 <Link href="/" className={path === "/" ? "on" : ""}><Users size={16} />{t("family")}</Link>
                 <hr />
-                {members.map((m) => (
-                  <Link key={m.id} href={`/m/${m.id}`} className={m.id === currentId ? "on" : ""}>
-                    <Avatar id={m.id} name={m.name} size={22} src={avatarSrc(m.avatar)} />{m.name}{m.attention > 0 && <span className="count">{m.attention}</span>}
-                  </Link>
-                ))}
+                {/* 只有云端模式有登录用户，本地 vault 模式不能排序 */}
+                {user ? (
+                  <Sortable className="a-menu-sort" itemClassName="a-menu-item" save={reorderMembers} label={t("reorder")}
+                    items={members.map((m) => ({ id: m.id, node: memberLink(m) }))} />
+                ) : members.map((m) => <div key={m.id}>{memberLink(m)}</div>)}
               </div>
             )}
           </div>

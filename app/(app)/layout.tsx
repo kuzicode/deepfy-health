@@ -12,6 +12,7 @@ import { Interactions } from "@/ui/Interactions";
 import { getReader } from "@/ui/repo";
 import "./app.css";
 import "./forms.css";
+import { reorderMembersAction } from "./actions";
 
 async function shellMembers(): Promise<ShellMember[]> {
   const s = await (await getReader()).snapshot();
@@ -32,7 +33,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="a-root" lang={locale}>
       <Interactions />
-      <AppShell siteHref={siteUrl(locale)} members={await shellMembers()} user={user || undefined}>
+      <AppShell siteHref={siteUrl(locale)} members={await shellMembers()} user={user || undefined} reorderMembers={reorderMembersAction}>
         <main className="a-main">{children}</main>
         <footer className="a-foot">{t("disclaimer")}</footer>
       </AppShell>

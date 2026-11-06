@@ -348,3 +348,18 @@ a.a-row:hover { background: var(--surface-2); }
 /* 顶栏 logo：宽屏显示完整字标，窄屏只留图标 */
 .a-bar .logo .logo-mark { display: none; }
 @media (max-width: 760px) { .a-bar .logo .logo-full { display: none; } .a-bar .logo .logo-mark { display: inline-flex; } }
+
+/* 拖动排序：手柄平时隐藏，悬停或键盘聚焦时显示；触屏没有悬停，一直显示 */
+.sortable-item { position: relative; transition: transform 0.18s var(--ease); }
+.sorting .sortable-item { user-select: none; }
+.sortable-handle { position: absolute; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: grab; touch-action: none; opacity: 0; transition: opacity 0.15s, background 0.15s; }
+.sortable-handle:hover { background: var(--line); color: var(--ink); }
+.sortable-handle:active { cursor: grabbing; }
+.sortable-item:hover .sortable-handle, .sortable-handle:focus-visible, .sorting .sortable-handle { opacity: 1; }
+@media (hover: none) { .sortable-handle { opacity: 0.7; } }
+@media (prefers-reduced-motion: reduce) { .sortable-item { transition: none; } }
+.a-card-item > .a-member-card { height: 100%; }
+.a-card-item > .sortable-handle { top: 12px; right: 12px; }
+.a-menu-item > a { padding-right: 34px; }
+.a-menu .a-menu-item > .sortable-handle { top: 50%; right: 4px; margin-top: -14px; padding: 0; width: 28px; height: 28px; }
+.a-menu-item > a .count { margin-right: 2px; }

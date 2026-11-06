@@ -318,7 +318,8 @@
       "agents": "Agents",
       "reminders": "Reminders",
       "feedback": "Feedback",
-      "docs": "Docs"
+      "docs": "Docs",
+      "reorder": "Drag to reorder"
     },
     "flag": {
       "H": "High",
