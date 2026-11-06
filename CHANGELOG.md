@@ -2,6 +2,8 @@
 
 从新到旧。每次部署到生产前在这里追加一条；细节与原因见 `docs/issues.md`。
 
+从 0.18.5 起，每条对应同版本号的 tag 和 [GitHub Release](https://github.com/kuzicode/deepfy-health/releases)；更早的版本没有 tag，发布说明见 `docs/release-history.md`。
+
 ## 0.18.5 · 2026-11-06 · 安全审查修复
 
 - Google 账号的邮箱未验证时，不再关联到已有账号，也不能新建账号。
