@@ -4,7 +4,7 @@
 
 从 0.18.5 起，每条对应同版本号的 tag 和 [GitHub Release](https://github.com/kuzicode/deepfy-health/releases)；更早的版本没有 tag，发布说明见 `docs/release-history.md`。
 
-## 0.20.0 · 未发布 · 家人排序
+## 0.20.0 · 2026-11-06 · 家人排序
 
 - 家庭页的卡片和顶部的家人列表可以拖动调整顺序，方向键也能调整，两处顺序一致，换设备也保留。
 
