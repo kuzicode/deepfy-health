@@ -4,7 +4,7 @@
 
 从 0.18.5 起，每条对应同版本号的 tag 和 [GitHub Release](https://github.com/kuzicode/deepfy-health/releases)；更早的版本没有 tag，发布说明见 `docs/release-history.md`。
 
-## 0.19.0 · 未发布 · 开放注册
+## 0.19.0 · 2026-11-06 · 开放注册，自托管为主
 
 - 不再需要申请和审批：用 Google 或邮箱就能直接注册。移除候补名单和邀请邮件。
 - 邮箱注册每个 IP 每天最多 5 次，全站每天有上限，超过 7 天未验证且没有档案的账号自动清理。
