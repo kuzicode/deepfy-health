@@ -1,11 +1,11 @@
 ---
-last_updated: 2026-11-06
+last_updated: 2026-11-07
 status: active
 ---
 
 # deepfy-health — 架构
 
-> 规则见 `AGENTS.md`；路线图见 `ROADMAP.md`。
+> 规则见 `AGENTS.md`；路线图见 `docs/ROADMAP.md`。
 
 ## 官网与 App（同一个 Next 应用）
 

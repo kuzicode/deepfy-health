@@ -1,11 +1,11 @@
 ---
-last_updated: 2026-11-06
+last_updated: 2026-11-07
 status: active
 ---
 
 # 自托管
 
-这是推荐的使用方式：跑在自己的电脑或家里的服务器上，数据留在本地，不需要域名和 HTTPS。欢迎一起维护，见 [CONTRIBUTING.md](../CONTRIBUTING.md)。代码和镜像不带任何用户数据，新实例的数据库是空的。
+这是推荐的使用方式：跑在自己的电脑或家里的服务器上，数据留在本地，不需要域名和 HTTPS。欢迎一起维护，见 [CONTRIBUTING.md](../.github/CONTRIBUTING.md)。代码和镜像不带任何用户数据，新实例的数据库是空的。
 
 ## 启动
 

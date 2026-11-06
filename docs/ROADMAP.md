@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-11-06
+last_updated: 2026-11-07
 status: active
 ---
 
@@ -11,7 +11,7 @@ status: active
 
 | 方向 | 说明 |
 |---|---|
-| 指标字典 | 候选：动态心电、胃肠镜、钼靶、有毒元素、胃蛋白酶原、EBV。要求见 `CONTRIBUTING.md` |
+| 指标字典 | 候选：动态心电、胃肠镜、钼靶、有毒元素、胃蛋白酶原、EBV。要求见 `.github/CONTRIBUTING.md` |
 | agent 兼容性 | 实测各家 agent 接入 `/mcp`，记录配置方式；WorkBuddy、Hermes Agent 还没测 |
 | 多语言 | `messages/` 补充和校对 |
 | 网页导入 | 现在导入自托管实例要用 `kzh push`，可以在设置页直接上传导出的 zip（注意大小限制、校验和账号隔离） |
@@ -36,4 +36,4 @@ status: active
 ## 技术债基线
 
 - lint 13 个警告，多为单函数复杂度 11–18（`computeFlag`、`latestReadings`、`checkupPlan`、`mergeChange`、`applyChanges`、`addRecordTool`、`TrendChart` 等），改到时顺手拆，不要增加。
-- knip 未用导出 0；jscpd 4 处小克隆（路由限速、测试夹具），未到第三处不抽。
+- knip 未用导出 1（`inviteHtml`）；jscpd 13 处小克隆，基本都是测试夹具（2026-11-07）。

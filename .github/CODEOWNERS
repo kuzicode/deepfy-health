@@ -15,5 +15,4 @@
 /pnpm-lock.yaml     @kuzicode
 /.github/           @kuzicode
 /AGENTS.md          @kuzicode
-/CONTRIBUTING.md    @kuzicode
-/SECURITY.md        @kuzicode
+/CLAUDE.md          @kuzicode

@@ -1,3 +1,8 @@
+---
+last_updated: 2026-11-07
+status: active
+---
+
 # 名称和品牌素材 / Name and brand assets
 
 MIT 许可证只覆盖代码。以下内容不在其中，保留所有权利：

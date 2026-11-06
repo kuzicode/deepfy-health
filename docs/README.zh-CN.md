@@ -1,6 +1,6 @@
 <div align="center">
 
-<h1><a href="https://deepfy.si"><img src="docs/brand/icon-256.png" width="40" align="top" alt=""></a>&nbsp;Deepfy Health</h1>
+<h1><a href="https://deepfy.si"><img src="brand/icon-256.png" width="40" align="top" alt=""></a>&nbsp;Deepfy Health</h1>
 
 ### 构建你的健康云档案，让 Agent 读懂你。
 
@@ -8,14 +8,14 @@
 看趋势、记复查，到期前收到邮件提醒。<br>
 通过 MCP，你自己的 agent 可以读取档案，并在你同意后帮你更新。
 
-[![Release](https://img.shields.io/github/v/release/kuzicode/deepfy-health?include_prereleases&label=release&color=111111)](https://github.com/kuzicode/deepfy-health/releases) [![Stars](https://img.shields.io/github/stars/kuzicode/deepfy-health?style=flat&color=111111)](https://github.com/kuzicode/deepfy-health/stargazers) [![License](https://img.shields.io/badge/license-MIT-111111)](LICENSE) ![Status](https://img.shields.io/badge/status-pre--release-C2410C)<br>
+[![Release](https://img.shields.io/github/v/release/kuzicode/deepfy-health?include_prereleases&label=release&color=111111)](https://github.com/kuzicode/deepfy-health/releases) [![Stars](https://img.shields.io/github/stars/kuzicode/deepfy-health?style=flat&color=111111)](https://github.com/kuzicode/deepfy-health/stargazers) [![License](https://img.shields.io/badge/license-MIT-111111)](../LICENSE) ![Status](https://img.shields.io/badge/status-pre--release-C2410C)<br>
 ![Next.js](https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white) ![MCP](https://img.shields.io/badge/MCP-0F766E)
 
-**[官网](https://deepfy.si)** &nbsp;·&nbsp; **[文档](https://deepfy.si/zh/docs)** &nbsp;·&nbsp; **[版本发布](https://github.com/kuzicode/deepfy-health/releases)** &nbsp;·&nbsp; **[路线图](ROADMAP.md)** &nbsp;·&nbsp; **[参与贡献](CONTRIBUTING.md)** &nbsp;·&nbsp; **[English](README.md)**
+**[官网](https://deepfy.si)** &nbsp;·&nbsp; **[文档](https://deepfy.si/zh/docs)** &nbsp;·&nbsp; **[版本发布](https://github.com/kuzicode/deepfy-health/releases)** &nbsp;·&nbsp; **[路线图](ROADMAP.md)** &nbsp;·&nbsp; **[参与贡献](../.github/CONTRIBUTING.md)** &nbsp;·&nbsp; **[English](../README.md)**
 
 <br>
 
-<img src="docs/images/family-zh.png" width="900" alt="家庭概览：每位家人一张卡片，显示需要关注的项目，下方是即将到期的体检、复查和用药提醒。图中数据均为虚构。">
+<img src="images/family-zh.png" width="900" alt="家庭概览：每位家人一张卡片，显示需要关注的项目，下方是即将到期的体检、复查和用药提醒。图中数据均为虚构。">
 
 <sub>图中数据均为虚构。</sub>
 
@@ -37,11 +37,11 @@
 - **知道接下来要做什么**：逾期的体检、复查和补剂到期日会显示在概览页，也会发邮件提醒。
 - **数据可以带走**：随时导出账号数据，再导入你自己部署的实例。
 
-健康内容在服务器上按账号加密。这不是端到端加密，报告日期和标题等检索用的元数据目前也还没有加密，详见[架构说明](docs/architecture.md)。
+健康内容在服务器上按账号加密。这不是端到端加密，报告日期和标题等检索用的元数据目前也还没有加密，详见[架构说明](architecture.md)。
 
 ## 快速开始
 
-**自托管（推荐）。** 跑在自己的电脑或内网服务器上，数据留在本地，不需要域名和 HTTPS，见 [docs/self-hosting.md](docs/self-hosting.md)。也欢迎一起维护这个项目，见[参与贡献](#参与贡献)。
+**自托管（推荐）。** 跑在自己的电脑或内网服务器上，数据留在本地，不需要域名和 HTTPS，见 [docs/self-hosting.md](self-hosting.md)。也欢迎一起维护这个项目，见[参与贡献](#参与贡献)。
 
 **需要云端托管？** 官方托管的 **[app.deepfy.si](https://app.deepfy.si)** 采用白名单制，目前开放早鸟申请。在登录页提交申请，通过后会收到邮件。目前免费，每个账号 100 MB 附件。
 
@@ -99,14 +99,14 @@ pnpm kzh pull --into ./backup/Personal
 
 ## 自托管
 
-这是推荐的使用方式。代码不带任何用户数据，也可以导入从官方托管导出的账号数据，见 [docs/self-hosting.md](docs/self-hosting.md)。
+这是推荐的使用方式。代码不带任何用户数据，也可以导入从官方托管导出的账号数据，见 [docs/self-hosting.md](self-hosting.md)。
 
 ## 参与贡献
 
-最适合入手的是指标字典、录入规则和多语言。先看 [CONTRIBUTING.md](CONTRIBUTING.md) 和 [AGENTS.md](AGENTS.md)。安全问题请按 [SECURITY.md](SECURITY.md) 私下报告，不要开公开 Issue。
+最适合入手的是指标字典、录入规则和多语言。先看 [CONTRIBUTING.md](../.github/CONTRIBUTING.md) 和 [AGENTS.md](../AGENTS.md)。安全问题请按 [SECURITY.md](../.github/SECURITY.md) 私下报告，不要开公开 Issue。
 
 ## 许可证
 
-代码使用 [MIT 许可证](LICENSE)。Deepfy 名称、logo 和图标不在其内，见 [TRADEMARK.md](TRADEMARK.md)。
+代码使用 [MIT 许可证](../LICENSE)。Deepfy 名称、logo 和图标不在其内，见 [TRADEMARK.md](TRADEMARK.md)。
 
-本仓库公开前的版本说明在 [docs/release-history.md](docs/release-history.md)。
+本仓库公开前的版本说明在 [docs/release-history.md](release-history.md)。

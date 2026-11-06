@@ -3,11 +3,11 @@
 ## 流程
 
 1. Fork 仓库，从 `main` 建分支。
-2. 按 [README](README.md) 在本地跑起来。开发只用样例数据和本地数据库。
+2. 按 [README](../README.md) 在本地跑起来。开发只用样例数据和本地数据库。
 3. 改动跨文件时，先开 Issue 说明问题和方案，避免白做。
 4. 提 PR，等 CI 通过和维护者批准。合并和部署都由维护者完成。
 
-用 agent 协作没问题，它会读 [AGENTS.md](AGENTS.md)。你要对提交的内容负责，并确认测试真的跑过。
+用 agent 协作没问题，它会读 [AGENTS.md](../AGENTS.md)。你要对提交的内容负责，并确认测试真的跑过。
 
 提交前运行：
 
@@ -19,7 +19,7 @@ pnpm typecheck && pnpm lint && pnpm test && pnpm build
 
 ## 不接受的改动
 
-合并进来的代码会运行在持有所有用户数据的官方服务器上，所以下面这些改动一律不接受（完整列表见 [AGENTS.md](AGENTS.md) 的 RL 组）：
+合并进来的代码会运行在持有所有用户数据的官方服务器上，所以下面这些改动一律不接受（完整列表见 [AGENTS.md](../AGENTS.md) 的 RL 组）：
 
 - 把健康内容、token 或密钥发到外部地址，或写进日志、错误信息、埋点。
 - 新增没有说明用途的出站请求、埋点或第三方脚本。
@@ -46,11 +46,11 @@ Issue、PR、commit 信息、测试和截图里都**不能出现真实健康信�
 
 ## 需要维护者重点审核的改动
 
-加密、登录鉴权、MCP、数据库迁移、构建配置和依赖，见 [CODEOWNERS](.github/CODEOWNERS)。这些代码会接触所有用户的数据，审核会更慢。新增依赖请在 PR 里说明为什么需要。
+加密、登录鉴权、MCP、数据库迁移、构建配置和依赖，见 [CODEOWNERS](CODEOWNERS)。这些代码会接触所有用户的数据，审核会更慢。新增依赖请在 PR 里说明为什么需要。
 
 ## 署名（DCO）
 
-提交时加上 `git commit -s`，表示你有权提交这些内容，并同意按 [MIT 许可证](LICENSE)发布（[Developer Certificate of Origin](https://developercertificate.org/)）。
+提交时加上 `git commit -s`，表示你有权提交这些内容，并同意按 [MIT 许可证](../LICENSE)发布（[Developer Certificate of Origin](https://developercertificate.org/)）。
 
 ## 维护者职责
 

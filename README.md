@@ -11,7 +11,7 @@ Over MCP, your own agent can read the record and, with your OK, update it for yo
 [![Release](https://img.shields.io/github/v/release/kuzicode/deepfy-health?include_prereleases&label=release&color=111111)](https://github.com/kuzicode/deepfy-health/releases) [![Stars](https://img.shields.io/github/stars/kuzicode/deepfy-health?style=flat&color=111111)](https://github.com/kuzicode/deepfy-health/stargazers) [![License](https://img.shields.io/badge/license-MIT-111111)](LICENSE) ![Status](https://img.shields.io/badge/status-pre--release-C2410C)<br>
 ![Next.js](https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white) ![MCP](https://img.shields.io/badge/MCP-0F766E)
 
-**[Website](https://deepfy.si)** &nbsp;·&nbsp; **[Docs](https://deepfy.si/en/docs)** &nbsp;·&nbsp; **[Releases](https://github.com/kuzicode/deepfy-health/releases)** &nbsp;·&nbsp; **[Roadmap](ROADMAP.md)** &nbsp;·&nbsp; **[Contributing](CONTRIBUTING.md)** &nbsp;·&nbsp; **[简体中文](README.zh-CN.md)**
+**[Website](https://deepfy.si)** &nbsp;·&nbsp; **[Docs](https://deepfy.si/en/docs)** &nbsp;·&nbsp; **[Releases](https://github.com/kuzicode/deepfy-health/releases)** &nbsp;·&nbsp; **[Roadmap](docs/ROADMAP.md)** &nbsp;·&nbsp; **[Contributing](.github/CONTRIBUTING.md)** &nbsp;·&nbsp; **[简体中文](docs/README.zh-CN.md)**
 
 <br>
 
@@ -103,10 +103,10 @@ This is the recommended way to run Deepfy Health. The code ships with no user da
 
 ## Contributing
 
-The best places to start are the indicator dictionary, data entry rules and translations. See [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md). To report a security issue, follow [SECURITY.md](SECURITY.md) instead of opening a public issue.
+The best places to start are the indicator dictionary, data entry rules and translations. See [CONTRIBUTING.md](.github/CONTRIBUTING.md) and [AGENTS.md](AGENTS.md). To report a security issue, follow [SECURITY.md](.github/SECURITY.md) instead of opening a public issue.
 
 ## License
 
-The code is under the [MIT License](LICENSE). The Deepfy name, logo and icons aren't covered by it; see [TRADEMARK.md](TRADEMARK.md).
+The code is under the [MIT License](LICENSE). The Deepfy name, logo and icons aren't covered by it; see [TRADEMARK.md](docs/TRADEMARK.md).
 
 Release notes from before this repository was public are in [docs/release-history.md](docs/release-history.md).
