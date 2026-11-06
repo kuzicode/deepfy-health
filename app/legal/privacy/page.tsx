@@ -7,6 +7,7 @@ export async function generateMetadata() {
 
 const ZH = (
   <>
+    <p>本政策适用于官方托管的 app.deepfy.si。运营者是个人开发者 kuzicode，可以通过 <a href="https://github.com/kuzicode">GitHub</a> 或登录后的「意见反馈」联系。自托管的实例由部署者负责。</p>
     <h2>1. 我们收集什么</h2>
     <ul>
       <li>账号信息：登录方式提供的姓名、邮箱，以及你使用的界面语言（决定邮件的语言）。头像是注册时随机分配的预设头像，不使用 Google 等登录方式提供的头像，可在设置里更换。</li>
@@ -36,6 +37,7 @@ const ZH = (
 
 const EN = (
   <>
+    <p>This policy applies to the hosted app at app.deepfy.si. It is operated by an individual developer, kuzicode, who you can reach on <a href="https://github.com/kuzicode">GitHub</a> or through Feedback after signing in. A self-hosted instance is the responsibility of whoever runs it.</p>
     <h2>1. What we collect</h2>
     <ul>
       <li>Account information: name and email from your sign-in method, and your interface language (which sets the language of our emails). Your avatar is a preset picked at random when you sign up — we don't use the picture from Google or other sign-in providers — and you can change it in Settings.</li>

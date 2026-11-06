@@ -1,7 +1,7 @@
 import { Download, Info, KeyRound, Lock, Mail } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@/i18n/config";
-import { appUrl, siteBase } from "@/site-links";
+import { appUrl, siteBase, SOCIAL } from "@/site-links";
 import { AgentBeam } from "@/ui/AgentBeam";
 import { Belt } from "../_belt/Belt";
 import { McpCopy } from "../_parts/McpCopy";
@@ -29,7 +29,8 @@ export default async function SitePage({ params }: { params: Promise<{ locale: L
             <p className="s-lead s-lead-1">{t("hero.lead1")}</p>
             <p className="s-lead s-lead-2">{t("hero.lead2")}</p>
             <div className="s-cta-row">
-              <a className="btn btn-primary" href={appUrl("/")}>{t("hero.cta")}</a>
+              <a className="btn btn-primary" href={SOCIAL.selfHost} target="_blank" rel="noopener">{t("hero.selfHost")}</a>
+              <a className="btn btn-glass" href={appUrl("/")}>{t("hero.cta")}</a>
               <McpCopy prompt={t("hero.mcpPrompt", { url: `${process.env.KZ_APP_URL ?? "https://app.deepfy.si"}/mcp`, app: process.env.KZ_APP_URL ?? "https://app.deepfy.si" })}
                 label={t("hero.mcpCopy")} copied={t("hero.mcpCopied")} hint={t("hero.mcpHint")} hintHref={appUrl("/agents")} />
             </div>
@@ -126,7 +127,10 @@ export default async function SitePage({ params }: { params: Promise<{ locale: L
       <section className="s-final glass reveal">
         <h2>{t("final.title")}</h2>
         <p>{t("final.lead")}</p>
-        <a className="btn btn-primary" href={appUrl("/")}>{t("final.cta")}</a>
+        <div className="s-cta-row" style={{ justifyContent: "center" }}>
+          <a className="btn btn-primary" href={SOCIAL.selfHost} target="_blank" rel="noopener">{t("hero.selfHost")}</a>
+          <a className="btn btn-glass" href={appUrl("/")}>{t("final.cta")}</a>
+        </div>
       </section>
     </main>
   );

@@ -23,7 +23,7 @@
     "hero": {
       "title1": "Built for your health.",
       "title2": "Read by your agents.",
-      "cta": "Start your record →",
+      "cta": "Try the hosted beta",
       "counter": "Agent‑ready ← Raw report",
       "saved": "{pct}% fewer",
       "mcpCopy": "Copy MCP setup prompt",
@@ -31,7 +31,8 @@
       "mcpHint": "MCP is live · get a token under Agents after signing in",
       "mcpPrompt": "Please add \"Deepfy Health Record\" as an MCP server so you can read (and, after I confirm, write to) my health record.\n\n- Name: deepfy\n- Type: remote MCP (Streamable HTTP)\n- URL: {url}\n- Header: Authorization: Bearer YOUR_DEEPFY_TOKEN\n\nI create the token by signing in at {app} and opening Agents (it also offers a full prompt with the token filled in). Replace YOUR_DEEPFY_TOKEN with my token; if I haven't given you one yet, remind me to create one first, then finish the setup.\n\nAdd it the way your client supports (CLI command or mcpServers in the config file). Then call list_members to confirm the connection and read deepfy://contract for the data guide and write rules. The token is a password: only put it in the MCP config, never commit it to a git repository or send it anywhere else.",
       "lead1": "Give Deepfy your reports, records and daily metrics.",
-      "lead2": "You see clear health cards;\nyour agent gets structured, encrypted data with reminders."
+      "lead2": "You see clear health cards;\nyour agent gets structured, encrypted data with reminders.",
+      "selfHost": "Self-host it →"
     },
     "flow": {
       "eyebrow": "How it works",
@@ -91,8 +92,8 @@
     },
     "final": {
       "title": "Start with your next checkup report",
-      "lead": "Free to use for now. Hand your report to your agent and it will enter it for you.",
-      "cta": "Open Deepfy"
+      "lead": "The code is open source, and we recommend running it on your own server. You can also try the hosted beta, free for now.",
+      "cta": "Try the hosted beta"
     },
     "foot": {
       "rights": "© 2026 Deepfy",
@@ -205,7 +206,7 @@
         "items": [
           "Records, reports and attachments are encrypted on the server (AES-256-GCM) with a separate key per account. This is server-side encryption, not end-to-end.",
           "Export everything from Settings at any time; deleting your account deletes the data and attachments too.",
-          "Every account is free for now, with up to 6 family members, 500 MB of attachments and 3 agent tokens — see the Terms.",
+          "The hosted app is an optional beta, free for now, with up to 6 family members, 100 MB of attachments and 3 agent tokens — see the Terms. Self-host if you need more space or want to hold your own data.",
           "All analysis is for reference only and is not a substitute for medical advice."
         ]
       },
@@ -751,7 +752,7 @@
         "photo_count": "Up to 6 photos at a time.",
         "not_found": "Profile not found.",
         "generic": "Couldn't save. Please try again.",
-        "quota_attachmentBytes": "Attachment storage is full (free plan: 500 MB). Remove photos you no longer need.",
+        "quota_attachmentBytes": "Attachment storage is full (beta limit: 100 MB). Remove photos you no longer need, or self-host.",
         "quota_members": "Family member limit reached.",
         "quota_attachmentCount": "Attachment limit reached. Remove photos you no longer need.",
         "quota_uploadBytesPerDay": "Today's upload limit is reached. Try again tomorrow.",

@@ -12,7 +12,7 @@ const MB = 1024 * 1024;
 const UNLIMITED = Number.POSITIVE_INFINITY;
 
 export const PLANS = {
-  free: { members: 6, attachmentBytes: 500 * MB, attachmentCount: 2000, uploadBytesPerDay: 1024 * MB, docs: 5000, docBytes: 20 * MB, changeBytes: 200 * MB, tokens: 3, mcpWritesPerDay: 200, exportsPerDay: 3 },
+  free: { members: 6, attachmentBytes: 100 * MB, attachmentCount: 1000, uploadBytesPerDay: 300 * MB, docs: 5000, docBytes: 20 * MB, changeBytes: 200 * MB, tokens: 3, mcpWritesPerDay: 200, exportsPerDay: 3 },
   pro: { members: 20, attachmentBytes: 10 * 1024 * MB, attachmentCount: 20000, uploadBytesPerDay: 20 * 1024 * MB, docs: 50000, docBytes: 2048 * MB, changeBytes: 4096 * MB, tokens: 10, mcpWritesPerDay: 2000, exportsPerDay: 10 },
   /** 管理员（KZ_ADMIN_EMAILS）：不受额度限制；频率限制（MCP 每分钟、验证码）照常 */
   admin: { members: UNLIMITED, attachmentBytes: UNLIMITED, attachmentCount: UNLIMITED, uploadBytesPerDay: UNLIMITED, docs: UNLIMITED, docBytes: UNLIMITED, changeBytes: UNLIMITED, tokens: UNLIMITED, mcpWritesPerDay: UNLIMITED, exportsPerDay: UNLIMITED },
