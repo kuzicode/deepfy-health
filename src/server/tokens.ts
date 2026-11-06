@@ -12,8 +12,9 @@ import { assertQuota, lockUser } from "./quota";
 const tokenAad = (userId: string, id: string) => `token:${userId}:${id}`;
 
 /** dek 省略时只存哈希（测试与旧调用）；网页创建时总是传入，以便之后再次复制 */
-export type TokenScope = "read" | "write";
-export const asScope = (v: unknown): TokenScope => (v === "write" ? "write" : "read");
+/** read：只读。write：经 MCP 写入，每次都留修改记录、可还原。sync：kzh push 整批覆盖，不留修改记录，MCP 上只读 */
+export type TokenScope = "read" | "write" | "sync";
+export const asScope = (v: unknown): TokenScope => (v === "write" || v === "sync" ? v : "read");
 
 export async function createToken(db: DB, userId: string, name: string, opts: { dek?: Buffer; scope?: TokenScope } = {}) {
   const { dek, scope = "read" } = opts;

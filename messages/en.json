@@ -673,7 +673,6 @@
       "scopeWrite": "Can write",
       "makeWrite": "Allow writes",
       "makeRead": "Make read-only",
-      "allowWrite": "Allow writes (log symptoms, update profile, import reports, save analysis; always undoable)",
       "changesTitle": "Recent agent changes",
       "changesHint": "Every agent write is listed here for 90 days. Undo restores the content from before that write; if it was changed again later, undo the newer change first.",
       "noChanges": "No agent has changed your record yet.",
@@ -700,7 +699,13 @@
         "adminHint": "Admin accounts have no quota (rate limits still apply)."
       },
       "docsLink": "Full guide in the docs →",
-      "avatar": "Avatar"
+      "avatar": "Avatar",
+      "scopeLabel": "Permission",
+      "scopeSync": "Local sync",
+      "makeSync": "Allow local sync",
+      "scopeSyncHint": "Agents should use Can write: every write can be reverted. Local sync is only for kzh push, which overwrites in bulk and keeps no change history.",
+      "signOutOthers": "Sign out other devices",
+      "signOutOthersDone": "Other devices have been signed out."
     },
     "quick": {
       "placeholder": "Tell your agent to log it, or add it here…",
@@ -747,7 +752,12 @@
         "not_found": "Profile not found.",
         "generic": "Couldn't save. Please try again.",
         "quota_attachmentBytes": "Attachment storage is full (free plan: 500 MB). Remove photos you no longer need.",
-        "quota_members": "Family member limit reached."
+        "quota_members": "Family member limit reached.",
+        "quota_attachmentCount": "Attachment limit reached. Remove photos you no longer need.",
+        "quota_uploadBytesPerDay": "Today's upload limit is reached. Try again tomorrow.",
+        "quota_docs": "Record limit reached.",
+        "quota_docBytes": "Record storage is full.",
+        "quota_changeBytes": "Agent change history is full. It is kept for up to 90 days and frees up as entries expire."
       }
     },
     "newMember": {
@@ -898,7 +908,7 @@
       "error": {
         "badCode": "Wrong or expired code",
         "badEmail": "Invalid email, or sending failed",
-        "tooMany": "Too many attempts — try again in 10 minutes"
+        "tooMany": "Too many attempts — try again later"
       }
     },
     "relation": {

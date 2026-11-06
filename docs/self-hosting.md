@@ -57,7 +57,7 @@ docker compose logs app | grep '\[mail\]'
 
 ## 导入 zip
 
-在自己实例的 **Agent 接入** 页面创建一个可写入的 token，然后在本机（需要 Node 22 和 pnpm）执行：
+在自己实例的 **Agent 接入** 页面创建一个「本地同步」权限的 token，然后在本机（需要 Node 22 和 pnpm）执行：
 
 ```bash
 pnpm install

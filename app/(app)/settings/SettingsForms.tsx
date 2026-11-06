@@ -27,6 +27,24 @@ export function SignOutButton({ label }: { label: string }) {
   );
 }
 
+/** 让其他设备上的登录失效；Agent 的 token 在「Agent 接入」页单独撤销 */
+export function SignOutOthersButton() {
+  const t = useTranslations("app.settings");
+  const [state, setState] = useState<"idle" | "busy" | "done" | "error">("idle");
+  const run = async () => {
+    setState("busy");
+    const res = await authClient.revokeOtherSessions().catch(() => ({ error: true }));
+    setState(res.error ? "error" : "done");
+  };
+  return (
+    <>
+      <button type="button" className="btn btn-glass btn-sm" disabled={state === "busy"} onClick={run}>{t("signOutOthers")}</button>
+      {state === "done" && <span className="muted" style={{ fontSize: 13 }}>{t("signOutOthersDone")}</span>}
+      {state === "error" && <span style={{ color: "var(--high)", fontSize: 13 }}>{t("passwordError")}</span>}
+    </>
+  );
+}
+
 /** 设置 / 修改密码：先给本人邮箱发验证码，再设新密码（better-auth 会为只用 Google 的账号新建密码登录方式） */
 export function PasswordForm({ email, hasPassword: initial }: { email: string; hasPassword: boolean }) {
   const t = useTranslations("app.settings");

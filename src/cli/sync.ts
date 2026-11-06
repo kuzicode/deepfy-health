@@ -18,10 +18,14 @@ function credentials(): Credentials {
   return JSON.parse(fs.readFileSync(CRED_FILE, "utf8"));
 }
 
-async function api(c: Credentials, method: string, route: string, { body, type = "application/json" }: { body?: BodyInit; type?: string } = {}) {
+async function api(c: Credentials, method: string, route: string, { body, type = "application/json", retries = 3 }: { body?: BodyInit; type?: string; retries?: number } = {}): Promise<Response> {
   const res = await fetch(new URL(route, c.server), {
     method, body, headers: { authorization: `Bearer ${c.token}`, ...(body ? { "content-type": type } : {}) },
   });
+  if (res.status === 429 && retries > 0) {
+    await new Promise((r) => setTimeout(r, Number(res.headers.get("retry-after") ?? 60) * 1000));
+    return api(c, method, route, { body, type, retries: retries - 1 });
+  }
   if (!res.ok) {
     const detail = await res.text();
     throw new Error(`${method} ${route} → ${res.status} ${detail.slice(0, 2000)}`);

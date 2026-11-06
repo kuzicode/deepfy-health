@@ -7,7 +7,7 @@ import { requireUser } from "@/server/session";
 import { AVATARS, avatarUrl, presetOf } from "@/avatars";
 import { PageHead, SectionHead } from "@/ui/blocks";
 import { setAvatarAction } from "./actions";
-import { DeleteAccountForm, PasswordForm, SignOutButton } from "./SettingsForms";
+import { DeleteAccountForm, PasswordForm, SignOutButton, SignOutOthersButton } from "./SettingsForms";
 
 export default async function SettingsPage() {
   const t = await getTranslations("app.settings");
@@ -35,6 +35,7 @@ export default async function SettingsPage() {
           <div className="a-panel a-rows">
             <div className="a-row">
               <span className="main"><span className="title">{u.name}</span><span className="detail" style={{ display: "block" }}>{u.email}</span></span>
+              <SignOutOthersButton />
               <SignOutButton label={nav("signOut")} />
             </div>
             <div className="a-row a-row-block"><PasswordForm email={u.email} hasPassword={!!cred?.password} /></div>

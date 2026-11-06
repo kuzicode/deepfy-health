@@ -673,7 +673,6 @@
       "scopeWrite": "可写入",
       "makeWrite": "改为可写入",
       "makeRead": "改为只读",
-      "allowWrite": "允许写入（记录症状、更新档案、导入报告、保存分析；可随时还原）",
       "changesTitle": "最近的 agent 修改",
       "changesHint": "agent 的每次写入都记录在这里，保留 90 天。还原会把内容恢复到这次写入之前；之后又被改过的需要先还原更新的那次。",
       "noChanges": "还没有 agent 修改过你的档案。",
@@ -700,7 +699,13 @@
         "adminHint": "管理员账号不受额度限制（频率限制照常）。"
       },
       "docsLink": "完整说明见文档 →",
-      "avatar": "头像"
+      "avatar": "头像",
+      "scopeLabel": "权限",
+      "scopeSync": "本地同步",
+      "makeSync": "改为本地同步",
+      "scopeSyncHint": "Agent 用「可写入」，每次写入都能还原。「本地同步」只给 kzh push 用，整批覆盖，不留修改记录。",
+      "signOutOthers": "退出其他设备",
+      "signOutOthersDone": "其他设备已退出登录。"
     },
     "quick": {
       "placeholder": "告诉 agent 就能记录，也可以在这里手动记…",
@@ -747,7 +752,12 @@
         "not_found": "找不到这个档案。",
         "generic": "保存没有成功，请重试。",
         "quota_attachmentBytes": "附件空间已用满（免费额度 500 MB）。删掉不需要的照片后再试。",
-        "quota_members": "已达到免费额度的家人数量上限。"
+        "quota_members": "已达到免费额度的家人数量上限。",
+        "quota_attachmentCount": "附件数量已达到上限。删掉不需要的照片后再试。",
+        "quota_uploadBytesPerDay": "今天的上传量已达到上限，明天再试。",
+        "quota_docs": "档案条目已达到上限。",
+        "quota_docBytes": "档案内容已达到容量上限。",
+        "quota_changeBytes": "agent 修改记录已达到容量上限，最多保留 90 天，过期后会自动释放。"
       }
     },
     "newMember": {
@@ -898,7 +908,7 @@
       "error": {
         "badCode": "验证码不正确或已过期",
         "badEmail": "邮箱格式不正确，或发送失败",
-        "tooMany": "操作太频繁，请 10 分钟后再试"
+        "tooMany": "操作太频繁，请稍后再试"
       }
     },
     "relation": {

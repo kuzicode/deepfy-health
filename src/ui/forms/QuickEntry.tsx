@@ -46,7 +46,7 @@ function useDone(state: ActionState, onDone: () => void) {
 function ErrorLine({ state }: { state: ActionState }) {
   const t = useTranslations("app.quick");
   if (!state.error) return null;
-  const known = ["invalid", "photo_size", "photo_type", "photo_count", "not_found", "generic", "quota_attachmentBytes", "quota_members"];
+  const known = ["invalid", "photo_size", "photo_type", "photo_count", "not_found", "generic", "quota_attachmentBytes", "quota_attachmentCount", "quota_uploadBytesPerDay", "quota_docs", "quota_docBytes", "quota_changeBytes", "quota_members"];
   return <p className="a-form-err">{known.includes(state.error) ? t(`errors.${state.error}` as "errors.generic") : state.error}</p>;
 }
 

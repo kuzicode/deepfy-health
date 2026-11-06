@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createDb, type DB } from "@/db/client";
 import { user } from "@/db/schema";
 import { newDek, randomId } from "./crypto";
-import { createToken, listTokens, revealToken, revokeToken, rotateToken, setTokenScope, tokenAuth, userIdForToken } from "./tokens";
+import { asScope, createToken, listTokens, revealToken, revokeToken, rotateToken, setTokenScope, tokenAuth, userIdForToken } from "./tokens";
 
 const URL = process.env.KZ_TEST_DATABASE_URL;
 
@@ -60,6 +60,10 @@ describe.skipIf(!URL)("接入 token（需要 KZ_TEST_DATABASE_URL）", () => {
     expect((await tokenAuth(db, `Bearer ${ro}`))?.scope).toBe("read");
     await setTokenScope(db, uid, id, "write");
     expect((await tokenAuth(db, `Bearer ${ro}`))?.scope).toBe("write");
+    const sync = await createToken(db, uid, "scope-s", { scope: "sync" });
+    expect((await tokenAuth(db, `Bearer ${sync}`))?.scope).toBe("sync");
+    expect(asScope("sync")).toBe("sync");
+    expect(asScope("admin")).toBe("read");
     const rw = await createToken(db, uid, "scope-w", { scope: "write" });
     expect((await tokenAuth(db, `Bearer ${rw}`))?.scope).toBe("write");
     for (const t of await listTokens(db, uid)) await revokeToken(db, uid, t.id);

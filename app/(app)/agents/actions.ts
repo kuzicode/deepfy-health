@@ -21,7 +21,7 @@ export async function revealTokenAction(id: string): Promise<{ token?: string }>
 export async function createTokenAction(_prev: { token?: string; quota?: number }, form: FormData): Promise<{ token?: string; quota?: number }> {
   const u = await requireUser();
   try {
-    const token = await createToken(getDb(), u.id, String(form.get("name") ?? ""), { dek: await dekOf(u.id), scope: form.get("write") ? "write" : "read" });
+    const token = await createToken(getDb(), u.id, String(form.get("name") ?? ""), { dek: await dekOf(u.id), scope: asScope(form.get("scope")) });
     revalidatePath("/agents");
     return { token };
   } catch (e) {
