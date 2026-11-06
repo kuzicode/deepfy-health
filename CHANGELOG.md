@@ -2,6 +2,8 @@
 
 从新到旧。每次部署到生产前在这里追加一条；细节与原因见 `docs/issues.md`。
 
+从 0.18.5 起，每条对应同版本号的 tag 和 [GitHub Release](https://github.com/kuzicode/deepfy-health/releases)；更早的版本没有 tag，发布说明见 `docs/release-history.md`。
+
 ## 0.19.0 · 未发布 · 开放注册
 
 - 不再需要申请和审批：用 Google 或邮箱就能直接注册。移除候补名单和邀请邮件。
@@ -13,8 +15,6 @@
 - 新增资源上限：附件文件数和每天上传量、档案条数和总量、agent 修改记录容量，接口和 MCP 限速并限制同时进行的请求数；MCP 不再接受批量请求。
 - 验证码发信和密码登录按邮箱与 IP 限次，提醒邮箱验证按账号、收件人和全站限量。
 - 设置页可以退出其他设备；应用增加内容安全策略（CSP）。
-
-从 0.18.5 起，每条对应同版本号的 tag 和 [GitHub Release](https://github.com/kuzicode/deepfy-health/releases)；更早的版本没有 tag，发布说明见 `docs/release-history.md`。
 
 ## 0.18.5 · 2026-11-06 · 安全审查修复
 
