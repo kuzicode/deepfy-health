@@ -13,7 +13,7 @@ const ZH = (
       <li>症状照片：你在快速记录里上传的照片，与其他健康数据一样加密存储；上传前在你的浏览器里压缩并去掉拍摄位置等元数据。</li>
       <li>此前的抢先体验申请：开放注册后不再收集，已有的申请记录（邮箱及自愿填写的说明）会被删除。</li>
       <li>提醒邮件：默认开启，可在「邮件提醒」里随时暂停。我们会在复查 / 体检到期前通过邮件服务商 Resend 发送提醒，邮件内容只有家人称呼、日期、检查项目名称和到期的用药或补剂名称，不含检测数值与分析；每封邮件都可以一键暂停。</li>
-      <li>意见反馈：你在「意见反馈」里写的内容会连同登录邮箱保存，每周汇总发给维护者，用于改进产品和回复你；请不要在反馈里填写检查数值等健康信息。</li>
+      <li>意见反馈：你在「意见反馈」里写的内容不加密，会连同登录邮箱保存，每周汇总发给维护者，用于改进产品和回复你；请不要在反馈里填写检查数值等健康信息。</li>
       <li>字典缺口反馈：只有你在记录页主动点击「反馈项目名称」时，才会发送字典暂未收录的项目名称、单位和分组，不含检测数值，也不关联你的账号，按名称汇总计数，用于完善指标字典。</li>
       <li>健康数据：你或你授权的工具（如本地 kzh、经 MCP 接入的 agent）上传的档案、检测记录、分析笔记、用药补剂计划、健康计划和附件（病历、体检报告等）。这些属于敏感个人信息。</li>
       <li>必要的技术信息：登录会话、IP 地址和浏览器标识，用于安全防护。为了在官网（deepfy.si）也显示你的登录状态，登录后会在 deepfy.si 域名下存一个只含头像编号的 cookie，不含任何身份信息，退出登录时清除。</li>
@@ -21,7 +21,7 @@ const ZH = (
     <h2>2. 如何保护</h2>
     <ul>
       <li>传输全程使用 HTTPS。</li>
-      <li>健康数据和附件在服务器上以 AES-256-GCM 加密存储，每个账号使用独立的数据密钥；数据密钥再由单独保管的主密钥加密。报告日期和标题、指标代码、家人目录名、家庭名、附件路径等用于检索的元数据目前未加密，只有服务器和数据库备份的管理者能看到，并计划改为加密。</li>
+      <li>健康数据和附件在服务器上以 AES-256-GCM 加密存储，每个账号使用独立的数据密钥；数据密钥再由单独保管的主密钥加密。报告日期和标题、指标代码、家人目录名、家庭名、附件路径、自定义指标的定义等用于检索的元数据目前未加密，只有服务器和数据库备份的管理者能看到，并计划改为加密。</li>
       <li>只有在你查看页面、导出或使用分析功能时，服务器才会在内存中解密。这不是端到端加密：为了提供分析等功能，服务器在处理时能够读取明文。</li>
       <li>不同账号的数据严格隔离；工作人员不会主动查看你的健康数据。</li>
     </ul>
@@ -42,7 +42,7 @@ const EN = (
       <li>Symptom photos: photos you add to quick logs are encrypted like the rest of your health data; your browser compresses them and strips location metadata before upload.</li>
       <li>Earlier early access requests: no longer collected now that registration is open. Existing requests (email and anything you chose to share) will be deleted.</li>
       <li>Reminder emails: on by default; pause any time under "Reminders". We send recheck / checkup reminders through our email provider Resend, containing only the family member's name, dates, item names and the names of medications or supplements coming due — no results or analysis. Every email has a one-click pause link.</li>
-      <li>Feedback: what you write on the Feedback page is stored with your sign-in email and sent to the maintainers in a weekly digest, to improve the product and reply to you. Please don't include test results or other health details.</li>
+      <li>Feedback: what you write on the Feedback page is stored unencrypted with your sign-in email and sent to the maintainers in a weekly digest, to improve the product and reply to you. Please don't include test results or other health details.</li>
       <li>Dictionary feedback: only when you click "Send item names" on the records page do we receive the names, units and sections of items not yet in our dictionary — no results, not linked to your account, counted per name — to improve the marker dictionary.</li>
       <li>Health data: profiles, records, analysis notes, medication and supplement plans, health plans and attachments (medical records, checkup reports) uploaded by you or tools you authorize (the local kzh CLI, agents connected over MCP). This is sensitive personal information.</li>
       <li>Necessary technical data: sessions, IP address and browser identifiers, used for security. To show that you're signed in on our website (deepfy.si), we store a cookie on that domain containing only your avatar number — no identifying information — and clear it when you sign out.</li>
@@ -50,7 +50,7 @@ const EN = (
     <h2>2. How we protect it</h2>
     <ul>
       <li>HTTPS for all traffic.</li>
-      <li>Health data and attachments are stored with AES-256-GCM encryption. Each account has its own data key, wrapped by a separately kept master key. Metadata used for lookups, such as report dates and titles, marker codes, member folder names, household name and attachment paths, is not yet encrypted. Only those who administer the server and its database backups can see it, and we plan to encrypt it.</li>
+      <li>Health data and attachments are stored with AES-256-GCM encryption. Each account has its own data key, wrapped by a separately kept master key. Metadata used for lookups, such as report dates and titles, marker codes, member folder names, household name, attachment paths and custom marker definitions, is not yet encrypted. Only those who administer the server and its database backups can see it, and we plan to encrypt it.</li>
       <li>The server decrypts data in memory only when you view pages, export, or use analysis. This is not end-to-end encryption: to provide analysis, the server can read plaintext while processing.</li>
       <li>Accounts are strictly isolated; staff do not access your health data.</li>
     </ul>
