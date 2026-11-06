@@ -11,7 +11,8 @@ import { indicatorName } from "@/ui/i18n";
 import { cloudMode } from "@/db/client";
 import { NewMemberForm } from "@/ui/forms/NewMemberForm";
 import { getReader } from "@/ui/repo";
-import { createMemberAction } from "./actions";
+import { Sortable } from "@/ui/Sortable";
+import { createMemberAction, reorderMembersAction } from "./actions";
 
 type T = Awaited<ReturnType<typeof getTranslations<"app">>>;
 
@@ -50,6 +51,12 @@ function MemberCard({ m, catalog, avatar, today, t, locale }: { m: MemberBundle;
   );
 }
 
+/** 云端模式可以拖动排序；本地 vault 模式顺序由 family.yaml 决定 */
+function MemberGrid({ items, label }: { items: { id: string; node: React.ReactNode }[]; label: string }) {
+  if (cloudMode()) return <Sortable className="a-grid" itemClassName="a-card-item" save={reorderMembersAction} label={label} items={items} />;
+  return <div className="a-grid">{items.map((x) => <div key={x.id} className="a-card-item">{x.node}</div>)}</div>;
+}
+
 export default async function Home() {
   const s = await (await getReader()).snapshot();
   const t = await getTranslations("app");
@@ -84,9 +91,7 @@ export default async function Home() {
           <div className="a-panel a-empty"><p><b>{t("home.empty")}</b></p></div>
         )
       ) : (
-        <div className="a-grid">
-          {s.members.map((m) => <MemberCard key={m.id} m={m} catalog={s.catalog} avatar={avatars.get(m.id)} today={today} t={t} locale={locale} />)}
-        </div>
+        <MemberGrid items={s.members.map((m) => ({ id: m.id, node: <MemberCard m={m} catalog={s.catalog} avatar={avatars.get(m.id)} today={today} t={t} locale={locale} /> }))} label={t("nav.reorder")} />
       )}
 
       {s.members.length > 0 && cloudMode() && (
