@@ -50,7 +50,7 @@ describe.skipIf(!URL)("访问控制与管理后台（需要 KZ_TEST_DATABASE_URL
 
   it("清理未验证账号：只删超过 7 天的，已验证和被拉黑的不动", async () => {
     const old = new Date(Date.now() - 8 * 86_400_000);
-    const ids = { stale: `s-${randomId()}`, recent: `r-${randomId()}`, verified: `v-${randomId()}`, blocked: `b-${randomId(), withData: `stale-data-${randomId()}`}` };
+    const ids = { stale: `s-${randomId()}`, recent: `r-${randomId()}`, verified: `v-${randomId()}`, blocked: `b-${randomId()}`, withData: `d-${randomId()}` };
     await db.insert(user).values([
       { id: ids.stale, name: "x", email: `${ids.stale}@example.com`, createdAt: old },
       { id: ids.recent, name: "x", email: `${ids.recent}@example.com` },
