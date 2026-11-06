@@ -25,6 +25,11 @@ const OTP_CHECK_PATHS = new Set(["/sign-in/email-otp", "/email-otp/verify-email"
 const otpChecksPerEmailIp = createLimiter(30, 86_400_000);
 const otpChecksPerEmail = createLimiter(300, 86_400_000);
 
+/** 密码登录：同一邮箱 + IP 每小时 20 次。全部 IP 合计每天 200 次防分散猜密码；被用完时邮箱主人还能用验证码或 Google 登录 */
+const PASSWORD_PATH = "/sign-in/email";
+const passwordPerEmailIp = createLimiter(20, 3600_000);
+const passwordPerEmail = createLimiter(200, 86_400_000);
+
 /** 会发验证码的接口：同一 IP 每天 20 次 */
 const OTP_SEND_RULE = { window: 86_400, max: 20 };
 
@@ -38,9 +43,10 @@ function createAuth() {
     advanced: { ipAddress: { ipAddressHeaders: ["x-real-ip"] } },
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
-        if (!OTP_CHECK_PATHS.has(ctx.path)) return;
+        const limits = OTP_CHECK_PATHS.has(ctx.path) ? [otpChecksPerEmailIp, otpChecksPerEmail] : ctx.path === PASSWORD_PATH ? [passwordPerEmailIp, passwordPerEmail] : undefined;
+        if (!limits) return;
         const email = String(ctx.body?.email ?? "").trim().toLowerCase();
-        if (email && (!otpChecksPerEmailIp(`${email}|${ctx.request ? clientIp(ctx.request) : "local"}`) || !otpChecksPerEmail(email))) throw new APIError("TOO_MANY_REQUESTS", { message: "Too many attempts" });
+        if (email && (!limits[0](`${email}|${ctx.request ? clientIp(ctx.request) : "local"}`) || !limits[1](email))) throw new APIError("TOO_MANY_REQUESTS", { message: "Too many attempts" });
       }),
     },
     rateLimit: { customRules: { "/email-otp/send-verification-otp": OTP_SEND_RULE, "/email-otp/request-password-reset": OTP_SEND_RULE, "/forget-password/email-otp": OTP_SEND_RULE } },

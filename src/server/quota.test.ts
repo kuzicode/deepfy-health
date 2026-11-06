@@ -1,10 +1,14 @@
-import { and, eq } from "drizzle-orm";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { and, eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { readVaultRaw } from "@/core/vault";
 import { createDb, type DB } from "@/db/client";
-import { accountPlan, agentChange, attachment, member, user } from "@/db/schema";
+import { accountPlan, agentChange, attachment, doc, member, user } from "@/db/schema";
 import { newDek, randomId } from "./crypto";
 import { PgRepository } from "./pg-repository";
-import { PLANS, QuotaExceeded, isUnlimited, limitsOf, planOf, usageOf } from "./quota";
+import { PLANS, QuotaExceeded, consumeUpload, isUnlimited, limitsOf, planOf, usageOf } from "./quota";
 import { createToken } from "./tokens";
 
 describe("额度定义", () => {
@@ -17,6 +21,79 @@ describe("额度定义", () => {
 });
 
 const URL = process.env.KZ_TEST_DATABASE_URL;
+
+describe.skipIf(!URL)("资源额度（需要 KZ_TEST_DATABASE_URL）", () => {
+  let db: DB;
+  const uid = `quota-res-${randomId()}`;
+  const kek = newDek();
+  const SAMPLE = path.resolve(import.meta.dirname, "../../examples/sample-vault/Personal");
+  const free = PLANS.free as unknown as Record<string, number>;
+  const withLimit = async (key: string, value: number, fn: () => Promise<void>) => {
+    const was = free[key];
+    free[key] = value;
+    try { await fn(); } finally { free[key] = was; }
+  };
+
+  beforeAll(async () => {
+    process.env.KZ_ATTACHMENT_DIR ??= fs.mkdtempSync(path.join(os.tmpdir(), "kzh-att-"));
+    db = createDb(URL!);
+    await db.insert(user).values({ id: uid, name: uid, email: `${uid}@example.com` });
+  });
+  afterAll(async () => {
+    await db.delete(user).where(eq(user.id, uid));
+    await db.$client.end();
+  });
+
+  const docCount = async () => {
+    const ids = (await db.select({ id: member.id }).from(member).where(eq(member.userId, uid))).map((m) => m.id);
+    return ids.length ? (await db.select({ id: doc.id }).from(doc).where(inArray(doc.memberId, ids))).length : 0;
+  };
+
+  it("导入超过文档条数或总量时整批回滚", async () => {
+    const repo = new PgRepository(db, uid, kek);
+    const raw = readVaultRaw(SAMPLE);
+    await withLimit("docs", 1, async () => {
+      await expect(repo.importRaw(raw)).rejects.toMatchObject({ resource: "docs" });
+    });
+    await withLimit("docBytes", 1, async () => {
+      await expect(repo.importRaw(raw)).rejects.toMatchObject({ resource: "docBytes" });
+    });
+    expect(await docCount()).toBe(0);
+    await repo.importRaw(raw);
+    expect(await docCount()).toBeGreaterThan(1);
+    expect((await usageOf(db, uid)).docBytes).toBeGreaterThan(0);
+  });
+
+  it("单点修改超过总量时也回滚", async () => {
+    const repo = new PgRepository(db, uid, kek);
+    const before = await docCount();
+    const change = { op: "add_member", id: "m-over", name: "over", profile: { id: "m-over", name: "over", sex: "female", birth_date: "1970-01-01" } } as const;
+    await withLimit("docs", before, async () => {
+      await expect(repo.applyChanges([change])).rejects.toMatchObject({ resource: "docs" });
+    });
+    expect(await docCount()).toBe(before);
+  });
+
+  it("附件数量到上限后不能新增，但可以覆盖已有的", async () => {
+    const repo = new PgRepository(db, uid, kek);
+    const [{ slug }] = await db.select({ slug: member.slug }).from(member).where(eq(member.userId, uid));
+    await repo.putAttachment(slug, "attachments/one.pdf", Buffer.from("v1"), "application/pdf");
+    await withLimit("attachmentCount", 1, async () => {
+      await expect(repo.putAttachment(slug, "attachments/empty.pdf", Buffer.alloc(0), "application/pdf")).rejects.toMatchObject({ resource: "attachmentCount" });
+      await repo.putAttachment(slug, "attachments/one.pdf", Buffer.from("v2"), "application/pdf");
+    });
+    expect((await usageOf(db, uid)).attachmentCount).toBe(1);
+  });
+
+  it("反复覆盖同一路径也会用完每天的上传量", async () => {
+    const repo = new PgRepository(db, uid, kek);
+    const [{ slug }] = await db.select({ slug: member.slug }).from(member).where(eq(member.userId, uid));
+    await consumeUpload(db, uid, PLANS.free.uploadBytesPerDay - 10); // 前面的用例已上传 4 字节，还剩 6 字节
+    await expect(repo.putAttachment(slug, "attachments/one.pdf", Buffer.from("too big"), "application/pdf")).rejects.toMatchObject({ resource: "uploadBytesPerDay" });
+    await expect(consumeUpload(db, uid, 7)).rejects.toBeInstanceOf(QuotaExceeded);
+    await repo.putAttachment(slug, "attachments/one.pdf", Buffer.from("v3"), "application/pdf");
+  });
+});
 
 describe.skipIf(!URL)("额度检查（需要 KZ_TEST_DATABASE_URL）", () => {
   let db: DB;

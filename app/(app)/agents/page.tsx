@@ -1,12 +1,14 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { cloudMode, getDb } from "@/db/client";
 import { requireUser, userRepository } from "@/server/session";
-import { listTokens } from "@/server/tokens";
+import { asScope, listTokens } from "@/server/tokens";
 import { siteUrl } from "@/site-links";
 import { PageHead, SectionHead } from "@/ui/blocks";
 import { revertChangeAction, revokeTokenAction, setScopeAction } from "./actions";
 import { NewTokenForm, TokenActions } from "./AgentForms";
 
+const SCOPE_LABEL = { read: "scopeRead", write: "scopeWrite", sync: "scopeSync" } as const;
+const MAKE_LABEL = { read: "makeRead", write: "makeWrite", sync: "makeSync" } as const;
 const fmt = (d: Date | null) => (d ? d.toISOString().slice(0, 16).replace("T", " ") : undefined);
 
 export default async function AgentsPage() {
@@ -30,15 +32,17 @@ export default async function AgentsPage() {
               {tokens.map((tk) => (
                 <div key={tk.id} className="a-row a-row-wrap">
                   <span className="main">
-                    <span className="title">{tk.name} <span className={`a-scope${tk.scope === "write" ? " w" : ""}`}>{tk.scope === "write" ? t("scopeWrite") : t("scopeRead")}</span></span>
+                    <span className="title">{tk.name} <span className={`a-scope${tk.scope === "read" ? "" : " w"}`}>{t(SCOPE_LABEL[asScope(tk.scope)])}</span></span>
                     <span className="detail mono" style={{ display: "block", fontSize: 11.5 }}>{t("created", { date: fmt(tk.createdAt)! })} · {t("lastUsed", { date: fmt(tk.lastUsedAt) ?? t("neverUsed") })}</span>
                     {!tk.revealable && <span className="detail" style={{ display: "block", fontSize: 12 }}>{t("legacyToken")}</span>}
                   </span>
                   <TokenActions id={tk.id} revealable={tk.revealable} />
-                  <form action={setScopeAction}>
-                    <input type="hidden" name="id" value={tk.id} /><input type="hidden" name="scope" value={tk.scope === "write" ? "read" : "write"} />
-                    <button className="btn btn-glass btn-sm">{tk.scope === "write" ? t("makeRead") : t("makeWrite")}</button>
-                  </form>
+                  {(["read", "write", "sync"] as const).filter((s) => s !== asScope(tk.scope)).map((s) => (
+                    <form key={s} action={setScopeAction}>
+                      <input type="hidden" name="id" value={tk.id} /><input type="hidden" name="scope" value={s} />
+                      <button className="btn btn-glass btn-sm">{t(MAKE_LABEL[s])}</button>
+                    </form>
+                  ))}
                   <form action={revokeTokenAction}><input type="hidden" name="id" value={tk.id} /><button className="link-danger">{t("revoke")}</button></form>
                 </div>
               ))}

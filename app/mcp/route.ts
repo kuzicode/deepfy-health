@@ -11,6 +11,9 @@ import { tokenAuth } from "@/server/tokens";
 export const dynamic = "force-dynamic";
 const perUser = createLimiter(60, 60_000);
 const perIp = createLimiter(120, 60_000);
+const MAX_BODY = 5 * 1024 * 1024;
+
+const rpcError = (code: number, message: string, status: number) => Response.json({ jsonrpc: "2.0", error: { code, message }, id: null }, { status });
 
 const unauthorized = () =>
   Response.json({ jsonrpc: "2.0", error: { code: -32001, message: "Unauthorized: create a token at app.deepfy.si/agents (Deepfy → Agents)" }, id: null },
@@ -23,7 +26,12 @@ async function handle(req: Request) {
   const auth = await tokenAuth(db, req.headers.get("authorization"));
   if (!auth) return unauthorized();
   const { userId } = auth;
-  if (!perUser(userId)) return Response.json({ jsonrpc: "2.0", error: { code: -32002, message: "Rate limited, retry in a minute" }, id: null }, { status: 429 });
+  if (!perUser(userId)) return rpcError(-32002, "Rate limited, retry in a minute", 429);
+  if (req.method === "POST") {
+    if (Number(req.headers.get("content-length") ?? 0) > MAX_BODY) return rpcError(-32600, "Request too large", 413);
+    // 一个批量请求可以带很多调用，会绕过上面的按次限速。当前 MCP 协议已经不用批量
+    if (Array.isArray(await req.clone().json().catch(() => undefined))) return rpcError(-32600, "Batch requests are not supported", 400);
+  }
 
   const repo = new PgRepository(db, userId, masterKey());
   const write = auth.scope === "write"

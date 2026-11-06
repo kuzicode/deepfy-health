@@ -13,7 +13,12 @@ export function NewTokenForm() {
     <form action={action} className="a-form">
       <input className="field" name="name" placeholder={t("tokenName")} maxLength={60} />
       <button className="btn btn-primary" disabled={pending}>{t("createToken")}</button>
-      <label className="a-check"><input type="checkbox" name="write" defaultChecked /> {t("allowWrite")}</label>
+      <select className="field" name="scope" defaultValue="write" aria-label={t("scopeLabel")}>
+        <option value="read">{t("scopeRead")}</option>
+        <option value="write">{t("scopeWrite")}</option>
+        <option value="sync">{t("scopeSync")}</option>
+      </select>
+      <p className="muted" style={{ margin: 0, flexBasis: "100%", fontSize: 13 }}>{t("scopeSyncHint")}</p>
       {state.token && <TokenSnippets token={state.token} />}
       {state.quota && <p className="a-form-err" style={{ flexBasis: "100%" }}>{t("tokenQuota", { limit: state.quota })}</p>}
     </form>

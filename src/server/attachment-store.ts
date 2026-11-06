@@ -4,8 +4,8 @@ import { and, eq, inArray } from "drizzle-orm";
 import type { DB } from "@/db/client";
 import { attachment, member } from "@/db/schema";
 import { open, randomId, seal, sha256 } from "./crypto";
-import { assertAttachmentPath, attachmentDir, gcOrphanAttachments } from "./attachments";
-import { assertQuota } from "./quota";
+import { assertAttachmentPath, attachmentDir, gcOrphansThrottled } from "./attachments";
+import { assertQuota, consumeUpload } from "./quota";
 import { NotFound, attAad, type Tx } from "./repo-base";
 
 // 一个账号的附件读写（密文文件 + attachment 表）。由 PgRepository 持有并委托，所有查询按 userId 限定（SEC）。
@@ -40,6 +40,8 @@ export class AttachmentStore {
       const [prev] = await tx.select().from(attachment).where(and(eq(attachment.memberId, m.id), eq(attachment.relPath, relPath)));
       if (prev?.sha256 === hash) return true;
       await assertQuota(tx, this.ctx.userId, "attachmentBytes", data.length - (prev?.size ?? 0));
+      if (!prev) await assertQuota(tx, this.ctx.userId, "attachmentCount");
+      await consumeUpload(tx, this.ctx.userId, data.length);
       const storageKey = randomId();
       await fs.mkdir(/*turbopackIgnore: true*/ attachmentDir(), { recursive: true });
       await fs.writeFile(path.join(/*turbopackIgnore: true*/ attachmentDir(), storageKey), seal(dek, data, attAad(m.id, relPath)));
@@ -49,8 +51,8 @@ export class AttachmentStore {
       return false;
     });
     if (unchanged) return { unchanged: true };
-    // 旧文件不立即删除：备份先 pg_dump 再打包附件，快照里引用的旧文件必须在打包时仍然存在；由 gcOrphanAttachments 延迟清理
-    void gcOrphanAttachments(this.ctx.db).catch(() => {});
+    // 旧文件不立即删除：备份先 pg_dump 再打包附件，快照里引用的旧文件必须在打包时仍然存在；由 GC 延迟清理
+    gcOrphansThrottled(this.ctx.db);
     return { unchanged: false };
   }
 
