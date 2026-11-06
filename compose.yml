@@ -25,7 +25,8 @@ services:
     env_file: ${KZ_ENV_FILE:-.env}
     environment:
       DATABASE_URL: postgres://kzh:${POSTGRES_PASSWORD}@db:5432/kzh
-    ports: ["127.0.0.1:3100:3000"]
+    # 默认只有本机能访问；局域网其他设备要用时，在 .env 设 KZ_BIND=0.0.0.0
+    ports: ["${KZ_BIND:-127.0.0.1}:3100:3000"]
     volumes: [attachments:/data/attachments]
     depends_on:
       db: { condition: service_healthy }

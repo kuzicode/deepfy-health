@@ -1,14 +1,31 @@
 import { eq, inArray } from "drizzle-orm";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { createDb, type DB } from "@/db/client";
 import { allowedEmail, waitlist } from "@/db/schema";
 import { isEmailAllowed } from "./access";
 import { randomId } from "./crypto";
 import { lookupEmail } from "./login-lookup";
-import { applyForAccess, decide, joinWaitlist, listWaitlist, waitlistStats } from "./waitlist";
+import { applyForAccess, approvedRequest, decide, deliverInvite, joinWaitlist, listWaitlist, waitlistStats } from "./waitlist";
 
 const URL = process.env.KZ_TEST_DATABASE_URL;
 const ENV = { allowed: process.env.KZ_ALLOWED_EMAILS, admins: process.env.KZ_ADMIN_EMAILS };
+
+describe("deliverInvite", () => {
+  const row = { email: "a@example.com", locale: "en" };
+
+  it("如实返回发送结果，按申请语言发送", async () => {
+    const sent: unknown[][] = [];
+    expect(await deliverInvite(row, async (...args) => { sent.push(args); return true; })).toBe(true);
+    expect(sent).toEqual([["a@example.com", "en"]]);
+    expect(await deliverInvite(row, async () => false)).toBe(false);
+  });
+
+  it("发信抛错时返回失败，不让审批报错", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(await deliverInvite(row, async () => { throw new Error("network"); })).toBe(false);
+    vi.restoreAllMocks();
+  });
+});
 
 describe.skipIf(!URL)("早鸟申请（需要 KZ_TEST_DATABASE_URL）", () => {
   let db: DB;
@@ -58,11 +75,13 @@ describe.skipIf(!URL)("早鸟申请（需要 KZ_TEST_DATABASE_URL）", () => {
     process.env.KZ_ADMIN_EMAILS = "boss@example.com";
     process.env.KZ_ALLOWED_EMAILS = "seed@example.com";
     await joinWaitlist(db, { email: b, agents: ["workbuddy"] });
+    expect(await approvedRequest(db, b)).toBeUndefined();
     expect(await lookupEmail(db, b)).toBe("closed");
     expect(await decide(db, b, false, "boss@example.com")).toBeUndefined();
     expect(await isEmailAllowed(db, b)).toBe(false);
     const row = await decide(db, b, true, "boss@example.com");
     expect(row?.status).toBe("approved");
+    expect((await approvedRequest(db, b.toUpperCase()))?.email).toBe(b);
     expect(await isEmailAllowed(db, b)).toBe(true);
     expect(await lookupEmail(db, b)).toBe("create");
   });

@@ -31,8 +31,7 @@
       "mcpHint": "MCP is live · get a token under Agents after signing in",
       "mcpPrompt": "Please add \"Deepfy Health Record\" as an MCP server so you can read (and, after I confirm, write to) my health record.\n\n- Name: deepfy\n- Type: remote MCP (Streamable HTTP)\n- URL: {url}\n- Header: Authorization: Bearer YOUR_DEEPFY_TOKEN\n\nI create the token by signing in at {app} and opening Agents (it also offers a full prompt with the token filled in). Replace YOUR_DEEPFY_TOKEN with my token; if I haven't given you one yet, remind me to create one first, then finish the setup.\n\nAdd it the way your client supports (CLI command or mcpServers in the config file). Then call list_members to confirm the connection and read deepfy://contract for the data guide and write rules. The token is a password: only put it in the MCP config, never commit it to a git repository or send it anywhere else.",
       "lead1": "Give Deepfy your reports, records and daily metrics.",
-      "lead2": "You see clear health cards;\nyour agent gets structured, encrypted data with reminders.",
-      "selfHost": "Self-host it →"
+      "lead2": "You see clear health cards;\nyour agent gets structured, encrypted data with reminders."
     },
     "flow": {
       "eyebrow": "How it works",
@@ -92,7 +91,7 @@
     },
     "final": {
       "title": "Start with your next checkup report",
-      "lead": "The code is open source. We recommend running it on your own server, and you're welcome to help build it. If you need it hosted, request early bird access.",
+      "lead": "Free during the early bird period. Hand your reports to your agent and it enters the results for you. To run it on your own computer or home network, see self-hosting in the docs.",
       "cta": "Request early bird access"
     },
     "foot": {
@@ -113,7 +112,7 @@
         "steps": [
           {
             "t": "Request access and sign up",
-            "d": "We recommend self-hosting; see the deployment guide on GitHub. If you need it hosted, choose Request early bird access on the sign-in page and submit your email. You'll get an invitation once it's approved. Then sign up with an email code or Google, agree to the Terms and Privacy Policy, and your account is ready. After that, just sign in."
+            "d": "Choose Request early bird access on the sign-in page and submit your email. You'll get an invitation once it's approved. Then sign up with an email code or Google, agree to the Terms and Privacy Policy, and your account is ready. After that, just sign in. If you'd rather not use the cloud, see Self-hosting below."
           },
           {
             "t": "Add family members",
@@ -215,7 +214,24 @@
       "copied": "Copied — paste it to your agent",
       "copyHint": "Rather not read it all? Copy the whole page and send it to your agent — it will walk you through requesting early bird access, signing up, setting up profiles and connecting.",
       "preface": "Below is the guide for Deepfy Health Record ({site}). Read it first, then walk me through it step by step: requesting early bird access and signing up, adding my family members, and connecting Deepfy to you as an MCP server. Tell me one next step at a time; when I need to do something on the website or give you a token, wait for my reply. Treat the token like a password and keep it only in the MCP config.",
-      "links": "Links"
+      "links": "Links",
+      "selfHost": {
+        "title": "Self-hosting",
+        "lead": "The recommended way to run it: on your own computer or home server, with your data staying local. You don't need a domain or HTTPS, just Docker. You're welcome to help build the project too.",
+        "step1": "Get the code and create the config",
+        "step1d": "Replace the IP with this machine's local network address and the email with yours. For this computer only, use http://localhost:3100 and remove the KZ_BIND line.",
+        "step2": "Start it",
+        "step3": "Create your account",
+        "step3d": "Open that address in a browser and sign up with the email above. No email is sent; the code is in the logs:",
+        "keyT": "Keep the master key safe.",
+        "keyD": "Your data can't be decrypted without KZ_MASTER_KEY in .env, so store a separate copy.",
+        "netT": "Local network only.",
+        "netD": "Traffic isn't encrypted this way, so don't forward the port to the internet. To add family, put their emails in KZ_ALLOWED_EMAILS and run docker compose up -d app.",
+        "agentT": "Connect an agent.",
+        "agentD": "The MCP address is http://your-address:3100/mcp. Create a token on your instance's Agents page.",
+        "more": "For backups, upgrades and moving data from the hosted app, see the full guide",
+        "moreLink": "docs/self-hosting.md"
+      }
     },
     "why": {
       "eyebrow": "Why Deepfy",
@@ -1130,7 +1146,10 @@
         "workbuddy": "WorkBuddy",
         "hermes-agent": "Hermes Agent",
         "other": "Other"
-      }
+      },
+      "inviteSent": "Approved. The invitation email was sent.",
+      "inviteFailed": "Approved, but the invitation email failed to send. They already have access; use Resend invite in the list.",
+      "resend": "Resend invite"
     }
   }
 }

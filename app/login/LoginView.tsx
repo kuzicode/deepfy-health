@@ -107,7 +107,7 @@ function signInViews(f: LoginFlow, u: Fields): Partial<Record<Step, React.ReactN
   };
 }
 
-/** 注册、申请早鸟、Google 新用户 */
+/** 注册、申请早鸟资格、Google 新用户 */
 function signUpViews(f: LoginFlow, u: Fields): Partial<Record<Step, React.ReactNode>> {
   const { t } = f;
   return {

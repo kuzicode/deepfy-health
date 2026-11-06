@@ -1,12 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { getDb } from "@/db/client";
 import { addAllowedEmail, disableTarget, removeAllowedEmail, setDisabled } from "@/server/access";
-import { toLocale } from "@/i18n/config";
-import { sendInviteEmail } from "@/server/mail";
 import { requireAdmin } from "@/server/session";
-import { decide } from "@/server/waitlist";
+import { approvedRequest, decide, deliverInvite } from "@/server/waitlist";
 
 export async function addAllowedAction(_prev: { error?: string }, form: FormData): Promise<{ error?: string }> {
   const admin = await requireAdmin();
@@ -38,6 +37,23 @@ export async function setDisabledAction(form: FormData) {
 export async function decideWaitlistAction(form: FormData) {
   const admin = await requireAdmin();
   const row = await decide(getDb(), String(form.get("email") ?? ""), form.get("approve") === "1", admin.email);
-  if (row) await sendInviteEmail(row.email, toLocale(row.locale)).catch((e) => console.error("invite mail failed", e));
+  if (row) showInviteResult(form, await deliverInvite(row));
   revalidatePath("/admin");
+}
+
+/** 重发邀请：只对已通过的申请有效 */
+export async function resendInviteAction(form: FormData) {
+  await requireAdmin();
+  const row = await approvedRequest(getDb(), String(form.get("email") ?? ""));
+  if (row) showInviteResult(form, await deliverInvite(row));
+  revalidatePath("/admin");
+}
+
+/** 结果放进地址里显示，停留在当前筛选。不带邮箱，免得进访问日志 */
+function showInviteResult(form: FormData, sent: boolean): never {
+  revalidatePath("/admin");
+  const params = new URLSearchParams({ invite: sent ? "sent" : "failed" });
+  const wl = String(form.get("wl") ?? "");
+  if (wl) params.set("wl", wl);
+  redirect(`/admin?${params}`);
 }

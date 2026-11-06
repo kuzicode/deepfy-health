@@ -23,7 +23,7 @@
     "hero": {
       "title1": "构建你的健康云档案，",
       "title2": "让 Agent 读懂你。",
-      "cta": "申请早鸟",
+      "cta": "申请早鸟资格",
       "counter": "Agent 可读 ← 报告原文",
       "saved": "精简 {pct}%",
       "mcpCopy": "复制 MCP 接入提示词",
@@ -31,8 +31,7 @@
       "mcpHint": "MCP 已开放 · token 登录后在「Agent 接入」创建",
       "mcpPrompt": "请帮我把「Deepfy 健康档案」添加为一个 MCP 服务器，用来读取（以及在我确认后写入）我的健康档案。\n\n- 名称：deepfy\n- 类型：远程 MCP（Streamable HTTP）\n- 地址：{url}\n- 请求头：Authorization: Bearer YOUR_DEEPFY_TOKEN\n\ntoken 需要我登录 {app} 后，在「Agent 接入」页创建（创建时可以直接复制带 token 的完整提示词）。把 YOUR_DEEPFY_TOKEN 换成我的 token；如果我还没有给你 token，请先提醒我去创建，拿到后再完成配置。\n\n请用你所在客户端支持的方式添加（命令行，或配置文件里的 mcpServers）。添加后调用 list_members 确认连接成功，并读一下 deepfy://contract 了解数据说明和写入规则。token 等同于密码，只写进 MCP 配置，不要提交到 git 仓库，也不要发送到其他地方。",
       "lead1": "把体检报告、病历和日常指标交给 Deepfy。",
-      "lead2": "你看到清晰的健康卡片；\n你的 agent 读到结构化、加密的数据，长期追踪、按时提醒。",
-      "selfHost": "自托管部署 →"
+      "lead2": "你看到清晰的健康卡片；\n你的 agent 读到结构化、加密的数据，长期追踪、按时提醒。"
     },
     "flow": {
       "eyebrow": "工作方式",
@@ -92,8 +91,8 @@
     },
     "final": {
       "title": "从下一份体检报告开始",
-      "lead": "代码开源，推荐部署到自己的服务器，也欢迎一起维护。需要云端托管的话，可以申请早鸟。",
-      "cta": "申请早鸟"
+      "lead": "早鸟期间免费。把报告交给你的 agent，它会帮你整理录入。想部署到自己的电脑或内网，可以看文档里的自托管。",
+      "cta": "申请早鸟资格"
     },
     "foot": {
       "rights": "© 2026 Deepfy",
@@ -113,7 +112,7 @@
         "steps": [
           {
             "t": "申请并注册",
-            "d": "推荐自托管，见 GitHub 上的部署说明。需要云端托管的话，在登录页点「申请早鸟」，填写邮箱提交，通过后会收到邀请邮件。然后用邮箱验证码或 Google 账号注册，勾选同意服务协议和隐私政策即可创建账号；之后直接登录。"
+            "d": "在登录页点「申请早鸟资格」，填写邮箱提交，通过后会收到邀请邮件。然后用邮箱验证码或 Google 账号注册，勾选同意服务协议和隐私政策即可创建账号；之后直接登录。不想用云端的话，可以看下面的自托管。"
           },
           {
             "t": "为家人建档",
@@ -213,9 +212,26 @@
       "more": "还有其他问题？登录后在头像菜单里提交「意见反馈」。",
       "copyMd": "复制为 Markdown",
       "copied": "已复制，粘贴给你的 agent",
-      "copyHint": "不想自己读？复制整页文档发给你的 agent，让它一步步带你申请早鸟、注册、建档和接入。",
-      "preface": "下面是 Deepfy 健康档案（{site}）的使用文档。请先读完，然后一步步指导我：申请早鸟并注册账号、为家人建档，再把 Deepfy 作为 MCP 服务器接入你自己。每次只告诉我下一步做什么；需要我在网页上操作或提供 token 时，等我回复再继续。token 等同于密码，只写进 MCP 配置。",
-      "links": "链接"
+      "copyHint": "不想自己读？复制整页文档发给你的 agent，让它一步步带你申请早鸟资格、注册、建档和接入。",
+      "preface": "下面是 Deepfy 健康档案（{site}）的使用文档。请先读完，然后一步步指导我：申请早鸟资格并注册账号、为家人建档，再把 Deepfy 作为 MCP 服务器接入你自己。每次只告诉我下一步做什么；需要我在网页上操作或提供 token 时，等我回复再继续。token 等同于密码，只写进 MCP 配置。",
+      "links": "链接",
+      "selfHost": {
+        "title": "自托管",
+        "lead": "推荐的使用方式：跑在自己的电脑或家里的服务器上，数据留在本地，不需要域名和 HTTPS。需要 Docker。也欢迎一起维护这个项目。",
+        "step1": "下载代码并生成配置",
+        "step1d": "把下面的 IP 换成这台机器的内网地址，邮箱换成你的。只在本机用的话，地址填 http://localhost:3100，并去掉 KZ_BIND 那一行。",
+        "step2": "启动",
+        "step3": "注册账号",
+        "step3d": "浏览器打开你填的地址，用上面的邮箱注册。不发邮件，验证码在日志里：",
+        "keyT": "保存好主密钥。",
+        "keyD": ".env 里的 KZ_MASTER_KEY 丢失后数据无法解密，请另外保存一份。",
+        "netT": "只在内网使用。",
+        "netD": "这种方式没有加密传输，不要做端口转发暴露到公网。家人要用，把邮箱加进 KZ_ALLOWED_EMAILS，改完运行 docker compose up -d app。",
+        "agentT": "接入 agent。",
+        "agentD": "MCP 地址是 http://你的地址:3100/mcp，token 在自己实例的「Agent 接入」页创建。",
+        "more": "备份、升级和从官方托管搬数据，见完整说明",
+        "moreLink": "docs/self-hosting.md"
+      }
     },
     "why": {
       "eyebrow": "为什么用 Deepfy",
@@ -1000,7 +1016,7 @@
     "title_setpw": "设置密码",
     "setPassword": "设置密码",
     "setDone": "密码已设置，现在可以用密码登录。",
-    "title_apply": "申请早鸟",
+    "title_apply": "申请早鸟资格",
     "title_applied": "已收到申请",
     "apply": {
       "sub": "Deepfy 推荐自托管。需要云端托管的话，留下你的邮箱，早鸟申请通过后我们会发邮件通知你。",
@@ -1130,7 +1146,10 @@
         "workbuddy": "WorkBuddy",
         "hermes-agent": "Hermes Agent",
         "other": "其他"
-      }
+      },
+      "inviteSent": "已通过，邀请邮件已发送。",
+      "inviteFailed": "已通过，但邀请邮件发送失败。对方已有资格，可以在列表里点「重发邀请」。",
+      "resend": "重发邀请"
     }
   }
 }

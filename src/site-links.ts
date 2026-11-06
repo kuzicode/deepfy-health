@@ -21,6 +21,5 @@ export async function siteBase() {
 export const SOCIAL = {
   github: "https://github.com/kuzicode/deepfy-health",
   releases: "https://github.com/kuzicode/deepfy-health/releases",
-  selfHost: "https://github.com/kuzicode/deepfy-health/blob/main/docs/self-hosting.md",
   author: { label: "@kuzicode", href: "https://github.com/kuzicode" },
 } as const;

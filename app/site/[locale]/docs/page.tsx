@@ -21,6 +21,12 @@ function docsMarkdown(t: T, o: { locale: string; prompt: string; mcpUrl: string;
     `> ${t("preface", { site })}`,
     `# ${t("title")}`, t("lead"),
     `## ${t("start.title")}`, steps("start.steps"), `${o.enter}: ${APP}`,
+    `## ${t("selfHost.title")}`, t("selfHost.lead"),
+    `### ${t("selfHost.step1")}`, t("selfHost.step1d"), `\`\`\`bash\n${SELF_HOST_SETUP}\n\`\`\``,
+    `### ${t("selfHost.step2")}`, `\`\`\`bash\n${SELF_HOST_START}\n\`\`\``,
+    `### ${t("selfHost.step3")}`, t("selfHost.step3d"), `\`\`\`bash\n${SELF_HOST_LOGS}\n\`\`\``,
+    `- ${t("selfHost.keyT")} ${t("selfHost.keyD")}\n- ${t("selfHost.netT")} ${t("selfHost.netD")}\n- ${t("selfHost.agentT")} ${t("selfHost.agentD")}`,
+    `${t("selfHost.more")} ${SELF_HOST_GUIDE}`,
     `## ${t("agents.title")}`, t("agents.lead"), steps("agents.steps"),
     `### ${t("agents.promptTitle")}`, t("agents.promptHint"), `\`\`\`\n${o.prompt}\n\`\`\``,
     `### ${t("agents.snippetsTitle")}`, t("agents.snippetHint", { token: "<TOKEN>" }), snippets,
@@ -30,6 +36,48 @@ function docsMarkdown(t: T, o: { locale: string; prompt: string; mcpUrl: string;
     `## ${t("links")}`, `- ${t("title")}: ${site}\n- App: ${APP}\n- ${o.terms}: ${APP}/legal/terms\n- ${o.privacy}: ${APP}/legal/privacy`,
     t("more"),
   ].join("\n\n");
+}
+
+/** 自托管的命令：只跑在本机或内网，不需要域名和 HTTPS。和 docs/self-hosting.md 保持一致 */
+const SELF_HOST_SETUP = `git clone https://github.com/kuzicode/deepfy-health.git && cd deepfy-health
+cat > .env <<EOT
+POSTGRES_PASSWORD=$(openssl rand -hex 24)
+KZ_MASTER_KEY=$(openssl rand -base64 32)
+BETTER_AUTH_SECRET=$(openssl rand -base64 32)
+BETTER_AUTH_URL=http://192.168.1.10:3100
+KZ_APP_URL=http://192.168.1.10:3100
+KZ_BIND=0.0.0.0
+KZ_SITE_HOSTS=site.invalid
+KZ_ADMIN_EMAILS=you@example.com
+KZ_ALLOWED_EMAILS=you@example.com
+KZ_MAIL_CONSOLE=1
+EOT
+chmod 600 .env`;
+const SELF_HOST_START = "docker compose run --rm migrate\ndocker compose up -d app";
+const SELF_HOST_LOGS = "docker compose logs app | grep '\\[mail\\]'";
+const SELF_HOST_GUIDE = "https://github.com/kuzicode/deepfy-health/blob/main/docs/self-hosting.md";
+
+function SelfHostSection({ t }: { t: Awaited<ReturnType<typeof getTranslations<"site.docs">>> }) {
+  return (
+    <section id="self-host">
+      <h2>{t("selfHost.title")}</h2>
+      <p>{t("selfHost.lead")}</p>
+      <h3>{t("selfHost.step1")}</h3>
+      <p className="muted">{t("selfHost.step1d")}</p>
+      <div className="s-snip"><pre><code>{SELF_HOST_SETUP}</code></pre></div>
+      <h3>{t("selfHost.step2")}</h3>
+      <div className="s-snip"><pre><code>{SELF_HOST_START}</code></pre></div>
+      <h3>{t("selfHost.step3")}</h3>
+      <p className="muted">{t("selfHost.step3d")}</p>
+      <div className="s-snip"><pre><code>{SELF_HOST_LOGS}</code></pre></div>
+      <ul>
+        <li><b>{t("selfHost.keyT")}</b> {t("selfHost.keyD")}</li>
+        <li><b>{t("selfHost.netT")}</b> {t("selfHost.netD")}</li>
+        <li><b>{t("selfHost.agentT")}</b> {t("selfHost.agentD")}</li>
+      </ul>
+      <p className="muted">{t("selfHost.more")} <a href={SELF_HOST_GUIDE} target="_blank" rel="noopener">{t("selfHost.moreLink")}</a></p>
+    </section>
+  );
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -42,7 +90,7 @@ export default async function DocsPage() {
   const hero = await getTranslations("site.hero");
   const c = await getTranslations("common");
   const mcpUrl = `${APP}/mcp`;
-  const sections = [["start", t("start.title")], ["agents", t("agents.title")], ["parts", t("parts.title")], ["privacy", t("privacy.title")]] as const;
+  const sections = [["start", t("start.title")], ["self-host", t("selfHost.title")], ["agents", t("agents.title")], ["parts", t("parts.title")], ["privacy", t("privacy.title")]] as const;
   const startSteps = t.raw("start.steps") as Step[];
   const agentSteps = t.raw("agents.steps") as Step[];
   const parts = t.raw("parts.items") as Step[];
@@ -75,6 +123,8 @@ export default async function DocsPage() {
             </ol>
             <p><a className="btn btn-primary btn-sm" href={appUrl("/")}>{c("enterApp")}</a></p>
           </section>
+
+          <SelfHostSection t={t} />
 
           <section id="agents">
             <h2>{t("agents.title")}</h2>

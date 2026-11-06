@@ -3,7 +3,7 @@ import type { DB } from "@/db/client";
 import { account, user } from "@/db/schema";
 import { isEmailAllowed, normalizeEmail } from "./access";
 
-// 登录页「先邮箱后分流」：告诉前端下一步是输密码、验证码、创建账号，还是不在已开通名单（前端转到「申请早鸟」）。
+// 登录页「先邮箱后分流」：告诉前端下一步是输密码、验证码、创建账号，还是不在已开通名单（前端转到「申请早鸟资格」）。
 // 已知取舍：会暴露某邮箱是否注册过（与 ChatGPT 等一致），因此按 IP 限速。停用账号照常分流，登录时由 auth 钩子拦截。
 
 export type LookupNext = "password" | "otp" | "create" | "closed";

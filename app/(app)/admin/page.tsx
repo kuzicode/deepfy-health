@@ -43,11 +43,11 @@ async function AllowedSection({ t }: { t: Awaited<ReturnType<typeof getTranslati
   );
 }
 
-export default async function AdminPage({ searchParams }: { searchParams: Promise<{ wl?: string }> }) {
+export default async function AdminPage({ searchParams }: { searchParams: Promise<{ wl?: string; invite?: string }> }) {
   const me = await requireAdmin();
   const db = getDb();
   const t = await getTranslations("admin");
-  const { wl } = await searchParams;
+  const { wl, invite } = await searchParams;
   const filter = WAITLIST_STATUS.find((s) => s === wl);
   const restricted = registrationRestricted();
   const [users, stats, gaps, notes] = await Promise.all([listUsers(db), adminStats(db), listFeedback(db), listRecentFeedback(db)]);
@@ -64,7 +64,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
 
       <p className="muted" style={{ margin: "12px 0 0", fontSize: 13.5 }}>{t(restricted ? "registration.restricted" : "registration.open")}</p>
 
-      {restricted && <WaitlistSection filter={filter} />}
+      {restricted && <WaitlistSection filter={filter} invite={invite} />}
 
       <section className="a-section">
         <SectionHead title={t("users.title")} />

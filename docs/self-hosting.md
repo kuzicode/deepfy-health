@@ -5,21 +5,11 @@ status: active
 
 # 自托管
 
-这是推荐的使用方式：用这份代码在自己的服务器上跑一套，也可以把官方托管上的账号数据搬过来。欢迎一起维护，见 [CONTRIBUTING.md](../CONTRIBUTING.md)。代码和镜像不带任何用户数据，新实例的数据库是空的。
+这是推荐的使用方式：跑在自己的电脑或家里的服务器上，数据留在本地，不需要域名和 HTTPS。欢迎一起维护，见 [CONTRIBUTING.md](../CONTRIBUTING.md)。代码和镜像不带任何用户数据，新实例的数据库是空的。
 
-## 从官方托管搬过来，分三步
+## 启动
 
-1. 在官方托管登录，打开 **设置 → 导出**，下载 zip。zip 里只有你这个账号的数据（家人、记录、日志、用药、附件）。
-2. 按下面启动自己的实例并注册账号。
-3. 把 zip 导入自己的实例。
-
-**不会带过来的：** 登录方式和密码、agent token、提醒设置、agent 修改记录。token 和提醒要在新实例重新设置。
-
-**zip 是明文。** 它是解密后的健康数据，请像保管原件一样保管，用完删除。
-
-## 启动实例
-
-需要 Docker。
+需要 Docker。把下面的 IP 换成这台机器的内网地址，邮箱换成你的：
 
 ```bash
 git clone https://github.com/kuzicode/deepfy-health.git && cd deepfy-health
@@ -27,11 +17,12 @@ cat > .env <<EOT
 POSTGRES_PASSWORD=$(openssl rand -hex 24)
 KZ_MASTER_KEY=$(openssl rand -base64 32)
 BETTER_AUTH_SECRET=$(openssl rand -base64 32)
-BETTER_AUTH_URL=https://health.example.com
-KZ_APP_URL=https://health.example.com
+BETTER_AUTH_URL=http://192.168.1.10:3100
+KZ_APP_URL=http://192.168.1.10:3100
+KZ_BIND=0.0.0.0
 KZ_SITE_HOSTS=site.invalid
 KZ_ADMIN_EMAILS=you@example.com
-KZ_ALLOWED_EMAILS=family@example.com
+KZ_ALLOWED_EMAILS=you@example.com
 KZ_MAIL_CONSOLE=1
 EOT
 chmod 600 .env
@@ -39,40 +30,64 @@ docker compose run --rm migrate
 docker compose up -d app
 ```
 
-应用只监听 `127.0.0.1:3100`。公开访问时，在前面放一个带 HTTPS 的反向代理转发到这个端口。反向代理必须对外拒绝 `/api/cron/`，并把 `X-Real-IP` 设为真实客户端 IP（如 nginx 的 `proxy_set_header X-Real-IP $remote_addr;`），否则限速按 IP 区分不开或可被伪造。只在本机用时，两个 URL 都填 `http://localhost:3100`。
-
-**必须另存 `KZ_MASTER_KEY`：** 丢失后数据无法解密。不要把它和数据库备份放在一起。
-
-**只给自己和家人用，一定要设 `KZ_ALLOWED_EMAILS`（逗号分隔）：** 不设时实例对所有人开放注册，只要能访问到你的地址就能注册。设了之后是白名单制：只有名单内的邮箱和管理员能注册，登录页显示申请表，可以在 `/admin` 审批和添加邮箱，已有账号不受影响。`KZ_ADMIN_EMAILS` 只决定谁是管理员（不受免费额度限制，可进入 `/admin` 拉黑账号），不会关闭注册。
+只在本机用的话，两个地址都填 `http://localhost:3100`，并去掉 `KZ_BIND` 那一行。
 
 ## 注册账号
 
-用 `KZ_ADMIN_EMAILS` 里的邮箱注册。`KZ_MAIL_CONSOLE=1` 时不发邮件，验证码打印在日志里：
+浏览器打开你填的地址，用上面的邮箱注册。`KZ_MAIL_CONSOLE=1` 时不发邮件，验证码在日志里：
 
 ```bash
 docker compose logs app | grep '\[mail\]'
 ```
 
-要真的发邮件，就配 `RESEND_API_KEY` 和 `MAIL_FROM`，并去掉 `KZ_MAIL_CONSOLE`。Google 登录可选，配 `GOOGLE_CLIENT_ID` 和 `GOOGLE_CLIENT_SECRET`。
+## 要注意的
 
-## 导入 zip
+- **保存好主密钥：** `.env` 里的 `KZ_MASTER_KEY` 丢失后数据无法解密。请另外保存一份，不要和数据库备份放在一起。
+- **只在内网使用：** 这种方式没有加密传输，不要做端口转发暴露到公网。
+- **加家人：** 把邮箱加进 `KZ_ALLOWED_EMAILS`（逗号分隔），运行 `docker compose up -d app`。也可以让他们在登录页提交申请，你在 `/admin` 审批。名单留空时，能访问这个地址的人都能注册。
+- **接入 agent：** MCP 地址是 `http://你的地址:3100/mcp`，token 在「Agent 接入」页创建。
 
-在自己实例的 **Agent 接入** 页面创建一个「本地同步」权限的 token，然后在本机（需要 Node 22 和 pnpm）执行：
+## 备份和升级
+
+备份数据库和附件（附件已加密，恢复时需要原来的 `.env`）：
+
+```bash
+mkdir -p backups
+docker compose exec -T db pg_dump -U kzh -Fc kzh > backups/db.dump
+docker compose cp app:/data/attachments backups/attachments
+```
+
+升级：
+
+```bash
+git pull
+docker compose build app migrate
+docker compose run --rm migrate
+docker compose up -d app
+```
+
+## 从官方托管搬过来
+
+1. 在官方托管登录，打开 **设置 → 导出**，下载 zip。zip 是解密后的明文，用完请删除。
+2. 在自己实例的 **Agent 接入** 页面创建一个「本地同步」权限的 token。
+3. 在本机（需要 Node 22 和 pnpm）执行：
 
 ```bash
 pnpm install
 unzip deepfy-health-*.zip -d my-export
 export HEALTH_VAULT_DIR=$PWD/my-export
 pnpm kzh validate
-pnpm kzh login --server https://health.example.com --token <token>
+pnpm kzh login --server http://你的地址:3100 --token <token>
 pnpm kzh push --dry-run
 pnpm kzh push
 ```
 
-导入完就可以删掉 zip 和解压目录。`pnpm kzh pull` 可以随时再导出一份。
+登录方式和密码、agent token、提醒设置、agent 修改记录不会带过来。
 
-## 之后由你负责
+## 可选
 
-服务器安全、备份、升级（`git pull` 后重新 `docker compose build app migrate`、`docker compose run --rm migrate`、`docker compose up -d app`）和数据合规都由你负责。提醒邮件还需要发信服务、`KZ_CRON_SECRET` 和每天调用 `/api/cron/reminders` 的定时任务。
+- **真的发邮件：** 配 `RESEND_API_KEY` 和 `MAIL_FROM`，并去掉 `KZ_MAIL_CONSOLE`。提醒邮件还需要 `KZ_CRON_SECRET` 和每天调用 `/api/cron/reminders` 的定时任务。
+- **Google 登录：** 配 `GOOGLE_CLIENT_ID` 和 `GOOGLE_CLIENT_SECRET`。
+- **放到公网：** 需要你自己配 HTTPS 反向代理，转发到 `127.0.0.1:3100`（不要设 `KZ_BIND`），对外拒绝 `/api/cron/`，并把 `X-Real-IP` 设为真实客户端 IP。
 
-Self-hosting: clone the repo, create `.env` as above, run the migration, start the app, sign up with your admin email, then import your export with `kzh push`. The export contains only your account's data and is plain text, so keep it safe and delete it afterwards.
+Self-hosting: clone the repo, create `.env` as above with your local network address, run the migration, start the app and sign up with your admin email. The code is printed in the logs. It runs over plain HTTP, so keep it on your local network.

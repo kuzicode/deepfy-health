@@ -1,9 +1,11 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
+import { toLocale } from "@/i18n/config";
 import type { DB } from "@/db/client";
 import { waitlist } from "@/db/schema";
 import { addAllowedEmail, normalizeEmail } from "./access";
 import { lookupEmail, type LookupNext } from "./login-lookup";
+import { sendInviteEmail } from "./mail";
 
 // 早鸟申请（候补名单）：前台申请 → 后台审批 → 通过即加入已开通名单并发邀请邮件。
 // 接口不透露是否已申请过；邮箱已开通时告知去登录，和 login-lookup 暴露的信息相同（已知取舍，同样按 IP 限速）。
@@ -61,5 +63,21 @@ export async function decide(db: DB, email: string, approve: boolean, by: string
     .where(eq(waitlist.email, e)).returning();
   if (!row || !approve) return undefined;
   await addAllowedEmail(db, e, "waitlist", by);
+  return row;
+}
+
+/** 发邀请邮件，返回是否发送成功。发信失败不影响资格，但必须让管理员看到，才能重发 */
+export async function deliverInvite(row: { email: string; locale: string | null }, sendMail = sendInviteEmail) {
+  try {
+    return await sendMail(row.email, toLocale(row.locale));
+  } catch (e) {
+    console.error("invite mail failed", e instanceof Error ? e.name : "unknown");
+    return false;
+  }
+}
+
+/** 已通过的申请（重发邀请用）；其他状态返回 undefined，不能靠重发绕过审批 */
+export async function approvedRequest(db: DB, email: string) {
+  const [row] = await db.select().from(waitlist).where(and(eq(waitlist.email, normalizeEmail(email)), eq(waitlist.status, "approved")));
   return row;
 }

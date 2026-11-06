@@ -59,7 +59,7 @@ export function useLoginFlow(error?: string, canApply = false) {
     if (!res.ok || !body.next) return { error: { code: body.error ?? "generic" } };
     setPassword("");
     setAgreed(false);
-    go(body.next === "closed" ? "apply" : (body.next as Step)); // 未开通的邮箱 → 申请早鸟
+    go(body.next === "closed" ? "apply" : (body.next as Step)); // 未开通的邮箱 → 申请早鸟资格
     if (body.next === "otp") await sendCode("sign-in", asked);
   });
 
