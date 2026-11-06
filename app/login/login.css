@@ -52,7 +52,7 @@
   .l-card { padding: 28px 20px 24px; border: none; box-shadow: none; background: transparent; }
 }
 
-/* 内测申请 */
+/* 早鸟申请 */
 .l-chips { border: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .l-chips legend { padding: 0 0 10px 4px; font-size: 13px; color: var(--body); }
 .l-chips button { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 13px; border-radius: 999px; border: 1px solid var(--line-strong); background: #fff; font: 500 13px/1 var(--sans); color: var(--body); cursor: pointer; transition: border-color 0.2s, background 0.2s; }

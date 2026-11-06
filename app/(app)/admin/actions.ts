@@ -34,7 +34,7 @@ export async function setDisabledAction(form: FormData) {
   revalidatePath("/admin");
 }
 
-/** 审批内测申请：通过 → 加入已开通名单并发邀请邮件；拒绝只改状态，不通知 */
+/** 审批早鸟申请：通过 → 加入已开通名单并发邀请邮件；拒绝只改状态，不通知 */
 export async function decideWaitlistAction(form: FormData) {
   const admin = await requireAdmin();
   const row = await decide(getDb(), String(form.get("email") ?? ""), form.get("approve") === "1", admin.email);

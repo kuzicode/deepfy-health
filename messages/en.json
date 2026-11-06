@@ -23,7 +23,7 @@
     "hero": {
       "title1": "Built for your health.",
       "title2": "Read by your agents.",
-      "cta": "Request the hosted beta",
+      "cta": "Request early bird access",
       "counter": "Agent‑ready ← Raw report",
       "saved": "{pct}% fewer",
       "mcpCopy": "Copy MCP setup prompt",
@@ -92,8 +92,8 @@
     },
     "final": {
       "title": "Start with your next checkup report",
-      "lead": "The code is open source. We recommend running it on your own server, and you're welcome to help build it. If you need it hosted, request the beta.",
-      "cta": "Request the hosted beta"
+      "lead": "The code is open source. We recommend running it on your own server, and you're welcome to help build it. If you need it hosted, request early bird access.",
+      "cta": "Request early bird access"
     },
     "foot": {
       "rights": "© 2026 Deepfy",
@@ -113,7 +113,7 @@
         "steps": [
           {
             "t": "Request access and sign up",
-            "d": "We recommend self-hosting; see the deployment guide on GitHub. If you need it hosted, choose Request the beta on the sign-in page and submit your email. You'll get an invitation once it's approved. Then sign up with an email code or Google, agree to the Terms and Privacy Policy, and your account is ready. After that, just sign in."
+            "d": "We recommend self-hosting; see the deployment guide on GitHub. If you need it hosted, choose Request early bird access on the sign-in page and submit your email. You'll get an invitation once it's approved. Then sign up with an email code or Google, agree to the Terms and Privacy Policy, and your account is ready. After that, just sign in."
           },
           {
             "t": "Add family members",
@@ -206,15 +206,15 @@
         "items": [
           "Records, reports and attachments are encrypted on the server (AES-256-GCM) with a separate key per account. This is server-side encryption, not end-to-end.",
           "Export everything from Settings at any time; deleting your account deletes the data and attachments too.",
-          "The hosted app is an invite-only beta, free for now, with up to 6 family members, 100 MB of attachments and 3 agent tokens — see the Terms. Self-host if you need more space or want to hold your own data.",
+          "The hosted app is an invite-only early bird program, free for now, with up to 6 family members, 100 MB of attachments and 3 agent tokens — see the Terms. Self-host if you need more space or want to hold your own data.",
           "All analysis is for reference only and is not a substitute for medical advice."
         ]
       },
       "more": "Anything else? Sign in and send Feedback from the avatar menu.",
       "copyMd": "Copy as Markdown",
       "copied": "Copied — paste it to your agent",
-      "copyHint": "Rather not read it all? Copy the whole page and send it to your agent — it will walk you through requesting the beta, signing up, setting up profiles and connecting.",
-      "preface": "Below is the guide for Deepfy Health Record ({site}). Read it first, then walk me through it step by step: requesting the beta and signing up, adding my family members, and connecting Deepfy to you as an MCP server. Tell me one next step at a time; when I need to do something on the website or give you a token, wait for my reply. Treat the token like a password and keep it only in the MCP config.",
+      "copyHint": "Rather not read it all? Copy the whole page and send it to your agent — it will walk you through requesting early bird access, signing up, setting up profiles and connecting.",
+      "preface": "Below is the guide for Deepfy Health Record ({site}). Read it first, then walk me through it step by step: requesting early bird access and signing up, adding my family members, and connecting Deepfy to you as an MCP server. Tell me one next step at a time; when I need to do something on the website or give you a token, wait for my reply. Treat the token like a password and keep it only in the MCP config.",
       "links": "Links"
     },
     "why": {
@@ -692,7 +692,7 @@
       "tokenQuota": "Free plan allows {limit} agent tokens. Remove one you no longer use first.",
       "usage": {
         "title": "Usage",
-        "hint": "Every account is on the free plan during the beta. This turns a different color when you're close to a limit. Need more? Tell us through Feedback.",
+        "hint": "Every account is on the free plan during the early bird period. This turns a different color when you're close to a limit. Need more? Tell us through Feedback.",
         "members": "Family members",
         "attachments": "Attachment storage",
         "tokens": "Agent tokens",
@@ -753,7 +753,7 @@
         "photo_count": "Up to 6 photos at a time.",
         "not_found": "Profile not found.",
         "generic": "Couldn't save. Please try again.",
-        "quota_attachmentBytes": "Attachment storage is full (beta limit: 100 MB). Remove photos you no longer need, or self-host.",
+        "quota_attachmentBytes": "Attachment storage is full (early bird limit: 100 MB). Remove photos you no longer need, or self-host.",
         "quota_members": "Family member limit reached.",
         "quota_attachmentCount": "Attachment limit reached. Remove photos you no longer need.",
         "quota_uploadBytesPerDay": "Today's upload limit is reached. Try again tomorrow.",
@@ -927,7 +927,7 @@
     },
     "feedback": {
       "title": "Feedback",
-      "sub": "We read every suggestion during the beta. Write whatever comes to mind; one idea per message is easiest to act on.",
+      "sub": "We read every suggestion during the early bird period. Write whatever comes to mind; one idea per message is easiest to act on.",
       "placeholder": "What's confusing, broken, or missing…",
       "note": "We attach your sign-in email so we can reply. Please don't include test results or other health details.",
       "submit": "Send",
@@ -1000,10 +1000,10 @@
     "title_setpw": "Set a password",
     "setPassword": "Set a password",
     "setDone": "Password set. You can now sign in with it.",
-    "title_apply": "Request the beta",
+    "title_apply": "Request early bird access",
     "title_applied": "Request received",
     "apply": {
-      "sub": "We recommend self-hosting Deepfy. If you need it hosted, leave your email and we'll let you know when your beta request is approved.",
+      "sub": "We recommend self-hosting Deepfy. If you need it hosted, leave your email and we'll let you know when your early bird request is approved.",
       "email": "Email",
       "ask": "Don't have access yet?",
       "haveAccess": "Already have access?",
@@ -1102,7 +1102,7 @@
       "invalid": "That email doesn't look right."
     },
     "waitlist": {
-      "title": "Beta requests",
+      "title": "Early bird requests",
       "hint": "Requests submitted on the sign-in page. Approving adds the email to the allowed list and sends an invite; declining sends nothing.",
       "stats": {
         "total": "Total",

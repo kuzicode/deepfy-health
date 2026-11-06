@@ -43,9 +43,9 @@
 
 **自托管（推荐）。** 部署到自己的服务器，数据也留在那里，见 [docs/self-hosting.md](docs/self-hosting.md)。也欢迎一起维护这个项目，见[参与贡献](#参与贡献)。
 
-**需要云端托管？** 官方托管的 **[app.deepfy.si](https://app.deepfy.si)** 是白名单制内测。在登录页提交申请，通过后会收到邮件。目前免费，每个账号 100 MB 附件。
+**需要云端托管？** 官方托管的 **[app.deepfy.si](https://app.deepfy.si)** 采用白名单制，目前开放早鸟申请。在登录页提交申请，通过后会收到邮件。目前免费，每个账号 100 MB 附件。
 
-**接入你的 agent。** 在「Agent 接入」页面创建 token，再添加 MCP 服务器。下面以 Claude Code 接入官方内测为例，自托管时换成自己的地址：
+**接入你的 agent。** 在「Agent 接入」页面创建 token，再添加 MCP 服务器。下面以 Claude Code 接入官方托管为例，自托管时换成自己的地址：
 
 ```sh
 claude mcp add --transport http deepfy https://app.deepfy.si/mcp \
@@ -99,7 +99,7 @@ pnpm kzh pull --into ./backup/Personal
 
 ## 自托管
 
-这是推荐的使用方式。代码不带任何用户数据，也可以导入从官方内测导出的账号数据，见 [docs/self-hosting.md](docs/self-hosting.md)。
+这是推荐的使用方式。代码不带任何用户数据，也可以导入从官方托管导出的账号数据，见 [docs/self-hosting.md](docs/self-hosting.md)。
 
 ## 参与贡献
 

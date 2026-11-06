@@ -30,7 +30,7 @@ describe("反馈表单与汇总邮件", () => {
 
 const URL = process.env.KZ_TEST_DATABASE_URL;
 
-describe.skipIf(!URL)("每周内测汇总（需要 KZ_TEST_DATABASE_URL）", () => {
+describe.skipIf(!URL)("每周汇总（需要 KZ_TEST_DATABASE_URL）", () => {
   let db: DB;
   const uid = `fb-${randomId()}`;
   beforeAll(async () => {

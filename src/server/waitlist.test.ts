@@ -10,7 +10,7 @@ import { applyForAccess, decide, joinWaitlist, listWaitlist, waitlistStats } fro
 const URL = process.env.KZ_TEST_DATABASE_URL;
 const ENV = { allowed: process.env.KZ_ALLOWED_EMAILS, admins: process.env.KZ_ADMIN_EMAILS };
 
-describe.skipIf(!URL)("内测申请（需要 KZ_TEST_DATABASE_URL）", () => {
+describe.skipIf(!URL)("早鸟申请（需要 KZ_TEST_DATABASE_URL）", () => {
   let db: DB;
   const id = randomId().slice(0, 8);
   const a = `wl-a-${id}@example.com`;

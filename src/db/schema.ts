@@ -184,7 +184,7 @@ export const userStatus = pgTable("user_status", {
   reason: text("reason"),
 });
 
-/** 内测申请：只有邮箱与申请人自己填写的说明；审批通过后写入 allowed_email */
+/** 早鸟申请：只有邮箱与申请人自己填写的说明；审批通过后写入 allowed_email */
 export const waitlist = pgTable("waitlist", {
   email: text("email").primaryKey(),
   locale: text("locale"),

@@ -5,7 +5,7 @@ import { catalogFeedback, feedback, user, waitlist } from "@/db/schema";
 import { randomId } from "./crypto";
 import { DISK_ALERT_PCT, MAIL_DAILY_ALERT, MAIL_MONTHLY_ALERT, getState, resourceStats, setState } from "./ops";
 
-// 内测反馈：用户在「意见反馈」页提交；每周把新反馈、字典缺口变化和几项运营数字汇成一封邮件发给管理员。
+// 意见反馈：用户在「意见反馈」页提交；每周把新反馈、字典缺口变化和几项运营数字汇成一封邮件发给管理员。
 // 反馈正文是用户自己写给我们的，附登录邮箱以便回复；页面上提示不要填检查数值等隐私。
 
 const FEEDBACK_KINDS = ["idea", "bug", "other"] as const;

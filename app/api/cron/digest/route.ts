@@ -4,7 +4,7 @@ import { cronAuthorized } from "@/server/cron-auth";
 import { runDigest } from "@/server/feedback";
 import { sendDigestEmail } from "@/server/mail";
 
-// 每周内测汇总（由定时任务每天调用，距上次满 7 天才发）：用户反馈 + 字典缺口变化，发给 KZ_ADMIN_EMAILS
+// 每周汇总（由定时任务每天调用，距上次满 7 天才发）：用户反馈 + 字典缺口变化，发给 KZ_ADMIN_EMAILS
 
 export const dynamic = "force-dynamic";
 

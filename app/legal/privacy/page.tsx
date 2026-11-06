@@ -12,7 +12,7 @@ const ZH = (
     <ul>
       <li>账号信息：登录方式提供的姓名、邮箱，以及你使用的界面语言（决定邮件的语言）。头像是注册时随机分配的预设头像，不使用 Google 等登录方式提供的头像，可在设置里更换。</li>
       <li>症状照片：你在快速记录里上传的照片，与其他健康数据一样加密存储；上传前在你的浏览器里压缩并去掉拍摄位置等元数据。</li>
-      <li>内测申请：你的邮箱，以及你自愿填写的在用 agent 和用途说明，仅用于审批与通知；申请未通过的记录可应你的要求删除。</li>
+      <li>早鸟申请：你的邮箱，以及你自愿填写的在用 agent 和用途说明，仅用于审批与通知；申请未通过的记录可应你的要求删除。</li>
       <li>提醒邮件：默认开启，可在「邮件提醒」里随时暂停。我们会在复查 / 体检到期前通过邮件服务商 Resend 发送提醒，邮件内容只有家人称呼、日期、检查项目名称和到期的用药或补剂名称，不含检测数值与分析；每封邮件都可以一键暂停。</li>
       <li>意见反馈：你在「意见反馈」里写的内容不加密，会连同登录邮箱保存，每周汇总发给维护者，用于改进产品和回复你；请不要在反馈里填写检查数值等健康信息。</li>
       <li>字典缺口反馈：只有你在记录页主动点击「反馈项目名称」时，才会发送字典暂未收录的项目名称、单位和分组，不含检测数值，也不关联你的账号，按名称汇总计数，用于完善指标字典。</li>
@@ -42,7 +42,7 @@ const EN = (
     <ul>
       <li>Account information: name and email from your sign-in method, and your interface language (which sets the language of our emails). Your avatar is a preset picked at random when you sign up — we don't use the picture from Google or other sign-in providers — and you can change it in Settings.</li>
       <li>Symptom photos: photos you add to quick logs are encrypted like the rest of your health data; your browser compresses them and strips location metadata before upload.</li>
-      <li>Beta requests: your email plus the agents and use case you choose to share, used only to review the request and notify you; we delete it on request.</li>
+      <li>Early bird requests: your email plus the agents and use case you choose to share, used only to review the request and notify you; we delete it on request.</li>
       <li>Reminder emails: on by default; pause any time under "Reminders". We send recheck / checkup reminders through our email provider Resend, containing only the family member's name, dates, item names and the names of medications or supplements coming due — no results or analysis. Every email has a one-click pause link.</li>
       <li>Feedback: what you write on the Feedback page is stored unencrypted with your sign-in email and sent to the maintainers in a weekly digest, to improve the product and reply to you. Please don't include test results or other health details.</li>
       <li>Dictionary feedback: only when you click "Send item names" on the records page do we receive the names, units and sections of items not yet in our dictionary — no results, not linked to your account, counted per name — to improve the marker dictionary.</li>

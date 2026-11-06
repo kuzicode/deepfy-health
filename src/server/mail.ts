@@ -23,7 +23,7 @@ const SUBJECT: Record<Locale, Record<OtpType, string>> = {
   },
 };
 
-/** 面向用户的邮件文案；每周内测汇总只发管理员，保持中文 */
+/** 面向用户的邮件文案；每周汇总只发管理员，保持中文 */
 const COPY = {
   zh: {
     system: "这是一封系统邮件，请勿直接回复。",
@@ -36,12 +36,12 @@ const COPY = {
       text: (c: string, title: string) => `${BRAND.zh} · ${title}\n\n你的验证码是 ${c}，5 分钟内有效。如果不是你本人操作，请忽略这封邮件。`,
     },
     invite: {
-      subject: `你已获得 ${BRAND.zh} 内测资格`,
-      title: "你已获得内测资格",
+      subject: `你已获得 ${BRAND.zh} 早鸟资格`,
+      title: "你已获得早鸟资格",
       preheader: "你的 Deepfy 健康档案已开通，现在就可以开始使用",
-      body: (email: string) => `你用 ${email} 申请的 ${BRAND.zh} 内测已通过。用这个邮箱登录，就可以建立你和家人的健康档案，并让你的 agent 读懂它。`,
+      body: (email: string) => `你用 ${email} 提交的 ${BRAND.zh} 早鸟申请已通过。用这个邮箱登录，就可以建立你和家人的健康档案，并让你的 agent 读懂它。`,
       cta: "开始使用",
-      text: (email: string, url: string) => `${BRAND.zh}\n\n你用 ${email} 申请的内测已通过。登录开始使用：${url}`,
+      text: (email: string, url: string) => `${BRAND.zh}\n\n你用 ${email} 提交的早鸟申请已通过。登录开始使用：${url}`,
     },
     reminder: {
       title: "接下来要做的检查",
@@ -71,12 +71,12 @@ const COPY = {
       text: (c: string, title: string) => `${BRAND.en} · ${title}\n\nYour code is ${c}. It's valid for 5 minutes. If this wasn't you, ignore this email.`,
     },
     invite: {
-      subject: `You're in: your ${BRAND.en} beta access is ready`,
-      title: "Your beta access is ready",
+      subject: `You're in: your ${BRAND.en} early bird access is ready`,
+      title: "Your early bird access is ready",
       preheader: "Your Deepfy Health Record is ready to use",
-      body: (email: string) => `The beta request from ${email} has been approved. Sign in with this email to set up records for you and your family and connect them to your agent.`,
+      body: (email: string) => `The early bird request from ${email} has been approved. Sign in with this email to set up records for you and your family and connect them to your agent.`,
       cta: "Get started",
-      text: (email: string, url: string) => `${BRAND.en}\n\nThe beta request from ${email} has been approved. Sign in to get started: ${url}`,
+      text: (email: string, url: string) => `${BRAND.en}\n\nThe early bird request from ${email} has been approved. Sign in to get started: ${url}`,
     },
     reminder: {
       title: "Coming up",
@@ -250,7 +250,7 @@ export async function sendReminderCode(to: string, code: string, locale: Locale 
   if (!ok) throw new Error("mail failed");
 }
 
-// ---- 每周内测汇总（发给 KZ_ADMIN_EMAILS）：用户反馈 + 字典缺口变化 + 几项运营数字 ----
+// ---- 每周汇总（发给 KZ_ADMIN_EMAILS）：用户反馈 + 字典缺口变化 + 几项运营数字 ----
 
 const KIND_LABEL: Record<string, string> = { idea: "建议", bug: "问题", other: "其他" };
 
@@ -267,7 +267,7 @@ export function digestHtml(d: Digest, base = appBase()) {
   const resLine = `资源：近 7 天发信 ${r.mailWeek} 封（单日最高 ${r.mailPeakDay}，本月 ${r.mailMonth} / 3000），附件共 ${mb(r.attachmentBytes)}${r.diskUsedPct === undefined ? "" : `，磁盘已用 ${r.diskUsedPct}%`}。${r.alert ? '<b style="color:#B42318">需要注意：磁盘用到 70%，或发信接近 Resend 免费档上限（每天 100 / 每月 3000）。</b>' : ""}`;
   return layout({
     base,
-    title: "本周内测汇总",
+    title: "本周汇总",
     preheader: `${d.feedback.length} 条反馈，${d.gaps.length} 个字典缺口变化`,
     body: `${p(`${d.since ? `自 ${cnDateTime(d.since)} 以来` : "首次汇总"}：<b>${d.feedback.length}</b> 条用户反馈，<b>${d.gaps.length}</b> 个字典缺口新增或次数增加。账号共 ${s.users} 个（新增 ${s.newUsers}），待审批申请 ${s.waitlistPending} 个。`)}
       ${p(resLine, !r.alert)}
@@ -279,14 +279,14 @@ export function digestHtml(d: Digest, base = appBase()) {
 
 export async function sendDigestEmail(to: string[], d: Digest) {
   const text = [
-    `${BRAND.zh} · 本周内测汇总`, "",
+    `${BRAND.zh} · 本周汇总`, "",
     ...d.feedback.map((f) => `[${KIND_LABEL[f.kind] ?? f.kind}] ${f.email ?? "—"} ${cnDateTime(f.createdAt)}${f.page ? ` ${f.page}` : ""}\n${f.body}\n`),
     `资源：近 7 天发信 ${d.resources.mailWeek} 封（单日最高 ${d.resources.mailPeakDay}，本月 ${d.resources.mailMonth} / 3000），附件 ${Math.round(d.resources.attachmentBytes / 1048576)} MB${d.resources.diskUsedPct === undefined ? "" : `，磁盘 ${d.resources.diskUsedPct}%`}${d.resources.alert ? "（需要注意）" : ""}`, "",
     ...(d.gaps.length ? ["字典缺口（本周新增 / 累计）", ...d.gaps.map((g) => `- ${g.name}${g.unit ? ` (${g.unit})` : ""}  +${g.added} / ${g.count}`)] : []),
     "", `${appBase()}/admin`,
   ].join("\n");
   for (const addr of to) {
-    const ok = await send({ to: addr, subject: `内测汇总：${d.feedback.length} 条反馈 · ${BRAND.zh}`, html: digestHtml(d), text, devLog: `内测汇总 → ${addr}：${d.feedback.length} 条反馈，${d.gaps.length} 个缺口` });
+    const ok = await send({ to: addr, subject: `每周汇总：${d.feedback.length} 条反馈 · ${BRAND.zh}`, html: digestHtml(d), text, devLog: `每周汇总 → ${addr}：${d.feedback.length} 条反馈，${d.gaps.length} 个缺口` });
     if (!ok) throw new Error("digest mail failed");
   }
 }

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Check } from "lucide-react";
 
-// 内测申请：填邮箱即可提交，可选填在用的 agent 和一句话用途。已开通的邮箱由服务端返回 next，转去登录。
+// 早鸟申请：填邮箱即可提交，可选填在用的 agent 和一句话用途。已开通的邮箱由服务端返回 next，转去登录。
 
 const AGENTS = ["claude-code", "codex", "gemini-cli", "grokbot", "workbuddy", "hermes-agent", "other"] as const;
 

@@ -5,7 +5,7 @@ import { waitlist } from "@/db/schema";
 import { addAllowedEmail, normalizeEmail } from "./access";
 import { lookupEmail, type LookupNext } from "./login-lookup";
 
-// 内测申请（候补名单）：前台申请 → 后台审批 → 通过即加入已开通名单并发邀请邮件。
+// 早鸟申请（候补名单）：前台申请 → 后台审批 → 通过即加入已开通名单并发邀请邮件。
 // 接口不透露是否已申请过；邮箱已开通时告知去登录，和 login-lookup 暴露的信息相同（已知取舍，同样按 IP 限速）。
 
 const AGENT_CHOICES = ["claude-code", "codex", "gemini-cli", "grokbot", "workbuddy", "hermes-agent", "other"] as const;

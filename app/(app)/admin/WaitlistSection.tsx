@@ -4,7 +4,7 @@ import { listWaitlist, waitlistStats } from "@/server/waitlist";
 import { SectionHead } from "@/ui/blocks";
 import { decideWaitlistAction } from "./actions";
 
-// 管理后台 · 内测申请：统计、按 agent 分布、按状态筛选的列表与审批
+// 管理后台 · 早鸟申请：统计、按 agent 分布、按状态筛选的列表与审批
 
 export const WAITLIST_STATUS = ["pending", "approved", "declined"] as const;
 const STATUS_CHIP: Record<string, string> = { pending: "chip-warn", approved: "chip-N", declined: "chip-unknown" };

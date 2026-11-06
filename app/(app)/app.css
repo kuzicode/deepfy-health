@@ -247,7 +247,7 @@ a.a-row:hover { background: var(--surface-2); }
 .a-table .sub { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; color: var(--muted); font-size: 12px; }
 .a-table tr.off td { opacity: 0.55; }
 
-/* 管理后台：内测申请 */
+/* 管理后台：早鸟申请 */
 .wl-agents { display: grid; gap: 8px; margin-top: 12px; }
 .wl-bar { display: grid; grid-template-columns: 120px 1fr 40px; align-items: center; gap: 12px; font-size: 13px; }
 .wl-bar i { display: block; height: 8px; border-radius: 999px; background: linear-gradient(90deg, var(--brand), var(--mint)); min-width: 4px; }
