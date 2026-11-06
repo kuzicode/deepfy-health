@@ -1,10 +1,12 @@
 import { z } from "zod";
 import { DOC_KINDS, isSafeDocKey, type RawVault } from "@/core/bundle";
 import { CatalogEntrySchema, FamilySchema } from "@/core/schema";
-import { getDb } from "@/db/client";
+import { getDb, type DB } from "@/db/client";
 import { masterKey } from "./crypto";
+import { clientIp, createLimiter } from "./login-lookup";
 import { ImportRejected, NotFound, PgRepository } from "./pg-repository";
 import { QuotaExceeded } from "./quota";
+import { createGate } from "./throttle";
 import { tokenAuth } from "./tokens";
 
 // /api/v1 只认 Bearer token（kzh、三期 MCP）；错误响应不回显任何健康内容（SEC）
@@ -12,17 +14,39 @@ import { tokenAuth } from "./tokens";
 export const json = (data: unknown, status = 200) =>
   Response.json(data, { status, headers: { "cache-control": "no-store" } });
 
-/** write：改动数据的接口（kzh push）要求 token 权限为「可写入」 */
-export async function withRepo(req: Request, fn: (repo: PgRepository, userId: string) => Promise<Response>, opts: { write?: boolean } = {}) {
-  const db = getDb();
+const perIp = createLimiter(600, 60_000);
+const perUser = createLimiter(300, 60_000);
+/** 导入、导出和附件传输都要把整份内容放进内存，要限制同时进行的数量（容器内存 1 GB） */
+const heavyGate = createGate(1, 8);
+
+export const rateLimited = (retryAfter = 60) =>
+  Response.json({ error: "rate_limited" }, { status: 429, headers: { "cache-control": "no-store", "retry-after": String(retryAfter) } });
+
+async function authorize(db: DB, req: Request, needSync?: boolean) {
+  if (!perIp(clientIp(req))) return rateLimited();
   const auth = await tokenAuth(db, req.headers.get("authorization"));
   if (!auth) return json({ error: "unauthorized" }, 401);
-  if (opts.write && auth.scope !== "write") return json({ error: "read_only_token", message: "This token is read-only. Allow writes for it at /agents." }, 403);
-  const userId = auth.userId;
+  if (!perUser(auth.userId)) return rateLimited();
+  if (needSync && auth.scope !== "sync") return json({ error: "sync_token_required", message: "kzh push needs a token with the local sync permission. Set it at /agents." }, 403);
+  return auth;
+}
+
+/**
+ * sync：整批覆盖的接口（kzh push）不留修改记录，只有「本地同步」权限的 token 能调。
+ * heavy：占内存的接口，限制同时进行的数量。
+ */
+export async function withRepo(req: Request, fn: (repo: PgRepository, userId: string) => Promise<Response>, opts: { sync?: boolean; heavy?: boolean } = {}) {
+  const db = getDb();
+  const auth = await authorize(db, req, opts.sync);
+  if (auth instanceof Response) return auth;
+  const { userId } = auth;
+  if (opts.heavy && !heavyGate.enter(userId)) return rateLimited(5);
   try {
     return await fn(new PgRepository(db, userId, masterKey()), userId);
   } catch (e) {
     return apiError(e);
+  } finally {
+    if (opts.heavy) heavyGate.leave(userId);
   }
 }
 
@@ -41,10 +65,11 @@ const RawDocSchema = z.object({
   data: z.record(z.string(), z.unknown()),
   body: z.string().max(200_000),
   updatedAt: z.string().datetime().optional(),
-}).refine((d) => isSafeDocKey(d.kind, d.key), { message: "非法的文档名", path: ["key"] });
+}).refine((d) => isSafeDocKey(d.kind, d.key), { message: "非法的文档名", path: ["key"] })
+  .refine((d) => JSON.stringify(d.data).length <= 1_000_000, { message: "文档内容太大", path: ["data"] });
 
 export const RawVaultSchema: z.ZodType<RawVault> = z.object({
   family: FamilySchema,
-  customCatalog: z.array(CatalogEntrySchema).default([]),
+  customCatalog: z.array(CatalogEntrySchema).max(2000).default([]),
   docs: z.record(z.string(), z.array(RawDocSchema)),
 });

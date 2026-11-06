@@ -13,6 +13,15 @@ export function assertAttachmentPath(relPath: string) {
 }
 
 const ORPHAN_MIN_AGE_MS = 48 * 3600_000;
+const GC_INTERVAL_MS = 10 * 60_000;
+let lastGc = 0;
+
+/** 上传后顺带清理：要遍历整个目录，全站最多 10 分钟跑一次 */
+export function gcOrphansThrottled(db: DB, now = Date.now()) {
+  if (now - lastGc < GC_INTERVAL_MS) return;
+  lastGc = now;
+  void gcOrphanAttachments(db).catch(() => {});
+}
 
 /** 清理没有任何记录引用、且已超过 minAge 的附件密文文件 */
 export async function gcOrphanAttachments(db: DB, minAgeMs = ORPHAN_MIN_AGE_MS, now = Date.now()) {

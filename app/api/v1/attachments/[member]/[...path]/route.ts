@@ -12,11 +12,11 @@ export const PUT = (req: Request, { params }: Ctx) =>
     if (data.length > MAX) return json({ error: "too_large" }, 413);
     const mime = req.headers.get("content-type") ?? "application/octet-stream";
     return json(await repo.putAttachment(member, path.map(decodeURIComponent).join("/"), data, mime));
-  }, { write: true });
+  }, { sync: true, heavy: true });
 
 export const GET = (req: Request, { params }: Ctx) =>
   withRepo(req, async (repo) => {
     const { member, path } = await params;
     const { data, mime } = await repo.getAttachment(member, path.map(decodeURIComponent).join("/"));
     return new Response(new Uint8Array(data), { headers: { "content-type": mime, "cache-control": "no-store" } });
-  });
+  }, { heavy: true });

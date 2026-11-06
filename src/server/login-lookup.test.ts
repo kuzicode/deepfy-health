@@ -3,7 +3,18 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { createDb, type DB } from "@/db/client";
 import { account, user } from "@/db/schema";
 import { randomId } from "./crypto";
-import { createLimiter, lookupEmail } from "./login-lookup";
+import { clientIp, createLimiter, lookupEmail } from "./login-lookup";
+
+describe("clientIp", () => {
+  const ip = (v: string) => clientIp(new Request("http://x/", { headers: { "x-real-ip": v } }));
+  it("IPv4 用完整地址，IPv6 按 /64 归为一个键", () => {
+    expect(ip("192.168.1.9")).toBe("192.168.1.9");
+    expect(ip("2001:db8:1:2:aaaa::1")).toBe(ip("2001:db8:1:2:bbbb:cccc:dddd:eeee"));
+    expect(ip("2001:db8:1:2::1")).toBe("2001:db8:1:2::/64");
+    expect(ip("2001:db8::1")).toBe("2001:db8:0:0::/64");
+    expect(ip("2001:db8:1:3::1")).not.toBe(ip("2001:db8:1:2::1"));
+  });
+});
 
 describe("createLimiter", () => {
   it("窗口内超过次数就拦截，窗口过后恢复", () => {

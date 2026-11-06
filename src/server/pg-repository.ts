@@ -7,7 +7,7 @@ import { open, randomId, seal, sha256 } from "./crypto";
 import { AttachmentStore } from "./attachment-store";
 import { mergeChange, writeDoc } from "./doc-write";
 import { logKey as logKeyFor } from "./quick-entry";
-import { assertQuota, lockUser } from "./quota";
+import { QuotaExceeded, assertDocQuota, assertQuota, limitsOf, lockUser } from "./quota";
 import { ImportRejected, NotFound, RevertConflict, docAad, docContent, ensureUserKey, nameAad, type AuditInfo, type Change, type ImportResult, type Tx } from "./repo-base";
 
 // 对外入口：类型与错误定义在 repo-base，写文档在 doc-write，附件在 attachment-store；调用方只从这里导入
@@ -75,6 +75,8 @@ export class PgRepository implements HealthReader {
 
   /** 整批校验通过才写入；云端版本比本地新时不覆盖（除非 force） */
   async importRaw(raw: RawVault, opts: { force?: boolean } = {}): Promise<ImportResult> {
+    const maxDocs = (await limitsOf(this.db, this.userId)).docs;
+    if (Object.values(raw.docs).flat().length > maxDocs) throw new QuotaExceeded("docs", maxDocs);
     validateImport(raw);
     const dek = await this.dek();
     const result: ImportResult = { created: 0, updated: 0, unchanged: 0, conflicts: [] };
@@ -99,6 +101,7 @@ export class PgRepository implements HealthReader {
           else result[outcome]++;
         }
       }
+      await assertDocQuota(tx, this.userId);
     });
     return result;
   }
@@ -128,7 +131,9 @@ export class PgRepository implements HealthReader {
       const orphaned = removedAttachments.filter((a) => !stillUsed(a.member, a.relPath));
       const errors = buildSnapshot(raw, { root: "web" }).issues.filter((x) => x.level === "error" && touched.has(x.file));
       if (errors.length) throw new ImportRejected(errors);
-      return this.writeChanges(tx, { dek, raw, changes, orphaned, audit: opts.audit });
+      const ids = await this.writeChanges(tx, { dek, raw, changes, orphaned, audit: opts.audit });
+      await assertDocQuota(tx, this.userId);
+      return ids;
     });
   }
 
