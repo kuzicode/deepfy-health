@@ -8,7 +8,7 @@ import { createDb, type DB } from "@/db/client";
 import { accountPlan, agentChange, attachment, doc, member, user } from "@/db/schema";
 import { newDek, randomId } from "./crypto";
 import { PgRepository } from "./pg-repository";
-import { PLANS, QuotaExceeded, consumeUpload, isUnlimited, limitsOf, planOf, usageOf } from "./quota";
+import { PLANS, QuotaExceeded, consumeUpload, isUnlimited, limitsOf, lockUser, planOf, usageOf } from "./quota";
 import { createToken } from "./tokens";
 
 describe("额度定义", () => {
@@ -73,6 +73,18 @@ describe.skipIf(!URL)("资源额度（需要 KZ_TEST_DATABASE_URL）", () => {
     });
     expect(await docCount()).toBe(before);
   });
+
+  it("等账号写锁超时后失败，不会一直占着数据库连接", async () => {
+    await db.transaction(async (holder) => {
+      await lockUser(holder, uid);
+      const other = createDb(URL!);
+      try {
+        await expect(other.transaction((tx) => lockUser(tx, uid))).rejects.toThrow();
+      } finally {
+        await other.$client.end();
+      }
+    });
+  }, 20_000);
 
   it("附件数量到上限后不能新增，但可以覆盖已有的", async () => {
     const repo = new PgRepository(db, uid, kek);

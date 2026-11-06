@@ -756,7 +756,8 @@
         "quota_attachmentCount": "附件数量已达到上限。删掉不需要的照片后再试。",
         "quota_uploadBytesPerDay": "今天的上传量已达到上限，明天再试。",
         "quota_docs": "档案条目已达到上限。",
-        "quota_docBytes": "档案内容已达到容量上限。"
+        "quota_docBytes": "档案内容已达到容量上限。",
+        "quota_changeBytes": "agent 修改记录已达到容量上限，最多保留 90 天，过期后会自动释放。"
       }
     },
     "newMember": {

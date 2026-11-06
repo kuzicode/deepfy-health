@@ -7,7 +7,7 @@ import { open, randomId, seal, sha256 } from "./crypto";
 import { AttachmentStore } from "./attachment-store";
 import { mergeChange, writeDoc } from "./doc-write";
 import { logKey as logKeyFor } from "./quick-entry";
-import { assertDocQuota, assertQuota, lockUser } from "./quota";
+import { QuotaExceeded, assertDocQuota, assertQuota, limitsOf, lockUser } from "./quota";
 import { ImportRejected, NotFound, RevertConflict, docAad, docContent, ensureUserKey, nameAad, type AuditInfo, type Change, type ImportResult, type Tx } from "./repo-base";
 
 // 对外入口：类型与错误定义在 repo-base，写文档在 doc-write，附件在 attachment-store；调用方只从这里导入
@@ -75,6 +75,8 @@ export class PgRepository implements HealthReader {
 
   /** 整批校验通过才写入；云端版本比本地新时不覆盖（除非 force） */
   async importRaw(raw: RawVault, opts: { force?: boolean } = {}): Promise<ImportResult> {
+    const maxDocs = (await limitsOf(this.db, this.userId)).docs;
+    if (Object.values(raw.docs).flat().length > maxDocs) throw new QuotaExceeded("docs", maxDocs);
     validateImport(raw);
     const dek = await this.dek();
     const result: ImportResult = { created: 0, updated: 0, unchanged: 0, conflicts: [] };

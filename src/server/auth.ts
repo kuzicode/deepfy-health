@@ -14,8 +14,21 @@ import { clientIp, createLimiter } from "./login-lookup";
 import { assignAvatarOnSignup } from "./avatar";
 import { ensureUserKey } from "./pg-repository";
 
-/** 验证码发信：同一邮箱每小时最多 5 封（超出静默不发，不暴露账号是否存在）；同一 IP 每天 20 次由下面的 rateLimit 规则管 */
-const otpPerEmail = createLimiter(5, 3600_000);
+/** 限流器保存 key、数据库保存姓名，这些字段在 better-auth 校验格式之前就要限长，否则一个请求能占用几十 MB 内存 */
+const MAX_LENGTH = { email: 254, name: 100, image: 2048 } as const;
+const fieldTooLong = (body: Record<string, unknown> | undefined) =>
+  (Object.keys(MAX_LENGTH) as (keyof typeof MAX_LENGTH)[]).some((k) => typeof body?.[k] === "string" && (body[k] as string).length > MAX_LENGTH[k]);
+
+/**
+ * 请求发验证码的接口。在发信前拦截，被拦的请求不会替换邮箱主人手里的验证码。
+ * 同一邮箱 + IP 每小时 5 次，全部 IP 合计每小时 20 次，别人很难锁住主人；同一 IP 所有接口合计每天 20 次
+ */
+const OTP_SEND_PATHS = ["/email-otp/send-verification-otp", "/email-otp/request-password-reset", "/forget-password/email-otp"];
+const otpSendsPerEmailIp = createLimiter(5, 3600_000);
+const otpSendsPerEmail = createLimiter(20, 3600_000);
+const otpSendsPerIp = createLimiter(20, 86_400_000);
+/** 未验证邮箱的验证信每天全站上限：不能让它用光发信额度，挡住其他人的登录验证码 */
+const verificationMailsPerDay = createLimiter(80, 86_400_000);
 
 /**
  * 校验验证码的接口：重发验证码不清零。同一邮箱 + IP 每天 30 次，别人只锁得住自己这个 IP，锁不住邮箱主人；
@@ -25,10 +38,25 @@ const OTP_CHECK_PATHS = new Set(["/sign-in/email-otp", "/email-otp/verify-email"
 const otpChecksPerEmailIp = createLimiter(30, 86_400_000);
 const otpChecksPerEmail = createLimiter(300, 86_400_000);
 
-/** 密码登录：同一邮箱 + IP 每小时 20 次。全部 IP 合计每天 200 次防分散猜密码；被用完时邮箱主人还能用验证码或 Google 登录 */
+/** 密码登录：同一邮箱 + IP 每小时 20 次。全部 IP 合计每天 2000 次防分散猜密码，要多个 IP 才能用完；用完时邮箱主人还能用验证码或 Google 登录 */
 const PASSWORD_PATH = "/sign-in/email";
 const passwordPerEmailIp = createLimiter(20, 3600_000);
-const passwordPerEmail = createLimiter(200, 86_400_000);
+const passwordPerEmail = createLimiter(2000, 86_400_000);
+
+function limitersFor(path: string) {
+  if (OTP_SEND_PATHS.includes(path)) return [otpSendsPerEmailIp, otpSendsPerEmail];
+  if (OTP_CHECK_PATHS.has(path)) return [otpChecksPerEmailIp, otpChecksPerEmail];
+  return path === PASSWORD_PATH ? [passwordPerEmailIp, passwordPerEmail] : undefined;
+}
+
+function assertAuthRequest(path: string, body: Record<string, unknown> | undefined, ip: string) {
+  if (fieldTooLong(body)) throw new APIError("BAD_REQUEST", { message: "Field too long" });
+  const limits = limitersFor(path);
+  if (!limits) return;
+  const email = String(body?.email ?? "").trim().toLowerCase();
+  const allowed = (!OTP_SEND_PATHS.includes(path) || otpSendsPerIp(ip)) && (!email || (limits[0](`${email}|${ip}`) && limits[1](email)));
+  if (!allowed) throw new APIError("TOO_MANY_REQUESTS", { message: "Too many attempts" });
+}
 
 /** 会发验证码的接口：同一 IP 每天 20 次 */
 const OTP_SEND_RULE = { window: 86_400, max: 20 };
@@ -39,14 +67,13 @@ const otpLocale = () => resolveLocale().catch(() => "zh" as const);
 function createAuth() {
   const db = getDb();
   return betterAuth({
+    // 登录页只用 send-verification-otp。这个接口绕过上面的发信限制，又可以对任何未验证账号调用
+    disabledPaths: ["/send-verification-email"],
     // 只信反向代理设置的 X-Real-IP：X-Forwarded-For 可以被客户端带上假值
     advanced: { ipAddress: { ipAddressHeaders: ["x-real-ip"] } },
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
-        const limits = OTP_CHECK_PATHS.has(ctx.path) ? [otpChecksPerEmailIp, otpChecksPerEmail] : ctx.path === PASSWORD_PATH ? [passwordPerEmailIp, passwordPerEmail] : undefined;
-        if (!limits) return;
-        const email = String(ctx.body?.email ?? "").trim().toLowerCase();
-        if (email && (!limits[0](`${email}|${ctx.request ? clientIp(ctx.request) : "local"}`) || !limits[1](email))) throw new APIError("TOO_MANY_REQUESTS", { message: "Too many attempts" });
+        assertAuthRequest(ctx.path, ctx.body, ctx.request ? clientIp(ctx.request) : "local");
       }),
     },
     rateLimit: { customRules: { "/email-otp/send-verification-otp": OTP_SEND_RULE, "/email-otp/request-password-reset": OTP_SEND_RULE, "/forget-password/email-otp": OTP_SEND_RULE } },
@@ -108,7 +135,7 @@ function createAuth() {
         expiresIn: 300,
         allowedAttempts: 5,
         // 不 await：避免通过响应时间探测邮箱是否存在
-        sendVerificationOTP: async ({ email, otp, type }) => { if (otpPerEmail(email.trim().toLowerCase())) void otpLocale().then((locale) => sendOtpEmail(email, otp, type, locale)).catch((e) => console.error("otp mail failed:", e instanceof Error ? e.message : "unknown")); },
+        sendVerificationOTP: async ({ email, otp, type }) => { if (type !== "email-verification" || verificationMailsPerDay("all")) void otpLocale().then((locale) => sendOtpEmail(email, otp, type, locale)).catch((e) => console.error("otp mail failed:", e instanceof Error ? e.message : "unknown")); },
       }),
       nextCookies(),
     ],

@@ -17,7 +17,7 @@ export const json = (data: unknown, status = 200) =>
 const perIp = createLimiter(600, 60_000);
 const perUser = createLimiter(300, 60_000);
 /** 导入、导出和附件传输都要把整份内容放进内存，要限制同时进行的数量（容器内存 1 GB） */
-const heavyGate = createGate(2, 8);
+const heavyGate = createGate(1, 8);
 
 export const rateLimited = (retryAfter = 60) =>
   Response.json({ error: "rate_limited" }, { status: 429, headers: { "cache-control": "no-store", "retry-after": String(retryAfter) } });
@@ -65,7 +65,8 @@ const RawDocSchema = z.object({
   data: z.record(z.string(), z.unknown()),
   body: z.string().max(200_000),
   updatedAt: z.string().datetime().optional(),
-}).refine((d) => isSafeDocKey(d.kind, d.key), { message: "非法的文档名", path: ["key"] });
+}).refine((d) => isSafeDocKey(d.kind, d.key), { message: "非法的文档名", path: ["key"] })
+  .refine((d) => JSON.stringify(d.data).length <= 1_000_000, { message: "文档内容太大", path: ["data"] });
 
 export const RawVaultSchema: z.ZodType<RawVault> = z.object({
   family: FamilySchema,

@@ -756,7 +756,8 @@
         "quota_attachmentCount": "Attachment limit reached. Remove photos you no longer need.",
         "quota_uploadBytesPerDay": "Today's upload limit is reached. Try again tomorrow.",
         "quota_docs": "Record limit reached.",
-        "quota_docBytes": "Record storage is full."
+        "quota_docBytes": "Record storage is full.",
+        "quota_changeBytes": "Agent change history is full. It is kept for up to 90 days and frees up as entries expire."
       }
     },
     "newMember": {

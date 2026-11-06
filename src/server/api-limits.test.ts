@@ -62,6 +62,14 @@ describe.skipIf(!URL)("/api/v1 和 /mcp 的权限与限制（需要 KZ_TEST_DATA
     expect(await db.select({ id: doc.id }).from(doc).where(eq(doc.memberId, m.id))).not.toEqual([]);
   });
 
+  it("单个文档的数据太大时拒绝导入", async () => {
+    const raw = readVaultRaw(SAMPLE);
+    const first = Object.values(raw.docs).flat()[0];
+    first.data = { ...first.data, padding: "x".repeat(1_000_001) };
+    const res = await postImport(tokens.sync, { body: JSON.stringify(raw) });
+    expect(res.status).toBe(400);
+  });
+
   it("超大的导入请求在解析前就拒绝", async () => {
     const res = await postImport(tokens.sync, { body: "{}", headers: { "content-length": String(21 * 1024 * 1024) } });
     expect(res.status).toBe(413);

@@ -5,7 +5,7 @@ import type { DB } from "@/db/client";
 import { attachment, member } from "@/db/schema";
 import { open, randomId, seal, sha256 } from "./crypto";
 import { assertAttachmentPath, attachmentDir, gcOrphansThrottled } from "./attachments";
-import { assertQuota, consumeUpload } from "./quota";
+import { QuotaExceeded, assertQuota, consumeUpload } from "./quota";
 import { NotFound, attAad, type Tx } from "./repo-base";
 
 // 一个账号的附件读写（密文文件 + attachment 表）。由 PgRepository 持有并委托，所有查询按 userId 限定（SEC）。
@@ -17,6 +17,13 @@ interface Ctx {
   /** 账号写锁（与 PgRepository 的其他写入共用） */
   lock: (tx: Tx) => Promise<unknown>;
   members: () => Promise<{ id: string; slug: string }[]>;
+}
+
+/** 数据库和备份在同一块盘上：剩余空间不够时停止接收附件，保住数据库 */
+const MIN_FREE_BYTES = 5 * 1024 * 1024 * 1024;
+async function assertDiskRoom(bytes: number) {
+  const { bavail, bsize } = await fs.statfs(/*turbopackIgnore: true*/ attachmentDir());
+  if (bavail * bsize < MIN_FREE_BYTES + bytes) throw new QuotaExceeded("uploadBytesPerDay", 0);
 }
 
 export class AttachmentStore {
@@ -44,6 +51,7 @@ export class AttachmentStore {
       await consumeUpload(tx, this.ctx.userId, data.length);
       const storageKey = randomId();
       await fs.mkdir(/*turbopackIgnore: true*/ attachmentDir(), { recursive: true });
+      await assertDiskRoom(data.length);
       await fs.writeFile(path.join(/*turbopackIgnore: true*/ attachmentDir(), storageKey), seal(dek, data, attAad(m.id, relPath)));
       const values = { mime, size: data.length, sha256: hash, storageKey };
       await tx.insert(attachment).values({ id: randomId(), memberId: m.id, relPath, ...values })

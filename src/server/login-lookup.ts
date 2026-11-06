@@ -34,6 +34,16 @@ export function createLimiter(max: number, windowMs: number) {
   };
 }
 
+/** IPv6 一个用户通常就有一整段 /64，按完整地址限速等于没限 */
+function ipKey(ip: string) {
+  if (!ip.includes(":")) return ip;
+  const [head, tail = ""] = ip.toLowerCase().split("::");
+  const left = head ? head.split(":") : [];
+  const right = tail ? tail.split(":") : [];
+  const groups = [...left, ...Array(Math.max(0, 8 - left.length - right.length)).fill("0"), ...right];
+  return `${groups.slice(0, 4).map((g) => g.replace(/^0+(?=.)/, "")).join(":")}::/64`;
+}
+
 /** 限速键：nginx 设置 X-Real-IP = $remote_addr；X-Forwarded-For 的首段可被客户端伪造，只取最后一段兜底 */
 export const clientIp = (req: Request) =>
-  req.headers.get("x-real-ip") || (req.headers.get("x-forwarded-for") ?? "").split(",").pop()?.trim() || "local";
+  ipKey(req.headers.get("x-real-ip") || (req.headers.get("x-forwarded-for") ?? "").split(",").pop()?.trim() || "local");
