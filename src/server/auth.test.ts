@@ -179,16 +179,20 @@ describe.skipIf(!URL)("邮箱注册的每日上限（需要 KZ_TEST_DATABASE_URL
         body: JSON.stringify({ email, password: "owner-pass-11", name: "x" }),
       }));
     };
-    const junk = await getAuth().handler(new Request("http://localhost:3000/api/auth/sign-up/email", {
-      method: "POST", headers: { "content-type": "application/json", origin: "http://localhost:3000" }, body: JSON.stringify({ email: "not-an-email", password: "owner-pass-11", name: "x" }),
+    const post = (email: string, password: string) => getAuth().handler(new Request("http://localhost:3000/api/auth/sign-up/email", {
+      method: "POST", headers: { "content-type": "application/json", origin: "http://localhost:3000" }, body: JSON.stringify({ email, password, name: "x" }),
     }));
-    expect(junk.status).toBe(400); // 格式不对的请求不占名额
+    // 校验不通过的请求不占名额
+    expect((await post("not-an-email", "owner-pass-11")).status).toBe(400);
+    const weak = `cap-${randomId().toLowerCase()}@example.com`;
+    emails.push(weak);
+    expect((await post(weak, "x")).status).toBe(400);
     expect((await signUp()).status).toBe(200);
     const blocked = await signUp();
     expect(blocked.status).toBe(429);
     expect((await blocked.json()).code).toBe("signup_busy");
     const db = createDb(URL!);
-    expect(await db.select().from(user).where(eq(user.email, emails[1]))).toEqual([]);
+    expect(await db.select().from(user).where(eq(user.email, emails.at(-1)!))).toEqual([]);
     await db.$client.end();
   });
 });

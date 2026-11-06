@@ -36,11 +36,8 @@ const otpLocale = () => resolveLocale().catch(() => "zh" as const);
 
 const signupsPerIp = createLimiter(20, 86_400_000);
 
-/** 只有格式正确、尚未注册的邮箱才计数：否则一个 IP 发垃圾请求就能把全站当天的名额用完 */
-async function assertSignupAllowed(rawEmail: unknown, req: Request | undefined) {
-  const email = String(rawEmail ?? "").trim().toLowerCase();
-  if (!/^\S+@\S+\.\S+$/.test(email)) return;
-  if (await getDb().query.user.findFirst({ where: eq(schema.user.email, email), columns: { id: true } })) return;
+/** 在账号真正创建前才计数：格式不对、密码太短、邮箱已注册或不在名单内的请求都到不了这里，不能用来耗尽全站名额 */
+function assertSignupQuota(req: Request | undefined) {
   if (!signupsPerIp(req ? clientIp(req) : "local")) throw new APIError("TOO_MANY_REQUESTS", { code: "rate_limited", message: "Too many sign-ups" });
   if (!signupBudget("all")) throw new APIError("TOO_MANY_REQUESTS", { code: "signup_busy", message: "Sign-ups are full today" });
 }
@@ -52,7 +49,6 @@ function createAuth() {
     advanced: { ipAddress: { ipAddressHeaders: ["x-real-ip"] } },
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
-        if (ctx.path === "/sign-up/email") await assertSignupAllowed(ctx.body?.email, ctx.request);
         if (!OTP_CHECK_PATHS.has(ctx.path)) return;
         const email = String(ctx.body?.email ?? "").trim().toLowerCase();
         if (email && (!otpChecksPerEmailIp(`${email}|${ctx.request ? clientIp(ctx.request) : "local"}`) || !otpChecksPerEmail(email))) throw new APIError("TOO_MANY_REQUESTS", { message: "Too many attempts" });
@@ -95,6 +91,9 @@ function createAuth() {
     databaseHooks: {
       user: {
         create: {
+          before: async (_u, ctx) => {
+            if (ctx?.path === "/sign-up/email") assertSignupQuota(ctx.request);
+          },
           after: async (u) => {
             await ensureUserKey(db, u.id, masterKey());
             await assignAvatarOnSignup(db, u.id); // 预设头像随机分配（清单为空时跳过）
