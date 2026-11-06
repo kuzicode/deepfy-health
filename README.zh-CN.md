@@ -1,13 +1,6 @@
 <div align="center">
 
-<a href="https://deepfy.si">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/deepfy-horizontal-dark.svg">
-    <img src="public/brand/deepfy-horizontal-color-accent.svg" width="220" alt="Deepfy">
-  </picture>
-</a>
-
-# Deepfy Health
+<h1><a href="https://deepfy.si"><img src="docs/brand/icon-256.png" width="40" align="top" alt=""></a>&nbsp;Deepfy Health</h1>
 
 ### 构建你的健康云档案，让 Agent 读懂你。
 
