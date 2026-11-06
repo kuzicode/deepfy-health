@@ -982,7 +982,8 @@
       "generic": "操作没有成功，请重试。",
       "disabled": "这个账号已被停用，如有疑问请联系管理员。",
       "rate_limited": "尝试太频繁，请稍后再试。",
-      "signup_busy": "今天的邮箱注册名额已满，请明天再试，或者用 Google 账号注册。"
+      "signup_busy": "今天的邮箱注册名额已满，请明天再试，或者用 Google 账号注册。",
+      "account_not_linked": "这个邮箱已注册但还没验证。请改用邮箱验证码登录，验证后就能关联 Google。"
     },
     "title_setpw": "设置密码",
     "setPassword": "设置密码",

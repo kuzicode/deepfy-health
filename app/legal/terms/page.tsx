@@ -17,7 +17,7 @@ const ZH = (
     <p>如果账号违反本协议或法律法规，或被用于攻击、滥用本服务，我们可以停用该账号。停用后不能登录，API token 失效，数据不会因此被删除；如需导出或删除这些数据，请联系我们。</p>
     <h2>4. 你上传的内容</h2>
     <p>你对上传的资料拥有全部权利。为家人建档前，应取得其同意或具有合法的监护、代理权限。我们仅为向你提供服务而处理这些内容，处理方式见《隐私政策》。</p>
-    <p>目前每个账号使用免费额度：最多 6 位家人、500 MB 附件（最多 2000 个，每天最多上传 1 GB）、5000 条档案（共 100 MB）、3 个 Agent 接入、Agent 每 24 小时 200 次写入、每天 3 次完整导出。当前用量可在「设置 → 用量」查看；额度可能随服务调整，调整前会提前告知。</p>
+    <p>目前每个账号使用免费额度：最多 6 位家人、500 MB 附件（最多 2000 个，每天最多上传 1 GB）、5000 条档案（共 20 MB）、3 个 Agent 接入、Agent 每 24 小时 200 次写入、每天 3 次完整导出。当前用量可在「设置 → 用量」查看；额度可能随服务调整，调整前会提前告知。</p>
     <h2>5. 导出与删除</h2>
     <p>你可以随时在「设置」中导出全部数据，或永久删除账号。删除后数据不可恢复。</p>
     <h2>6. 服务变更与终止</h2>
@@ -37,7 +37,7 @@ const EN = (
     <p>If an account breaks these terms or the law, or is used to attack or abuse the Service, we may disable it. A disabled account cannot sign in and its API tokens stop working. Its data is not deleted as a result; contact us to export or delete it.</p>
     <h2>4. Your content</h2>
     <p>You keep all rights to what you upload. Before creating records for family members, obtain their consent or hold lawful authority to act for them. We process your content only to provide the Service, as described in the Privacy Policy.</p>
-    <p>Every account is currently on the free plan: up to 6 family members, 500 MB of attachments (at most 2,000 files, uploading at most 1 GB per day), 5,000 records (100 MB in total), 3 agent tokens, 200 agent writes per 24 hours and 3 full exports per day. See Settings → Usage; limits may change with notice.</p>
+    <p>Every account is currently on the free plan: up to 6 family members, 500 MB of attachments (at most 2,000 files, uploading at most 1 GB per day), 5,000 records (20 MB in total), 3 agent tokens, 200 agent writes per 24 hours and 3 full exports per day. See Settings → Usage; limits may change with notice.</p>
     <h2>5. Export and deletion</h2>
     <p>You can export all your data or permanently delete your account in Settings at any time. Deletion cannot be undone.</p>
     <h2>6. Changes and termination</h2>

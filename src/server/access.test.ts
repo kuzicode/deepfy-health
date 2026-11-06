@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { createDb, type DB } from "@/db/client";
-import { session, user, userStatus } from "@/db/schema";
+import { member, session, user, userStatus } from "@/db/schema";
 import { deleteStaleUnverified, disableTarget, isAdminEmail, isDisabled, isEmailAllowed, registrationRestricted, setDisabled } from "./access";
 import { listUsers } from "./admin";
 import { randomId } from "./crypto";
@@ -75,6 +75,17 @@ describe.skipIf(!URL)("访问控制与管理后台（需要 KZ_TEST_DATABASE_URL
     expect(await userIdForToken(db, `Bearer ${token}`)).toBeUndefined();
     await setDisabled(db, uid, false);
     expect(await userIdForToken(db, `Bearer ${token}`)).toBe(uid);
+    expect(await db.select().from(userStatus).where(eq(userStatus.userId, uid))).toEqual([]);
+  });
+
+  it("清理未验证账号时，有档案的账号不动", async () => {
+    const id = `stale-${randomId()}`;
+    const old = new Date(Date.now() - 8 * 86_400_000);
+    await db.insert(user).values({ id, name: id, email: `${id}@example.com`, emailVerified: false, createdAt: old, updatedAt: old });
+    await db.insert(member).values({ id: randomId(), userId: id, slug: "m", nameCipher: "x" });
+    await deleteStaleUnverified(db);
+    expect(await db.select({ id: user.id }).from(user).where(eq(user.id, id))).toHaveLength(1);
+    await db.delete(user).where(eq(user.id, id));
   });
 
   it("停用目标以数据库邮箱为准：管理员和自己不可停用", async () => {

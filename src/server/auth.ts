@@ -34,7 +34,7 @@ const signupBudget = createLimiter(Number(process.env.KZ_SIGNUP_DAILY_LIMIT) || 
 /** 验证码语言跟用户正在看的页面走；不在请求上下文时（脚本）用中文 */
 const otpLocale = () => resolveLocale().catch(() => "zh" as const);
 
-const signupsPerIp = createLimiter(20, 86_400_000);
+const signupsPerIp = createLimiter(5, 86_400_000);
 
 /** 在账号真正创建前才计数：格式不对、密码太短、邮箱已注册或不在名单内的请求都到不了这里，不能用来耗尽全站名额 */
 function assertSignupQuota(req: Request | undefined) {

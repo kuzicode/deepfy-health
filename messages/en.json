@@ -982,7 +982,8 @@
       "generic": "Something went wrong — try again.",
       "disabled": "This account has been disabled. Contact the administrator.",
       "rate_limited": "Too many attempts. Please try again shortly.",
-      "signup_busy": "Email sign-ups are full for today. Try again tomorrow, or sign up with Google."
+      "signup_busy": "Email sign-ups are full for today. Try again tomorrow, or sign up with Google.",
+      "account_not_linked": "This email is registered but not verified yet. Sign in with an email code first, then you can link Google."
     },
     "title_setpw": "Set a password",
     "setPassword": "Set a password",
