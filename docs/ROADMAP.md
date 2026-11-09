@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-11-07
+last_updated: 2026-11-09
 status: active
 ---
 
@@ -35,5 +35,5 @@ status: active
 
 ## 技术债基线
 
-- lint 13 个警告，多为单函数复杂度 11–18（`computeFlag`、`latestReadings`、`checkupPlan`、`mergeChange`、`applyChanges`、`addRecordTool`、`TrendChart` 等），改到时顺手拆，不要增加。
-- knip 未用导出 1（`inviteHtml`）；jscpd 13 处小克隆，基本都是测试夹具（2026-11-07）。
+- lint 12 个警告（2026-11-09），多为单函数复杂度 11–18（`computeFlag`、`latestReadings`、`checkupPlan`、`mergeChange`、`applyChanges`、`addRecordTool`、`TrendChart` 等），改到时顺手拆，不要增加。
+- knip 未用导出 1（`inviteHtml`）；jscpd 14 处小克隆，基本都是测试夹具（2026-11-09）。
