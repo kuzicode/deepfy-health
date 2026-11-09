@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { cloudMode, getDb } from "@/db/client";
-import { isAdminEmail, isDisabled } from "./access";
+import { isAdmin, isDisabled } from "./access";
 import { getAuth } from "./auth";
 import { masterKey } from "./crypto";
 import { PgRepository } from "./pg-repository";
@@ -22,7 +22,7 @@ export async function requireUser() {
 /** 管理员页面：非管理员一律 404，不暴露后台的存在 */
 export async function requireAdmin() {
   const u = await requireUser();
-  if (!isAdminEmail(u.email) || !u.emailVerified) notFound();
+  if (!(await isAdmin(getDb(), u))) notFound();
   return u;
 }
 

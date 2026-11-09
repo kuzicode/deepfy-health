@@ -1,9 +1,9 @@
 import { and, eq, lt, notExists } from "drizzle-orm";
 import type { DB } from "@/db/client";
-import { allowedEmail, member, session, user, userStatus } from "@/db/schema";
-import { isHosted } from "./edition";
+import { allowedEmail, member, opsState, session, user, userStatus } from "@/db/schema";
+import { isHosted, isSelfHosted } from "./edition";
 
-// 访问控制：管理员只来自环境变量（网页上不能提权）。设了 KZ_ALLOWED_EMAILS 就是白名单制：名单 = 环境变量 ∪ 后台 allowed_email（审批通过的申请）∪ 管理员。
+// 访问控制：管理员来自环境变量，自托管版再加上首次设置时创建的所有者（网页上不能提权）。设了 KZ_ALLOWED_EMAILS 就是白名单制：名单 = 环境变量 ∪ 后台 allowed_email（审批通过的申请）∪ 管理员。
 // 留空是开放注册，只用于自托管，官方实例必须设。被拉黑（停用）的账号不能登录、token 失效
 
 const list = (v: string | undefined) => (v ?? "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
@@ -11,6 +11,21 @@ export const normalizeEmail = (e: string) => e.trim().toLowerCase();
 
 export const adminEmails = () => list(process.env.KZ_ADMIN_EMAILS);
 export const isAdminEmail = (email: string | null | undefined) => !!email && adminEmails().includes(normalizeEmail(email));
+
+/** 自托管版的所有者：ops_state 的 owner 键，值 { userId }。首次设置先写入空占位，建号成功后填上 userId */
+export const OWNER_KEY = "owner";
+
+export async function ownerId(db: Pick<DB, "select">): Promise<string | undefined> {
+  if (!isSelfHosted()) return undefined;
+  const [row] = await db.select({ value: opsState.value }).from(opsState).where(eq(opsState.key, OWNER_KEY));
+  return (row?.value as { userId?: string } | undefined)?.userId || undefined;
+}
+
+/** 管理员：邮箱已验证，且在 KZ_ADMIN_EMAILS 里或是自托管的所有者 */
+export async function isAdmin(db: Pick<DB, "select">, u: { id: string; email: string | null | undefined; emailVerified: boolean }) {
+  if (!u.emailVerified) return false;
+  return isAdminEmail(u.email) || (await ownerId(db)) === u.id;
+}
 
 const allowList = () => list(process.env.KZ_ALLOWED_EMAILS);
 
@@ -41,10 +56,10 @@ export async function setDisabled(db: DB, userId: string, disabled: boolean, rea
   await db.delete(session).where(eq(session.userId, userId));
 }
 
-/** 管理员要停用的目标：身份以数据库为准；自己和其他管理员不可停用 */
+/** 管理员要停用的目标：身份以数据库为准；自己和其他管理员（含所有者）不可停用 */
 export async function disableTarget(db: DB, adminId: string, userId: string) {
   const target = await db.query.user.findFirst({ where: eq(user.id, userId) });
-  if (!target || target.id === adminId || isAdminEmail(target.email)) return undefined;
+  if (!target || target.id === adminId || isAdminEmail(target.email) || (await ownerId(db)) === target.id) return undefined;
   return target;
 }
 

@@ -1,7 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { attentionCount } from "@/core/health-template";
 import { cloudMode, getDb } from "@/db/client";
-import { isAdminEmail } from "@/server/access";
+import { isAdmin } from "@/server/access";
 import { ensureAvatar } from "@/server/avatar";
 import { familyAvatars } from "@/server/member-avatars";
 import { getSession } from "@/server/session";
@@ -27,7 +27,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // 同步失败不影响页面，邮件继续用上次的语言
   if (session) await syncUserLocale(getDb(), session.user.id, locale).catch((e) => console.error("locale sync failed", e instanceof Error ? e.name : "error"));
   const user = session && {
-    name: session.user.name, email: session.user.email, isAdmin: isAdminEmail(session.user.email) && session.user.emailVerified,
+    name: session.user.name, email: session.user.email, isAdmin: await isAdmin(getDb(), session.user),
     avatar: await ensureAvatar(getDb(), session.user),
   };
   return (
