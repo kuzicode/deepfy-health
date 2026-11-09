@@ -77,6 +77,14 @@ describe.skipIf(!URL)("自托管版账号（需要 KZ_TEST_DATABASE_URL）", () 
     expect((await signIn(owner.email, "owner-pass-2")).status).toBe(200);
   });
 
+  it("Docker 里 request.url 是容器内部地址：按 Host 判断同源，其他来源被拒绝", async () => {
+    const internal = async (origin: string) => (await load()).handler(new Request("http://0.0.0.0:3000/api/auth/sign-in/email", {
+      method: "POST", headers: { "content-type": "application/json", host: "192.168.1.10:3100", origin, cookie: "x=1" }, body: JSON.stringify({ email: owner.email, password: "owner-pass-2" }),
+    }));
+    expect((await internal("http://192.168.1.10:3100")).status).toBe(200);
+    expect((await internal("http://evil.test")).status).toBe(403);
+  });
+
   it("管理员重置密码：旧密码失效，该账号的会话全部删除", async () => {
     const mom = await db.query.user.findFirst({ where: eq(user.email, "mom@example.com") });
     await signIn("mom@example.com", "mom-pass-12");

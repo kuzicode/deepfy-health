@@ -51,10 +51,17 @@ async function checkedRequest(req: Request) {
   return new Request(req.url, { method: "POST", headers: req.headers, body: text });
 }
 
+/** 回给 agent 的网页链接。自托管不设 KZ_APP_URL，用这次请求的 Host：Docker 里 req.url 是容器内部地址 */
+function appOrigin(req: Request) {
+  if (process.env.KZ_APP_URL) return process.env.KZ_APP_URL;
+  const host = req.headers.get("host");
+  return host ? `${req.headers.get("x-forwarded-proto") === "https" ? "https" : "http"}://${host}` : new URL(req.url).origin;
+}
+
 async function serve(req: Request, auth: TokenAuth) {
   const repo = new PgRepository(getDb(), auth.userId, masterKey());
   const write = auth.scope === "write"
-    ? { writer: repo, audit: { tokenId: auth.tokenId, tokenName: auth.name }, appUrl: process.env.KZ_APP_URL || new URL(req.url).origin }
+    ? { writer: repo, audit: { tokenId: auth.tokenId, tokenName: auth.name }, appUrl: appOrigin(req) }
     : undefined;
   const server = createMcpServer(repo, undefined, write);
   const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });

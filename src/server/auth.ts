@@ -88,6 +88,11 @@ const SELF_HOSTED_DISABLED = [
   "/request-password-reset", "/reset-password", "/reset-password/:token", "/verify-email", "/change-email",
 ];
 
+const sameHostOrigins = (req?: Request) => {
+  const host = req?.headers.get("host");
+  return host ? [`http://${host}`, `https://${host}`] : [];
+};
+
 function createAuth() {
   const db = getDb();
   const self = isSelfHosted();
@@ -96,8 +101,10 @@ function createAuth() {
     disabledPaths: ["/send-verification-email", ...(self ? SELF_HOSTED_DISABLED : [])],
     // 只信反向代理设置的 X-Real-IP：X-Forwarded-For 可以被客户端带上假值。
     // 来源检查显式打开：生产默认就开着，better-auth 在测试环境会默认关掉，写明后测试也覆盖它。
-    // 自托管版不设 BETTER_AUTH_URL，地址和可信来源从每个请求推导，等于同源检查，localhost 和局域网 IP 都能用
     advanced: { ipAddress: { ipAddressHeaders: ["x-real-ip"] }, disableOriginCheck: false },
+    // 自托管版不设固定地址，localhost 和局域网 IP 都能打开：只信任和这次请求 Host 相同的来源，等于同源检查。
+    // 不能靠 request.url 推导：Docker 里它是容器内部地址
+    ...(self ? { trustedOrigins: sameHostOrigins } : {}),
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
         assertAuthRequest(ctx.path, ctx.body, ctx.request ? clientIp(ctx.request) : "local");
