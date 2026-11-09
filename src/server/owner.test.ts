@@ -4,6 +4,7 @@ import { createDb, type DB } from "@/db/client";
 import { opsState, user } from "@/db/schema";
 import { disableTarget, isAdmin, OWNER_KEY, registrationRestricted } from "./access";
 import { randomId } from "./crypto";
+import { planOf } from "./quota";
 
 const URL = process.env.KZ_TEST_DATABASE_URL;
 
@@ -35,6 +36,13 @@ describe.skipIf(!URL)("自托管版的所有者（需要 KZ_TEST_DATABASE_URL）
     expect(await isAdmin(db, { id: other, email: `${other}@example.com`, emailVerified: true })).toBe(false);
     expect(await disableTarget(db, other, id)).toBeUndefined();
     expect((await disableTarget(db, id, other))?.id).toBe(other);
+  });
+
+  it("自托管版不限额度，官方版照旧", async () => {
+    vi.stubEnv("KZ_EDITION", "self");
+    expect(await planOf(db, other)).toBe("admin");
+    vi.stubEnv("KZ_EDITION", "hosted");
+    expect(await planOf(db, other)).toBe("free");
   });
 
   it("官方版不认所有者", async () => {

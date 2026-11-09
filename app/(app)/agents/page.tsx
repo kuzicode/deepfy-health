@@ -2,7 +2,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { cloudMode, getDb } from "@/db/client";
 import { requireUser, userRepository } from "@/server/session";
 import { asScope, listTokens } from "@/server/tokens";
-import { siteUrl } from "@/site-links";
+import { docsUrl } from "@/site-links";
 import { PageHead, SectionHead } from "@/ui/blocks";
 import { revertChangeAction, revokeTokenAction, setScopeAction } from "./actions";
 import { NewTokenForm, TokenActions } from "./AgentForms";
@@ -25,7 +25,7 @@ export default async function AgentsPage() {
       <PageHead eyebrow="MCP" title={t("tokens")} />
       <div className="a-settings">
         <section>
-          <p className="muted a-lead">{t("tokensHint")} <a href={`${siteUrl(await getLocale())}/docs#agents`} target="_blank" rel="noopener">{t("docsLink")}</a></p>
+          <p className="muted a-lead">{t("tokensHint")} <a href={`${docsUrl(await getLocale())}#agents`} target="_blank" rel="noopener">{t("docsLink")}</a></p>
           <div className="a-panel a-pad"><NewTokenForm /></div>
           {tokens.length > 0 && (
             <div className="a-panel a-rows" style={{ marginTop: 10 }}>

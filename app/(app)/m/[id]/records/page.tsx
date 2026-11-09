@@ -1,3 +1,4 @@
+import { isSelfHosted } from "@/server/edition";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -22,7 +23,7 @@ export default async function RecordsPage({ params }: { params: Promise<{ id: st
   const locale = await getLocale();
   const records = [...m.records].sort((a, b) => b.date.localeCompare(a.date));
   const years = [...new Set(records.map((r) => r.date.slice(0, 4)))];
-  const canFeedback = cloudMode();
+  const canFeedback = cloudMode() && !isSelfHosted(); // 字典缺口是给官方实例维护者的
 
   return (
     <>

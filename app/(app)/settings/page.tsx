@@ -10,13 +10,10 @@ import { setAvatarAction } from "./actions";
 import { isSelfHosted } from "@/server/edition";
 import { ChangePasswordForm, DeleteAccountForm, PasswordForm, SignOutButton, SignOutOthersButton } from "./SettingsForms";
 
-export default async function SettingsPage() {
+/** 用量和额度：自托管版不限额度，不显示 */
+async function UsageSection({ userId }: { userId: string }) {
   const t = await getTranslations("app.settings");
-  if (!cloudMode()) return <><PageHead eyebrow={t("eyebrow")} title={t("title")} /><div className="a-panel a-empty">{t("localMode")}</div></>;
-  const u = await requireUser();
-  const nav = await getTranslations("app.nav");
-  const cred = await getDb().query.account.findFirst({ where: and(eq(account.userId, u.id), eq(account.providerId, "credential")) });
-  const [limits, used] = await Promise.all([limitsOf(getDb(), u.id), usageOf(getDb(), u.id)]);
+  const [limits, used] = await Promise.all([limitsOf(getDb(), userId), usageOf(getDb(), userId)]);
   const mb = (b: number) => (b >= 1024 ** 3 ? `${(b / 1024 ** 3).toFixed(0)} GB` : `${(b / 1048576).toFixed(b < 10 * 1048576 ? 1 : 0)} MB`);
   const of = (used: number, limit: number, fmt: (n: number) => string = String): [string, number] =>
     [`${fmt(used)} / ${isUnlimited(limit) ? t("usage.unlimited") : fmt(limit)}`, used / limit];
@@ -26,6 +23,29 @@ export default async function SettingsPage() {
     [t("usage.tokens"), ...of(used.tokens, limits.tokens)],
     [t("usage.writes"), ...of(used.mcpWritesPerDay, limits.mcpWritesPerDay)],
   ];
+
+  return (
+    <section>
+          <SectionHead title={t("usage.title")} />
+          <p className="muted a-lead">{t(isUnlimited(limits.members) ? "usage.adminHint" : "usage.hint")}</p>
+          <div className="a-panel a-rows">
+            {usage.map(([label, value, ratio]) => (
+              <div className="a-row" key={label}>
+                <span className="main"><span className="title">{label}</span></span>
+                <span className={`chip ${ratio >= 1 ? "chip-H" : ratio >= 0.8 ? "chip-warn" : "chip-mint"}`}>{value}</span>
+              </div>
+            ))}
+          </div>
+    </section>
+  );
+}
+
+export default async function SettingsPage() {
+  const t = await getTranslations("app.settings");
+  if (!cloudMode()) return <><PageHead eyebrow={t("eyebrow")} title={t("title")} /><div className="a-panel a-empty">{t("localMode")}</div></>;
+  const u = await requireUser();
+  const nav = await getTranslations("app.nav");
+  const cred = await getDb().query.account.findFirst({ where: and(eq(account.userId, u.id), eq(account.providerId, "credential")) });
 
   return (
     <>
@@ -61,23 +81,12 @@ export default async function SettingsPage() {
           </section>
         )}
 
-        <section>
-          <SectionHead title={t("usage.title")} />
-          <p className="muted a-lead">{t(isUnlimited(limits.members) ? "usage.adminHint" : "usage.hint")}</p>
-          <div className="a-panel a-rows">
-            {usage.map(([label, value, ratio]) => (
-              <div className="a-row" key={label}>
-                <span className="main"><span className="title">{label}</span></span>
-                <span className={`chip ${ratio >= 1 ? "chip-H" : ratio >= 0.8 ? "chip-warn" : "chip-mint"}`}>{value}</span>
-              </div>
-            ))}
-          </div>
-        </section>
+        {!isSelfHosted() && <UsageSection userId={u.id} />}
 
         <section>
           <SectionHead title={t("security")} />
           <div className="a-panel a-pad">
-            <p style={{ margin: "0 0 14px", lineHeight: 1.7 }}>{t("securityText")}</p>
+            <p style={{ margin: "0 0 14px", lineHeight: 1.7 }}>{t(isSelfHosted() ? "securityTextSelf" : "securityText")}</p>
             <a className="btn btn-glass btn-sm" href="/settings/export">{t("export")}</a>
           </div>
         </section>

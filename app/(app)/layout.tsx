@@ -6,7 +6,8 @@ import { ensureAvatar } from "@/server/avatar";
 import { familyAvatars } from "@/server/member-avatars";
 import { getSession } from "@/server/session";
 import { syncUserLocale } from "@/server/user-locale";
-import { siteUrl } from "@/site-links";
+import { isSelfHosted } from "@/server/edition";
+import { docsUrl, homeUrl } from "@/site-links";
 import { AppShell, type ShellMember } from "@/ui/AppShell";
 import { Interactions } from "@/ui/Interactions";
 import { getReader } from "@/ui/repo";
@@ -33,7 +34,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="a-root" lang={locale}>
       <Interactions />
-      <AppShell siteHref={siteUrl(locale)} members={await shellMembers()} user={user || undefined} reorderMembers={reorderMembersAction}>
+      <AppShell homeHref={homeUrl(locale)} docsHref={docsUrl(locale)} selfHosted={isSelfHosted()} members={await shellMembers()} user={user || undefined} reorderMembers={reorderMembersAction}>
         <main className="a-main">{children}</main>
         <footer className="a-foot">{t("disclaimer")}</footer>
       </AppShell>

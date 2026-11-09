@@ -1,3 +1,4 @@
+import { isSelfHosted } from "@/server/edition";
 import { getDb } from "@/db/client";
 import { deleteStaleUnverified } from "@/server/access";
 import { gcOrphanAttachments } from "@/server/attachments";
@@ -11,6 +12,7 @@ import { pauseParams, runReminderJob } from "@/server/reminders";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
+  if (isSelfHosted()) return new Response("not found", { status: 404 });
   if (!cronAuthorized(req)) return new Response("not found", { status: 404 });
   const kek = masterKey();
   const result = await runReminderJob(getDb(), kek, (m) =>

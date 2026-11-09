@@ -1,4 +1,6 @@
+import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
+import { isSelfHosted } from "@/server/edition";
 import { addDays } from "@/core/analysis";
 import { cloudMode, getDb } from "@/db/client";
 import { masterKey } from "@/server/crypto";
@@ -55,6 +57,7 @@ function Preview({ t, items }: { t: T; items: { who: string; what: string; when:
 }
 
 export default async function RemindersPage() {
+  if (isSelfHosted()) notFound(); // 这一页是邮件提醒设置，自托管版不发信；首页和成员页的「接下来」照常
   const t = await getTranslations("app.reminders");
   if (!cloudMode()) return <><PageHead eyebrow="" title={t("title")} /><div className="a-panel a-empty">{t("localMode")}</div></>;
   const u = await requireUser();

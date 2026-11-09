@@ -727,7 +727,8 @@
       "passwordCurrent": "当前密码",
       "passwordChanged": "密码已修改，其他设备都已退出登录。",
       "passwordWrong": "没有成功：当前密码不正确，或新密码少于 8 位。",
-      "passwordForgot": "忘记当前密码？用邮箱验证码重置"
+      "passwordForgot": "忘记当前密码？用邮箱验证码重置",
+      "securityTextSelf": "档案、病历、体检报告和附件以 AES-256-GCM 加密存储在你自己的机器上，每个账号独立密钥。主密钥在服务器的 .env 里，请单独备份。这不是端到端加密。"
     },
     "quick": {
       "placeholder": "告诉 agent 就能记录，也可以在这里手动记…",

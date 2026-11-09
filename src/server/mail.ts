@@ -1,4 +1,5 @@
 // 发信：Resend HTTP API（不引 SDK）。未配置 RESEND_API_KEY 时：本地开发打印到控制台；生产环境报错，除非设了 KZ_MAIL_CONSOLE=1。
+import { isSelfHosted } from "./edition";
 import { cnDateTime } from "./cn-time";
 import type { Locale } from "@/i18n/config";
 import { countMail } from "./ops";
@@ -162,6 +163,7 @@ function fromHeader(locale: Locale) {
 }
 
 async function send({ to, subject, html, text, devLog, headers, locale = "zh" }: { to: string; subject: string; html: string; text: string; devLog: string; headers?: Record<string, string>; locale?: Locale }): Promise<boolean> {
+  if (isSelfHosted()) return false; // 自托管版不发信
   const key = process.env.RESEND_API_KEY;
   if (!key) {
     // 自托管可以不接发信服务：显式设 KZ_MAIL_CONSOLE=1 后，验证码打印到自己服务器的日志（devLog 不含健康内容）

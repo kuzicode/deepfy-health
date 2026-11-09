@@ -30,7 +30,7 @@ const HELP = `kzh — 健康分区工具（默认输出 JSON，--pretty 给人�
   kzh init-member <id> --name N [--dir 目录名] --sex male|female --birth YYYY-MM-DD [--admin]
                                        生成个人主页、兴趣爱好、保险配置与 Health/ 模板
 
-云端（app.deepfy.si）：
+云端（官方托管或自托管实例）：
   kzh login --server URL --token kzh_xxx   保存凭据到 ~/.config/kzh/credentials.json（权限 600）
   kzh push [--dry-run] [--force]           校验通过后把本地 vault 推到云端；云端更新的条目默认跳过
   kzh pull [--into 目录] [--overwrite]      从云端导出到本地（默认当前 vault）；不同的文件另存 *.cloud.md

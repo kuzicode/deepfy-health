@@ -20,7 +20,7 @@ const gate = createGate(4, 16);
 const rpcError = (code: number, message: string, status: number) => Response.json({ jsonrpc: "2.0", error: { code, message }, id: null }, { status });
 
 const unauthorized = () =>
-  Response.json({ jsonrpc: "2.0", error: { code: -32001, message: "Unauthorized: create a token at app.deepfy.si/agents (Deepfy → Agents)" }, id: null },
+  Response.json({ jsonrpc: "2.0", error: { code: -32001, message: "Unauthorized: create a token on the Agents page (Deepfy → Agents)" }, id: null },
     { status: 401, headers: { "www-authenticate": 'Bearer realm="deepfy"', "cache-control": "no-store" } });
 
 async function handle(req: Request) {

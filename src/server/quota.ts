@@ -1,7 +1,8 @@
 import { and, count, eq, gt, inArray, sql, sum } from "drizzle-orm";
 import type { DB } from "@/db/client";
 import { accountPlan, agentChange, apiToken, attachment, doc, member, user } from "@/db/schema";
-import { isAdminEmail, ownerId } from "./access";
+import { isAdminEmail } from "./access";
+import { isSelfHosted } from "./edition";
 import { createBudget } from "./throttle";
 
 // 账号额度（目前所有人都是 free）：家人数、附件总量、token 数、agent 每日写入、导出次数。
@@ -41,11 +42,12 @@ export class QuotaExceeded extends Error {
   }
 }
 
-/** 管理员邮箱 → admin；account_plan 里是 pro → pro；其余（包括没有记录）→ free */
+/** 自托管版不限额度（自己的机器）；管理员邮箱 → admin；account_plan 里是 pro → pro；其余（包括没有记录）→ free */
 export async function planOf(db: Q, userId: string): Promise<Plan> {
+  if (isSelfHosted()) return "admin";
   const [row] = await db.select({ plan: accountPlan.plan, email: user.email }).from(user)
     .leftJoin(accountPlan, eq(accountPlan.userId, user.id)).where(eq(user.id, userId));
-  if (isAdminEmail(row?.email) || (await ownerId(db)) === userId) return "admin";
+  if (isAdminEmail(row?.email)) return "admin";
   return row?.plan === "pro" ? "pro" : "free";
 }
 

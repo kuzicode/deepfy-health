@@ -1,3 +1,4 @@
+import { isSelfHosted } from "./edition";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { and, eq, inArray } from "drizzle-orm";
@@ -20,10 +21,12 @@ interface Ctx {
 }
 
 /** 数据库和备份在同一块盘上：剩余空间不够时停止接收附件，保住数据库 */
-const MIN_FREE_BYTES = 5 * 1024 * 1024 * 1024;
+const GB = 1024 * 1024 * 1024;
+/** 自托管常跑在小硬盘的家用设备上，留 1 GB */
+const minFreeBytes = () => (isSelfHosted() ? GB : 5 * GB);
 async function hasDiskRoom(bytes: number) {
   const { bavail, bsize } = await fs.statfs(/*turbopackIgnore: true*/ attachmentDir());
-  return bavail * bsize >= MIN_FREE_BYTES + bytes;
+  return bavail * bsize >= minFreeBytes() + bytes;
 }
 
 /** 空间不足时先清理过期的旧文件再复查，否则上传一直失败，清理也一直等不到触发 */

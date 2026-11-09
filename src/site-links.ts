@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { isSelfHosted } from "@/server/edition";
 
 // 官网与 App 共用一个 Next 应用：deepfy.si 由 proxy.ts 改写到 /site/[locale]；本地直接访问 /site/zh 预览
 
@@ -13,6 +14,12 @@ const NO_SITE_HOST = "site.invalid";
 /** 官网首页：生产为 https://deepfy.si/<locale>；本地为 /site/<locale> 预览 */
 export const siteUrl = (locale: string) =>
   process.env.KZ_APP_URL && siteHosts()[0] !== NO_SITE_HOST ? `https://${siteHosts()[0]}/${locale}` : `/site/${locale}`;
+
+/** logo 指向哪里：官方版回官网，自托管版没有官网，回自己的首页 */
+export const homeUrl = (locale: string) => (isSelfHosted() ? "/" : siteUrl(locale));
+
+/** 使用文档：自托管版实例里没有官网页面，指向公开文档 */
+export const docsUrl = (locale: string) => (isSelfHosted() ? `https://deepfy.si/${locale}/docs` : `${siteUrl(locale)}/docs`);
 
 /** 官网内部链接前缀：在官网域名下为空，本地预览时为 /site */
 export async function siteBase() {

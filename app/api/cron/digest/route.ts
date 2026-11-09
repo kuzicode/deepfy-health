@@ -1,3 +1,4 @@
+import { isSelfHosted } from "@/server/edition";
 import { getDb } from "@/db/client";
 import { adminEmails } from "@/server/access";
 import { cronAuthorized } from "@/server/cron-auth";
@@ -9,6 +10,7 @@ import { sendDigestEmail } from "@/server/mail";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
+  if (isSelfHosted()) return new Response("not found", { status: 404 });
   if (!cronAuthorized(req)) return new Response("not found", { status: 404 });
   const to = adminEmails();
   if (!to.length) return Response.json({ sent: false, reason: "no-admin" });

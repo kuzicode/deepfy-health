@@ -24,12 +24,13 @@ const TOP_LINKS = [["/agents", "agents", Bot]] as const;
 
 
 /** 右上角账号头像与菜单；挂载时写官网登录态标记，退出时清掉 */
-function AccountMenu({ user, path }: { user: ShellUser; path: string }) {
+function AccountMenu({ user, path, selfHosted }: { user: ShellUser; path: string; selfHosted: boolean }) {
   const t = useTranslations("app.nav");
   const menu = useDropdown();
   const close = menu.setOpen;
   useEffect(() => { close(false); }, [path, close]);
-  useEffect(() => { setSignedInMark(user.avatar); }, [user.avatar]);
+  // 官网右上角的登录标记，自托管版没有官网
+  useEffect(() => { if (!selfHosted) setSignedInMark(user.avatar); }, [user.avatar, selfHosted]);
   return (
     <div className="a-account" ref={menu.ref}>
       <button type="button" onClick={() => menu.setOpen(!menu.open)} aria-label={user.email}>
@@ -39,8 +40,8 @@ function AccountMenu({ user, path }: { user: ShellUser; path: string }) {
         <div className="a-menu glass" style={{ background: "var(--glass-strong)" }}>
           <div className="who">{user.email}</div>
           <Link href="/settings"><Settings size={16} />{t("settings")}</Link>
-          <Link href="/reminders"><Mail size={16} />{t("reminders")}</Link>
-          <Link href={`/feedback?from=${encodeURIComponent(path)}`}><MessageSquare size={16} />{t("feedback")}</Link>
+          {!selfHosted && <Link href="/reminders"><Mail size={16} />{t("reminders")}</Link>}
+          {!selfHosted && <Link href={`/feedback?from=${encodeURIComponent(path)}`}><MessageSquare size={16} />{t("feedback")}</Link>}
           {user.isAdmin && <Link href="/admin"><ShieldCheck size={16} />{t("admin")}</Link>}
           <button type="button" onClick={async () => { await authClient.signOut(); clearSignedInMark(); window.location.assign("/login"); }}>
             <LogOut size={16} />{t("signOut")}
@@ -51,7 +52,7 @@ function AccountMenu({ user, path }: { user: ShellUser; path: string }) {
   );
 }
 
-export function AppShell({ members, user, siteHref, reorderMembers, children }: { members: ShellMember[]; user?: ShellUser; siteHref: string; reorderMembers: (ids: string[]) => Promise<void>; children: React.ReactNode }) {
+export function AppShell({ members, user, homeHref, docsHref, selfHosted, reorderMembers, children }: { members: ShellMember[]; user?: ShellUser; homeHref: string; docsHref: string; selfHosted: boolean; reorderMembers: (ids: string[]) => Promise<void>; children: React.ReactNode }) {
   const t = useTranslations("app.nav");
   const path = usePathname();
   const currentId = decodeURIComponent(path.match(/^\/m\/([^/]+)/)?.[1] ?? "");
@@ -75,8 +76,8 @@ export function AppShell({ members, user, siteHref, reorderMembers, children }: 
     <>
       <header className="a-bar">
         <div className="a-bar-inner glass">
-          {/* 「家庭」已经回到 App 首页，logo 指向官网 */}
-          <a href={siteHref} aria-label="Deepfy" className="logo"><span className="logo-full"><Wordmark size={20} /></span><span className="logo-mark"><Logo size={22} /></span></a>
+          {/* 「家庭」已经回到 App 首页，logo 指向官网（自托管版回首页） */}
+          <a href={homeHref} aria-label="Deepfy" className="logo"><span className="logo-full"><Wordmark size={20} /></span><span className="logo-mark"><Logo size={22} /></span></a>
           <div className="a-member" ref={memberMenu.ref}>
             <button type="button" onClick={() => memberMenu.setOpen(!memberMenu.open)} aria-expanded={memberMenu.open}>
               {current ? <Avatar id={current.id} name={current.name} size={26} src={avatarSrc(current.avatar)} /> : <Users size={16} style={{ marginLeft: 6 }} />}
@@ -106,10 +107,10 @@ export function AppShell({ members, user, siteHref, reorderMembers, children }: 
                 <Icon size={16} /><span>{t(key)}</span>
               </Link>
             ))}
-            <a href={`${siteHref}/docs`} className="a-agents" aria-label={t("docs")}><BookOpen size={16} /><span>{t("docs")}</span></a>
+            <a href={docsHref} className="a-agents" aria-label={t("docs")}><BookOpen size={16} /><span>{t("docs")}</span></a>
             <LocaleToggle />
             {user && (
-              <AccountMenu user={user} path={path} />
+              <AccountMenu user={user} path={path} selfHosted={selfHosted} />
             )}
           </div>
         </div>

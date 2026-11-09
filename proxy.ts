@@ -18,24 +18,30 @@ function withLocale(req: NextRequest, locale: string) {
   return headers;
 }
 
+function routeSiteHost(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+  const m = pathname.match(/^\/(zh|en)(\/.*)?$/);
+  if (m) {
+    const url = req.nextUrl.clone();
+    url.pathname = `/site/${m[1]}${m[2] ?? ""}`;
+    return NextResponse.rewrite(url, { request: { headers: withLocale(req, m[1]) } });
+  }
+  if (pathname === "/") {
+    const url = req.nextUrl.clone();
+    url.pathname = `/${negotiate(req.headers.get("accept-language"))}`;
+    return NextResponse.redirect(url);
+  }
+  return NextResponse.next();
+}
+
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const host = (req.headers.get("host") ?? "").split(":")[0];
 
-  if (SITE_HOSTS.includes(host)) {
-    const m = pathname.match(/^\/(zh|en)(\/.*)?$/);
-    if (m) {
-      const url = req.nextUrl.clone();
-      url.pathname = `/site/${m[1]}${m[2] ?? ""}`;
-      return NextResponse.rewrite(url, { request: { headers: withLocale(req, m[1]) } });
-    }
-    if (pathname === "/") {
-      const url = req.nextUrl.clone();
-      url.pathname = `/${negotiate(req.headers.get("accept-language"))}`;
-      return NextResponse.redirect(url);
-    }
-    return NextResponse.next();
-  }
+  if (SITE_HOSTS.includes(host)) return routeSiteHost(req);
+
+  // 自托管版没有官网和官方服务条款
+  if (!isHosted() && /^\/(site|legal)(\/|$)/.test(pathname)) return NextResponse.redirect(new URL("/", req.url));
 
   const site = pathname.match(/^\/site\/(zh|en)(\/|$)/);
   if (site) return NextResponse.next({ request: { headers: withLocale(req, site[1]) } });
