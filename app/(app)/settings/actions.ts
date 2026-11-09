@@ -5,11 +5,13 @@ import { redirect } from "next/navigation";
 import { getDb } from "@/db/client";
 import { user } from "@/db/schema";
 import { revalidatePath } from "next/cache";
+import { ownerId } from "@/server/access";
 import { setAvatar } from "@/server/avatar";
 import { requireUser, userRepository } from "@/server/session";
 
 export async function deleteAccountAction(_prev: { error?: string }, form: FormData): Promise<{ error?: string }> {
   const u = await requireUser();
+  if ((await ownerId(getDb())) === u.id) return { error: "owner" }; // 自托管的所有者是唯一能管理实例的人，删了之后谁都进不了后台，也不能重新设置
   if (String(form.get("confirm") ?? "").trim().toLowerCase() !== u.email.toLowerCase()) {
     return { error: "mismatch" };
   }

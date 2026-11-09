@@ -728,7 +728,8 @@
       "passwordChanged": "Password changed. Your other devices have been signed out.",
       "passwordWrong": "That didn't work: the current password is wrong, or the new password is shorter than 8 characters.",
       "passwordForgot": "Forgot your current password? Reset it with an email code",
-      "securityTextSelf": "Records, reports and attachments are encrypted with AES-256-GCM on your own machine, with a separate key for each account. The master key is in the server's .env file; back it up separately. This isn't end-to-end encryption."
+      "securityTextSelf": "Records, reports and attachments are encrypted with AES-256-GCM on your own machine, with a separate key for each account. The master key is in the server's .env file; back it up separately. This isn't end-to-end encryption.",
+      "deleteOwner": "This is the admin account for this instance, so it can't be deleted. To wipe the whole instance, run docker compose down -v on the server."
     },
     "quick": {
       "placeholder": "Tell your agent to log it, or add it here…",

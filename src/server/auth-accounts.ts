@@ -1,10 +1,11 @@
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, notExists } from "drizzle-orm";
 import type { AuthContext, BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthEndpoint } from "better-auth/api";
 import { z } from "zod";
 import { getDb } from "@/db/client";
 import { account, opsState, session, user } from "@/db/schema";
 import { normalizeEmail, OWNER_KEY } from "./access";
+import { masterKey } from "./crypto";
 import { isSelfHosted } from "./edition";
 
 // 自托管版的账号管理：首次设置创建所有者、管理员添加账号、重置密码。
@@ -19,14 +20,26 @@ function assertSelfHosted() {
   if (!isSelfHosted()) throw new APIError("NOT_FOUND");
 }
 
-/** 建号：邮箱视为已验证（自托管不发信），设好密码 */
+/** 建号：邮箱视为已验证（自托管不发信），设好密码。建到一半失败时撤掉，不留下没有密码或密钥的账号，否则首次设置再也不能重试 */
 async function createAccount(c: AuthContext, body: z.infer<typeof account_>) {
+  masterKey(); // 主密钥无效时什么都不建
   const email = normalizeEmail(body.email);
   if (await c.internalAdapter.findUserByEmail(email)) throw new APIError("BAD_REQUEST", { code: "user_exists", message: "User already exists" });
-  const created = await c.internalAdapter.createUser({ email, name: body.name, emailVerified: true }, { method: "admin" });
-  if (!created) throw new APIError("INTERNAL_SERVER_ERROR", { message: "Failed to create user" });
-  await c.internalAdapter.linkAccount({ providerId: "credential", accountId: created.id, userId: created.id, password: await c.password.hash(body.password) });
-  return created;
+  try {
+    const created = await c.internalAdapter.createUser({ email, name: body.name, emailVerified: true }, { method: "admin" });
+    if (!created) throw new APIError("INTERNAL_SERVER_ERROR", { message: "Failed to create user" });
+    await c.internalAdapter.linkAccount({ providerId: "credential", accountId: created.id, userId: created.id, password: await c.password.hash(body.password) });
+    return created;
+  } catch (e) {
+    await removeUnfinished(email);
+    throw e;
+  }
+}
+
+/** 只删没有密码的账号：走到这里说明邮箱原本不存在，已经设好密码的是别的请求建成的，不能动 */
+async function removeUnfinished(email: string) {
+  const db = getDb();
+  await db.delete(user).where(and(eq(user.email, email), notExists(db.select({ id: account.id }).from(account).where(and(eq(account.userId, user.id), eq(account.providerId, "credential"))))));
 }
 
 export const kzAccounts = () => ({

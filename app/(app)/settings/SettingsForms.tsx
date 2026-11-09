@@ -14,7 +14,7 @@ export function DeleteAccountForm({ email }: { email: string }) {
       <p className="muted" style={{ margin: 0, flexBasis: "100%" }}>{t("deleteText")}</p>
       <input className="field" name="confirm" placeholder={t("deleteConfirm", { email })} autoComplete="off" />
       <button className="btn btn-danger" disabled={pending}>{t("deleteButton")}</button>
-      {state.error && <p style={{ color: "var(--high)", margin: 0, flexBasis: "100%" }}>{t("deleteMismatch")}</p>}
+      {state.error && <p style={{ color: "var(--high)", margin: 0, flexBasis: "100%" }}>{t(state.error === "owner" ? "deleteOwner" : "deleteMismatch")}</p>}
     </form>
   );
 }

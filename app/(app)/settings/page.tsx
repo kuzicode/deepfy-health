@@ -7,6 +7,7 @@ import { requireUser } from "@/server/session";
 import { AVATARS, avatarUrl, presetOf } from "@/avatars";
 import { PageHead, SectionHead } from "@/ui/blocks";
 import { setAvatarAction } from "./actions";
+import { ownerId } from "@/server/access";
 import { isSelfHosted } from "@/server/edition";
 import { ChangePasswordForm, DeleteAccountForm, PasswordForm, SignOutButton, SignOutOthersButton } from "./SettingsForms";
 
@@ -38,6 +39,13 @@ async function UsageSection({ userId }: { userId: string }) {
           </div>
     </section>
   );
+}
+
+/** 自托管的所有者不能删除自己，见 deleteAccountAction */
+async function DeleteSection({ userId, email }: { userId: string; email: string }) {
+  if ((await ownerId(getDb())) !== userId) return <DeleteAccountForm email={email} />;
+  const t = await getTranslations("app.settings");
+  return <p className="muted" style={{ margin: 0 }}>{t("deleteOwner")}</p>;
 }
 
 export default async function SettingsPage() {
@@ -93,7 +101,7 @@ export default async function SettingsPage() {
 
         <section>
           <SectionHead title={t("delete")} />
-          <div className="a-panel a-pad"><DeleteAccountForm email={u.email} /></div>
+          <div className="a-panel a-pad"><DeleteSection userId={u.id} email={u.email} /></div>
         </section>
       </div>
     </>

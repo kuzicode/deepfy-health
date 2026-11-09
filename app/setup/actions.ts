@@ -25,6 +25,7 @@ async function createOwner(body: Account): Promise<SetupError | "done" | undefin
     const err = e as { body?: { code?: string }; statusCode?: number };
     if (err.body?.code === "setup_done") return "done";
     if (err.body?.code === "user_exists") return "user_exists";
+    console.error("setup failed:", e instanceof Error ? e.message : "unknown"); // 比如主密钥配错，运行的人要在日志里看得到原因
     return err.statusCode === 400 ? "invalid" : "generic";
   }
 }
