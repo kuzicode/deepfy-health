@@ -22,7 +22,7 @@ Deepfy 健康档案（app.deepfy.si，官网 deepfy.si）：agent-first 的家�
 | 架构（两种模式、加密、鉴权、路由） | `docs/architecture.md` | 按需 |
 | 贡献流程 / 安全上报 | `.github/CONTRIBUTING.md`、`.github/SECURITY.md` | 按需 |
 | 名称和品牌素材的使用范围 | `docs/TRADEMARK.md` | 按需 |
-| 中文 README（改 README 时两份同步） | `docs/README.zh-CN.md` | 按需 |
+| 英文 README（根目录 README.md 是中文，改时两份同步） | `docs/README.en.md` | 按需 |
 | 自托管、导出和导入 | `docs/self-hosting.md`、`docs/self-hosting.en.md`（两份同步） | 按需 |
 | MCP 接入：工具、权限、写入记录与还原、报告录入与字典维护 | `docs/mcp.md` | 按需 |
 | 品牌与 logo 资产 | `docs/brand/` | 按需 |

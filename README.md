@@ -2,111 +2,111 @@
 
 <h1><a href="https://deepfy.si"><img src="docs/brand/icon-256.png" width="40" align="top" alt=""></a>&nbsp;Deepfy Health</h1>
 
-### Built for your health. Read by your agents.
+### 构建你的健康云档案，让 Agent 读懂你。
 
-**Checkups, lab results, medications and daily readings, in one structured record for your whole family.**<br>
-See trends, keep track of rechecks, and get email reminders before they're due.<br>
-Over MCP, your own agent can read the record and, with your OK, update it for you.
+**体检、化验、用药和日常指标，整理成全家人的结构化健康档案。**<br>
+看趋势、记复查，到期前收到邮件提醒。<br>
+通过 MCP，你自己的 agent 可以读取档案，并在你同意后帮你更新。
 
 [![Release](https://img.shields.io/github/v/release/kuzicode/deepfy-health?include_prereleases&label=release&color=111111)](https://github.com/kuzicode/deepfy-health/releases) [![Stars](https://img.shields.io/github/stars/kuzicode/deepfy-health?style=flat&color=111111)](https://github.com/kuzicode/deepfy-health/stargazers) [![License](https://img.shields.io/badge/license-MIT-111111)](LICENSE) ![Status](https://img.shields.io/badge/status-pre--release-C2410C)<br>
 ![Next.js](https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white) ![MCP](https://img.shields.io/badge/MCP-0F766E)
 
-**[Website](https://deepfy.si)** &nbsp;·&nbsp; **[Docs](https://deepfy.si/en/docs)** &nbsp;·&nbsp; **[Releases](https://github.com/kuzicode/deepfy-health/releases)** &nbsp;·&nbsp; **[Roadmap](docs/ROADMAP.md)** &nbsp;·&nbsp; **[Contributing](.github/CONTRIBUTING.md)** &nbsp;·&nbsp; **[简体中文](docs/README.zh-CN.md)**
+**[官网](https://deepfy.si)** &nbsp;·&nbsp; **[文档](https://deepfy.si/zh/docs)** &nbsp;·&nbsp; **[版本发布](https://github.com/kuzicode/deepfy-health/releases)** &nbsp;·&nbsp; **[路线图](docs/ROADMAP.md)** &nbsp;·&nbsp; **[参与贡献](.github/CONTRIBUTING.md)** &nbsp;·&nbsp; **[English](docs/README.en.md)**
 
 <br>
 
-<img src="docs/images/family-en.png" width="900" alt="The family overview: a card for each person with items needing attention, and upcoming checkups, rechecks and medication reviews. All data shown is fictional.">
+<img src="docs/images/family-zh.png" width="900" alt="家庭概览：每位家人一张卡片，显示需要关注的项目，下方是即将到期的体检、复查和用药提醒。图中数据均为虚构。">
 
-<sub>All data shown is fictional.</sub>
+<sub>图中数据均为虚构。</sub>
 
 </div>
 
 <br>
 
 > [!IMPORTANT]
-> **Pre-release software under active development.** Features, APIs and data formats may change.
+> **持续开发中的测试版，不是正式版本。** 功能、接口和数据格式都可能变化。
 >
-> Deepfy Health is for reference only and doesn't replace medical advice. **Never post real health information in issues, pull requests or screenshots.**
+> Deepfy Health 仅供参考，不能替代医生诊断。**不要在 Issue、PR 或截图里贴任何真实健康信息。**
 
-## Is Deepfy Health for you?
+## 适合你吗？
 
-Health records end up scattered across PDFs, photos and hospital apps, and an AI agent can't make sense of a file it has never seen. Deepfy Health turns them into one structured record that you and your agent can both use.
+健康资料往往散落在 PDF、照片和各家医院的 App 里，AI agent 也读不到它没见过的文件。Deepfy Health 把它们整理成一份结构化档案，你和你的 agent 都能用。
 
-- **Keep the whole family in one place**: a profile, results and trends, medications and supplements for each person.
-- **Hand a report to your agent**: it reads the report and enters the results. Every change is recorded, and you can undo it.
-- **Know what's coming up**: overdue checkups, rechecks and supplement end dates appear on the overview and in email reminders.
-- **Keep your data portable**: export your account at any time, and import it into your own instance.
+- **全家人放在一处**：每个人都有基本档案、检查结果和趋势、用药和补剂。
+- **把报告交给 agent**：它读完报告，录入结果。每次修改都有记录，可以还原。
+- **知道接下来要做什么**：逾期的体检、复查和补剂到期日会显示在概览页，也会发邮件提醒。
+- **数据可以带走**：随时导出账号数据，再导入你自己部署的实例。
 
-Your health content is encrypted per account on the server. This isn't end-to-end encryption, and some lookup metadata, such as report dates and titles, isn't encrypted yet. See the [architecture notes](docs/architecture.md).
+健康内容在服务器上按账号加密。这不是端到端加密，报告日期和标题等检索用的元数据目前也还没有加密，详见[架构说明](docs/architecture.md)。
 
-## Quick start
+## 快速开始
 
-**Self-host it (recommended).** Run it on your own computer or home server and keep your data there. It takes three commands and no domain, HTTPS or email service: see the [self-hosting guide](docs/self-hosting.en.md). You're welcome to help build it too: see [Contributing](#contributing).
+**自托管（推荐）。** 跑在自己的电脑或内网服务器上，数据留在本地。三条命令就能启动，不需要域名、HTTPS 或邮箱服务，见[自托管教程](docs/self-hosting.md)。也欢迎一起维护这个项目，见[参与贡献](#参与贡献)。
 
-**Need it hosted?** The hosted app at **[app.deepfy.si](https://app.deepfy.si)** is an invite-only early bird program. Request access on the sign-in page, and you'll get an email once it's approved. It's free for now, with 100 MB of attachments per account.
+**需要云端托管？** 官方托管的 **[app.deepfy.si](https://app.deepfy.si)** 采用白名单制，目前开放早鸟申请。在登录页提交申请，通过后会收到邮件。目前免费，每个账号 100 MB 附件。
 
-**Connect your agent.** Create a token on the **Agents** page, then add the MCP server. For Claude Code on the hosted app (on your own instance, use its address):
+**接入你的 agent。** 在「Agent 接入」页面创建 token，再添加 MCP 服务器。下面以 Claude Code 接入官方托管为例，自托管时换成自己的地址：
 
 ```sh
 claude mcp add --transport http deepfy https://app.deepfy.si/mcp \
   --header "Authorization: Bearer kzh_…"
 ```
 
-The **Agents** page has ready-to-copy setups for other agents. New tokens can write by default. Choose **Read-only** when you create one, or change it later.
+其他 agent 的配置可以在「Agent 接入」页面直接复制。新建 token 默认可写入。如果只想让 agent 读取，创建时选「只读」，之后也可以改。
 
-## Run it locally
+## 本地运行
 
-You need Node 22 and pnpm. With no configuration, it runs on fictional sample data:
+需要 Node 22 和 pnpm。什么都不配置，就能用虚构的样例数据跑起来：
 
 ```sh
 pnpm install
-pnpm dev        # http://localhost:3000, reads examples/sample-vault
+pnpm dev        # http://localhost:3000，读 examples/sample-vault
 pnpm test
 ```
 
-Sign-in, MCP and writes need a local Postgres (Docker):
+要用登录、MCP 和写入，需要本地 Postgres（Docker）：
 
 ```sh
-cp .env.example .env.local   # uncomment the cloud mode lines and generate the two local keys
+cp .env.example .env.local   # 取消注释云端模式那几行，并生成两个本地密钥
 pnpm db:up && pnpm db:migrate
-pnpm dev                     # without a mail provider, sign-in codes print to the console
+pnpm dev                     # 不配发信时，登录验证码打印在控制台
 ```
 
-To run the database tests:
+运行数据库测试：
 
 ```sh
 docker compose -f compose.dev.yml exec db createdb -U kzh kzh_test
 pnpm test:db
 ```
 
-Local development needs no production accounts or keys.
+本地开发不需要任何线上账号或密钥。
 
-## Two modes
+## 两种模式
 
-- **Cloud mode** (`DATABASE_URL` is set): accounts sign in, and health content is encrypted per account in Postgres.
-- **Local vault mode**: reads a folder of Markdown files directly, such as an Obsidian vault. This is mainly for development and backups.
+- **云端模式**（设置了 `DATABASE_URL`）：账号登录，健康内容按账号加密后存进 Postgres。
+- **本地 vault 模式**：直接读 Markdown 目录，可以是 Obsidian vault，主要用于开发和备份。
 
-To sync a local vault with an instance:
+把本地 vault 同步到实例：
 
 ```sh
 pnpm kzh login --server https://app.deepfy.si --token kzh_xxx
-pnpm kzh push --dry-run      # preview what would be pushed
-pnpm kzh push                # pushes only if validation passes; skips items newer in the cloud (--force overwrites)
+pnpm kzh push --dry-run      # 先看会推多少
+pnpm kzh push                # 校验通过才推；云端更新的条目默认跳过（--force 覆盖）
 pnpm kzh pull --into ./backup/Personal
 ```
 
-Run `pnpm kzh --help` for all commands.
+`pnpm kzh --help` 查看全部命令。
 
-## Self-hosting
+## 自托管
 
-This is the recommended way to run Deepfy Health. The code ships with no user data, and you can import your account export from the hosted app. See the [self-hosting guide](docs/self-hosting.en.md).
+这是推荐的使用方式。代码不带任何用户数据，也可以导入从官方托管导出的账号数据，见[自托管教程](docs/self-hosting.md)。
 
-## Contributing
+## 参与贡献
 
-The best places to start are the indicator dictionary, data entry rules and translations. See [CONTRIBUTING.md](.github/CONTRIBUTING.md) and [AGENTS.md](AGENTS.md). To report a security issue, follow [SECURITY.md](.github/SECURITY.md) instead of opening a public issue.
+最适合入手的是指标字典、录入规则和多语言。先看 [CONTRIBUTING.md](.github/CONTRIBUTING.md) 和 [AGENTS.md](AGENTS.md)。安全问题请按 [SECURITY.md](.github/SECURITY.md) 私下报告，不要开公开 Issue。
 
-## License
+## 许可证
 
-The code is under the [MIT License](LICENSE). The Deepfy name, logo and icons aren't covered by it; see [TRADEMARK.md](docs/TRADEMARK.md).
+代码使用 [MIT 许可证](LICENSE)。Deepfy 名称、logo 和图标不在其内，见 [TRADEMARK.md](docs/TRADEMARK.md)。
 
-Release notes from before this repository was public are in [docs/release-history.md](docs/release-history.md).
+本仓库公开前的版本说明在 [docs/release-history.md](docs/release-history.md)。
