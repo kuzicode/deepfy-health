@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { registrationRestricted } from "@/server/access";
+import { googleEnabled } from "@/server/edition";
 import { getSession } from "@/server/session";
 import { siteUrl } from "@/site-links";
 import { Wordmark } from "@/ui/Logo";
@@ -33,7 +34,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <LocaleToggle />
         </div>
       </header>
-      <LoginView error={error} legal={{ terms: "/legal/terms", privacy: "/legal/privacy" }} canApply={registrationRestricted()} initialMode={mode} selfHostHref={`${site}/docs#self-host`} />
+      <LoginView error={error} legal={{ terms: "/legal/terms", privacy: "/legal/privacy" }} canApply={registrationRestricted()} initialMode={mode} selfHostHref={`${site}/docs#self-host`} google={googleEnabled()} />
       <footer className="login-foot">
         <a href="/legal/terms">{t("terms")}</a><span>|</span><a href="/legal/privacy">{t("privacy")}</a>
         {support && <><span>|</span><a href={`mailto:${support}`}>{t("contact")}</a></>}

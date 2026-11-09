@@ -29,7 +29,7 @@ function Field({ label, children, action }: { label: string; children: React.Rea
 type Legal = { terms: string; privacy: string };
 
 /** 各步骤共用的输入框和按钮 */
-function useFields(f: LoginFlow, legal: Legal, selfHostHref: string) {
+function useFields(f: LoginFlow, legal: Legal, selfHostHref: string, google: boolean) {
   const { t } = f;
   const emailRO = (
     <Field label={t("email")} action={<button type="button" className="ff-action" onClick={() => f.go("start")}>{t("edit")}</button>}>
@@ -58,7 +58,7 @@ function useFields(f: LoginFlow, legal: Legal, selfHostHref: string) {
   const primary = (label: string, disabled: boolean) => <button className="l-btn" disabled={f.busy || disabled}>{label}</button>;
   const link = (label: string, onClick: () => void) => <button type="button" className="l-link" onClick={onClick}>{label}</button>;
   const selfHost = <p className="l-selfhost">{t("apply.selfHost")} <a href={selfHostHref}>{t("apply.selfHostLink")}</a></p>;
-  return { emailRO, pwField, otpField, consent, primary, link, selfHost };
+  return { emailRO, pwField, otpField, consent, primary, link, selfHost, google };
 }
 type Fields = ReturnType<typeof useFields>;
 
@@ -75,8 +75,10 @@ function signInViews(f: LoginFlow, u: Fields): Partial<Record<Step, React.ReactN
   return {
     start: (
       <>
-        <button type="button" className="l-oauth" onClick={() => f.google(false)}><GoogleIcon />{t("google")}</button>
-        <div className="l-or"><span>{t("or")}</span></div>
+        {u.google && <>
+          <button type="button" className="l-oauth" onClick={() => f.google(false)}><GoogleIcon />{t("google")}</button>
+          <div className="l-or"><span>{t("or")}</span></div>
+        </>}
         <form className="l-form" onSubmit={f.submit(f.lookup)}>
           <input className="l-input" type="email" autoComplete="email" placeholder={t("email")} value={f.email} readOnly={f.busy} onChange={(e) => f.setEmail(e.target.value.trim())} />
           {u.primary(t("continue"), !/^\S+@\S+\.\S+$/.test(f.email))}
@@ -159,9 +161,9 @@ function heading(step: Step, canApply: boolean) {
   return { title: `title_${step}` };
 }
 
-export function LoginView({ error, legal, canApply, initialMode, selfHostHref }: { error?: string; legal: Legal; canApply: boolean; initialMode?: string; selfHostHref: string }) {
+export function LoginView({ error, legal, canApply, initialMode, selfHostHref, google }: { error?: string; legal: Legal; canApply: boolean; initialMode?: string; selfHostHref: string; google: boolean }) {
   const f = useLoginFlow({ error, canApply, initialMode });
-  const u = useFields(f, legal, selfHostHref);
+  const u = useFields(f, legal, selfHostHref, google);
   const { t, step, msg } = f;
   const view = { ...signInViews(f, u), ...signUpViews(f, u) }[step];
   const { title, sub } = heading(step, canApply);

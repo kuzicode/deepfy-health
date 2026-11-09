@@ -13,6 +13,7 @@ import { resolveLocale } from "@/i18n/resolve";
 import { clientIp, createLimiter } from "./login-lookup";
 import { assignAvatarOnSignup } from "./avatar";
 import { ensureUserKey } from "./pg-repository";
+import { googleEnabled } from "./edition";
 
 /** 限流器保存 key、数据库保存姓名，这些字段在 better-auth 校验格式之前就要限长，否则一个请求能占用几十 MB 内存 */
 const MAX_LENGTH = { email: 254, name: 100, image: 2048 } as const;
@@ -106,14 +107,14 @@ function createAuth() {
     // 同一邮箱用密码、验证码、Google 哪种方式登录都是同一个账号。不要设 trustedProviders：
     // 它会跳过 better-auth 对「Google 邮箱已验证」的检查，邮箱未验证的 Google 身份就能关联到别人的账号
     account: { accountLinking: { enabled: true } },
-    socialProviders: {
+    socialProviders: googleEnabled() ? {
       google: {
-        clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+        clientId: process.env.GOOGLE_CLIENT_ID!,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
         // 「登录」不自动建号，只有「注册」（已勾选同意条款）才会创建账号
         disableImplicitSignUp: true,
       },
-    },
+    } : {},
     user: {
       // 白名单制（设了 KZ_ALLOWED_EMAILS）：只允许名单内的邮箱、审批通过的申请和管理员；留空是开放注册，只用于自托管
       validateUserInfo: async ({ user, source }) => {

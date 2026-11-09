@@ -13,3 +13,6 @@ export function edition(): Edition {
 
 export const isHosted = () => edition() === "hosted";
 export const isSelfHosted = () => edition() === "self";
+
+/** Google 登录：只在官方版且配置了客户端时启用，否则登录页不显示按钮 */
+export const googleEnabled = () => isHosted() && !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET;
