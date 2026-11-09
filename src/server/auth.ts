@@ -101,7 +101,9 @@ function createAuth() {
     disabledPaths: ["/send-verification-email", ...(self ? SELF_HOSTED_DISABLED : [])],
     // 只信反向代理设置的 X-Real-IP：X-Forwarded-For 可以被客户端带上假值。
     // 来源检查显式打开：生产默认就开着，better-auth 在测试环境会默认关掉，写明后测试也覆盖它。
-    advanced: { ipAddress: { ipAddressHeaders: ["x-real-ip"] }, disableOriginCheck: false },
+    // 自托管常跑在 http://192.168.x.x：better-auth 在生产模式下默认加 __Secure- 前缀，浏览器在非 HTTPS 地址上会丢弃这种 cookie，登录后立刻掉线。
+    // 配了 https 的 BETTER_AUTH_URL（自己加了反向代理）才用 Secure cookie
+    advanced: { ipAddress: { ipAddressHeaders: ["x-real-ip"] }, disableOriginCheck: false, ...(self ? { useSecureCookies: (process.env.BETTER_AUTH_URL ?? "").startsWith("https://") } : {}) },
     // 自托管版不设固定地址，localhost 和局域网 IP 都能打开：只信任和这次请求 Host 相同的来源，等于同源检查。
     // 不能靠 request.url 推导：Docker 里它是容器内部地址
     ...(self ? { trustedOrigins: sameHostOrigins } : {}),
