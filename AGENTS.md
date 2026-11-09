@@ -56,7 +56,7 @@ Deepfy 健康档案（app.deepfy.si，官网 deepfy.si）：agent-first 的家�
 - **HM3** 文档只写绝对日期 `YYYY-MM-DD`；不以仓库外路径（如 `~/.claude/plans/`）作为权威内容，需要就摘要进仓
 - **HM4** 问题状态的唯一权威是 `docs/issues.md`；`docs/ROADMAP.md` 只链接 `ISS-XXX`，不复述状态
 - **HM5** 本文件是唯一常载文件，≤ 150 行；领域规则组超过 6 条时细则下沉 `docs/conventions.md`，此处只留摘要 + 链接
-- **HM6** 仓库安全（公开）：本地专用 `.env*`、`vault/`、`*.pdf`、`data/`（已 gitignore，不要 `git add -f`）。`.env.example` 是唯一入仓的 env 文件，只放占位值。凭据、服务器 IP、SSH 账号、部署配置、运维记录和用量数字都不进本仓库；推送前先过 Doctor D7
+- **HM6** 仓库安全（公开）：本地专用 `.env*`、`vault/`、`*.pdf`、`data/`（已 gitignore，不要 `git add -f`）。`.env.example` 是唯一入仓的 env 文件，只放占位值。凭据、服务器 IP、SSH 账号、部署配置、运维记录和用量数字都不进本仓库；推送前自查，CI 的 gitleaks 会扫描密钥
 
 ### CH — 代码健康
 
