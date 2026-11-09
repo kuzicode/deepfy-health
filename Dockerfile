@@ -21,6 +21,8 @@ RUN groupadd -r app && useradd -r -g app app && mkdir -p /data/attachments && ch
 COPY --from=builder --chown=app:app /app/.next/standalone ./
 COPY --from=builder --chown=app:app /app/.next/static ./.next/static
 COPY --from=builder --chown=app:app /app/public ./public
+# 自托管版启动时自动迁移要读这些文件，standalone 不会带上
+COPY --from=builder --chown=app:app /app/drizzle ./drizzle
 USER app
 EXPOSE 3000
 CMD ["node", "server.js"]

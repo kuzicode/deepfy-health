@@ -1,4 +1,4 @@
-# 所有端口只绑 127.0.0.1，由宿主机反向代理对外
+# 默认所有端口只绑 127.0.0.1。自托管：先运行 sh scripts/selfhost-init.sh，再 docker compose up -d，见 docs/self-hosting.md
 services:
   db:
     image: postgres:16-alpine
