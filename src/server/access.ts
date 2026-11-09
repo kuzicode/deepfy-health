@@ -1,6 +1,7 @@
 import { and, eq, lt, notExists } from "drizzle-orm";
 import type { DB } from "@/db/client";
 import { allowedEmail, member, session, user, userStatus } from "@/db/schema";
+import { isHosted } from "./edition";
 
 // 访问控制：管理员只来自环境变量（网页上不能提权）。设了 KZ_ALLOWED_EMAILS 就是白名单制：名单 = 环境变量 ∪ 后台 allowed_email（审批通过的申请）∪ 管理员。
 // 留空是开放注册，只用于自托管，官方实例必须设。被拉黑（停用）的账号不能登录、token 失效
@@ -13,8 +14,8 @@ export const isAdminEmail = (email: string | null | undefined) => !!email && adm
 
 const allowList = () => list(process.env.KZ_ALLOWED_EMAILS);
 
-/** 是否是白名单制。官方实例必须设 KZ_ALLOWED_EMAILS（部署脚本会检查） */
-export const registrationRestricted = () => allowList().length > 0;
+/** 是否是白名单制。官方实例必须设 KZ_ALLOWED_EMAILS（部署脚本会检查）；自托管版没有公开注册，不用名单 */
+export const registrationRestricted = () => isHosted() && allowList().length > 0;
 
 export async function isEmailAllowed(db: DB, email: string | null | undefined): Promise<boolean> {
   if (!email) return false;

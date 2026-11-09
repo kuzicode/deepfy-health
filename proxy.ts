@@ -1,12 +1,14 @@
 import { getSessionCookie } from "better-auth/cookies";
 import { NextResponse, type NextRequest } from "next/server";
 import { LOCALE_HEADER, negotiate } from "@/i18n/config";
+import { isHosted } from "@/server/edition";
 
 // 1) 官网域名（deepfy.si / www）：/ 按浏览器语言跳到 /zh 或 /en，/zh/* /en/* 改写到 /site/[locale]/*
 // 2) /site/[locale]/*：本地预览官网，设置语言头
 // 3) 其余为 App：未登录跳 /login（真正的会话校验在页面里 requireUser）
 
-const SITE_HOSTS = (process.env.KZ_SITE_HOSTS ?? "deepfy.si,www.deepfy.si").split(",").map((s) => s.trim());
+// 自托管版没有官网域名
+const SITE_HOSTS = isHosted() ? (process.env.KZ_SITE_HOSTS ?? "deepfy.si,www.deepfy.si").split(",").map((s) => s.trim()) : [];
 // 公开路径（鉴权在路由内自行处理）：MCP、登录、条款、API、官网预览，以及图标 / manifest / 分享图 / 品牌素材（邮件里引用 /brand/*）
 const PUBLIC_APP = /^\/(mcp$|login|legal|api\/|site\/|brand\/|avatars\/|icon|apple-icon|favicon\.ico|manifest\.webmanifest|maskable-512\.png|opengraph-image)/;
 
