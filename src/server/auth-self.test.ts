@@ -24,10 +24,7 @@ describe.skipIf(!URL)("自托管版账号（需要 KZ_TEST_DATABASE_URL）", () 
   const owner = { name: "Owner", email: "owner@example.com", password: "owner-pass-1" };
 
   beforeAll(async () => {
-    vi.stubEnv("KZ_EDITION", "self");
-    vi.stubEnv("DATABASE_URL", URL!);
-    vi.stubEnv("BETTER_AUTH_URL", "");
-    vi.stubEnv("KZ_ADMIN_EMAILS", "");
+    for (const [k, v] of [["KZ_EDITION", "self"], ["DATABASE_URL", URL!], ["BETTER_AUTH_URL", ""], ["KZ_ADMIN_EMAILS", ""]]) vi.stubEnv(k, v);
     vi.stubEnv("KZ_MASTER_KEY", Buffer.alloc(32, 7).toString("base64"));
     vi.stubEnv("BETTER_AUTH_SECRET", "test-secret-test-secret-test-secret-1");
     db = createDb(URL!);

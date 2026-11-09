@@ -41,7 +41,7 @@ Your health content is encrypted per account on the server. This isn't end-to-en
 
 ## Quick start
 
-**Self-host it (recommended).** Run it on your own server and keep your data there. No domain or HTTPS needed: see [docs/self-hosting.md](docs/self-hosting.md). You're welcome to help build it too: see [Contributing](#contributing).
+**Self-host it (recommended).** Run it on your own computer or home server and keep your data there. It takes three commands and no domain, HTTPS or email service: see the [self-hosting guide](docs/self-hosting.en.md). You're welcome to help build it too: see [Contributing](#contributing).
 
 **Need it hosted?** The hosted app at **[app.deepfy.si](https://app.deepfy.si)** is an invite-only early bird program. Request access on the sign-in page, and you'll get an email once it's approved. It's free for now, with 100 MB of attachments per account.
 
@@ -99,7 +99,7 @@ Run `pnpm kzh --help` for all commands.
 
 ## Self-hosting
 
-This is the recommended way to run Deepfy Health. The code ships with no user data, and you can import your account export from the hosted app. See [docs/self-hosting.md](docs/self-hosting.md) (in Chinese for now).
+This is the recommended way to run Deepfy Health. The code ships with no user data, and you can import your account export from the hosted app. See the [self-hosting guide](docs/self-hosting.en.md).
 
 ## Contributing
 

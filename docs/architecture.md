@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-11-07
+last_updated: 2026-11-09
 status: active
 ---
 
@@ -23,10 +23,25 @@ status: active
 
 | 模式 | 触发 | 数据源 | 登录 |
 |---|---|---|---|
-| 云端（生产） | 设置了 `DATABASE_URL` | Postgres，按用户加密 | Google（better-auth） |
+| 云端 | 设置了 `DATABASE_URL` | Postgres，按用户加密 | better-auth，见下面的两个版本 |
 | 本地 vault（开发） | 未设置 `DATABASE_URL` | `HEALTH_VAULT_DIR/Personal`（默认示例 vault） | 无 |
 
 生产环境未设置 `DATABASE_URL` 时直接报错，不会退回本地模式。
+
+## 两个版本（`KZ_EDITION`，`src/server/edition.ts`）
+
+云端模式分官方托管和自托管。默认 `hosted`；自托管由 `scripts/selfhost-init.sh` 写入 `KZ_EDITION=self`。线上专属功能都要经过这个开关，新增时也一样。
+
+| | `hosted`（官方托管） | `self`（自托管） |
+|---|---|---|
+| 登录 | 邮箱 + 密码（需验证码验证）、验证码、Google | 只有邮箱 + 密码，不验证邮箱 |
+| 账号来源 | 白名单和早鸟申请 | 首次访问 `/setup` 创建所有者（`ops_state` 的 `owner`），之后由管理员添加（`src/server/auth-accounts.ts`，server-only 端点） |
+| 管理员 | `KZ_ADMIN_EMAILS` | `KZ_ADMIN_EMAILS` ∪ 所有者 |
+| 可信来源 | 固定的 `BETTER_AUTH_URL` | 和请求 `Host` 相同的来源；Docker 里 `request.url` 是容器内部地址，不能用 |
+| Cookie | Secure | 配了 https 的 `BETTER_AUTH_URL` 才用 Secure，否则局域网 HTTP 存不下 |
+| 数据库迁移 | 部署脚本单独跑 | 启动时自动（`instrumentation.ts`） |
+| 额度 | 按档位 | 不限；磁盘至少留 1 GB |
+| 官网、协议、反馈、邮件提醒、定时任务 | 有 | 没有 |
 
 ## 数据流
 
@@ -58,8 +73,8 @@ Obsidian vault (Personal/<Dir>/Health/*.md)
 - 注册：邮箱 + 密码，必须输入邮箱验证码（emailOTP 插件，`overrideDefaultEmailVerification`）才能登录；或 Google（`requestSignUp`，`disableImplicitSignUp`）。两种方式都只在创建账号这一步勾选服务协议与隐私政策（健康数据需单独同意）。
 - 登录：邮箱 + 密码、邮箱验证码免密（只给已注册用户，`disableSignUp`）、Google；同一邮箱自动合并为一个账号（accountLinking）。忘记密码走验证码重置。
 - 发信：`src/server/mail.ts`（Resend HTTP API）；本地未配置 key 时验证码打印在开发服务器控制台，生产必须配置。
-- 注册：设了 `KZ_ALLOWED_EMAILS` 就是白名单制，名单 = 环境变量 ∪ 后台 `allowed_email` 表（后台添加或审批通过）∪ 管理员（`src/server/access.ts`，在 `user.validateUserInfo` 里校验）。官方实例是白名单制：登录页提交申请 → 后台审批 → 发邀请邮件。留空是开放注册，只用于自托管。邮箱注册每个 IP 每天 5 次，全站每天上限 `KZ_SIGNUP_DAILY_LIMIT`（默认 60，超限返回 `signup_busy`，避免批量注册用光发信额度）。超过 7 天仍未验证的账号由每日任务清理。
-- 管理员：只由 `KZ_ADMIN_EMAILS` 指定，且邮箱需已验证；`/admin` 对非管理员返回 404。后台只显示账号元数据与数量（`src/server/admin.ts`），不解密任何健康内容，不提供代登录。
+- 注册：设了 `KZ_ALLOWED_EMAILS` 就是白名单制，名单 = 环境变量 ∪ 后台 `allowed_email` 表（后台添加或审批通过）∪ 管理员（`src/server/access.ts`，在 `user.validateUserInfo` 里校验）。官方实例是白名单制：登录页提交申请 → 后台审批 → 发邀请邮件。留空是开放注册（`hosted` 版本）。邮箱注册每个 IP 每天 5 次，全站每天上限 `KZ_SIGNUP_DAILY_LIMIT`（默认 60，超限返回 `signup_busy`，避免批量注册用光发信额度）。超过 7 天仍未验证的账号由每日任务清理。
+- 管理员：由 `KZ_ADMIN_EMAILS` 指定（自托管版再加上所有者），且邮箱需已验证；`/admin` 对非管理员返回 404。后台只显示账号元数据与数量（`src/server/admin.ts`），不解密任何健康内容，不提供代登录。
 - 拉黑账号（后台叫「拉黑」，给用户看的提示是「已停用」）：`user_status.disabled_at`；拉黑时删除全部会话，`session.create.before` 抛出 `disabled` 错误拒绝新登录，API token 失效，提醒停发；账号还在，所以这个邮箱不能重新注册；可以解除。
 - `/api/v1/*`：Bearer `kzh_…` token（「Agent 接入」页 `/agents` 创建，可随时再次复制或重新生成）。kzh 与三期 MCP 共用。
 

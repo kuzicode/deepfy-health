@@ -24,7 +24,7 @@ function docsMarkdown(t: T, o: { locale: string; prompt: string; mcpUrl: string;
     `## ${t("selfHost.title")}`, t("selfHost.lead"),
     `### ${t("selfHost.step1")}`, t("selfHost.step1d"), `\`\`\`bash\n${SELF_HOST_SETUP}\n\`\`\``,
     `### ${t("selfHost.step2")}`, `\`\`\`bash\n${SELF_HOST_START}\n\`\`\``,
-    `### ${t("selfHost.step3")}`, t("selfHost.step3d"), `\`\`\`bash\n${SELF_HOST_LOGS}\n\`\`\``,
+    `### ${t("selfHost.step3")}`, t("selfHost.step3d"),
     `- ${t("selfHost.keyT")} ${t("selfHost.keyD")}\n- ${t("selfHost.netT")} ${t("selfHost.netD")}\n- ${t("selfHost.agentT")} ${t("selfHost.agentD")}`,
     `${t("selfHost.more")} ${SELF_HOST_GUIDE}`,
     `## ${t("agents.title")}`, t("agents.lead"), steps("agents.steps"),
@@ -40,21 +40,8 @@ function docsMarkdown(t: T, o: { locale: string; prompt: string; mcpUrl: string;
 
 /** 自托管的命令：只跑在本机或内网，不需要域名和 HTTPS。和 docs/self-hosting.md 保持一致 */
 const SELF_HOST_SETUP = `git clone https://github.com/kuzicode/deepfy-health.git && cd deepfy-health
-cat > .env <<EOT
-POSTGRES_PASSWORD=$(openssl rand -hex 24)
-KZ_MASTER_KEY=$(openssl rand -base64 32)
-BETTER_AUTH_SECRET=$(openssl rand -base64 32)
-BETTER_AUTH_URL=http://192.168.1.10:3100
-KZ_APP_URL=http://192.168.1.10:3100
-KZ_BIND=0.0.0.0
-KZ_SITE_HOSTS=site.invalid
-KZ_ADMIN_EMAILS=you@example.com
-KZ_ALLOWED_EMAILS=you@example.com
-KZ_MAIL_CONSOLE=1
-EOT
-chmod 600 .env`;
-const SELF_HOST_START = "docker compose run --rm migrate\ndocker compose up -d app";
-const SELF_HOST_LOGS = "docker compose logs app | grep '\\[mail\\]'";
+sh scripts/selfhost-init.sh`;
+const SELF_HOST_START = "docker compose up -d";
 const SELF_HOST_GUIDE = "https://github.com/kuzicode/deepfy-health/blob/main/docs/self-hosting.md";
 
 function SelfHostSection({ t }: { t: Awaited<ReturnType<typeof getTranslations<"site.docs">>> }) {
@@ -69,7 +56,6 @@ function SelfHostSection({ t }: { t: Awaited<ReturnType<typeof getTranslations<"
       <div className="s-snip"><pre><code>{SELF_HOST_START}</code></pre></div>
       <h3>{t("selfHost.step3")}</h3>
       <p className="muted">{t("selfHost.step3d")}</p>
-      <div className="s-snip"><pre><code>{SELF_HOST_LOGS}</code></pre></div>
       <ul>
         <li><b>{t("selfHost.keyT")}</b> {t("selfHost.keyD")}</li>
         <li><b>{t("selfHost.netT")}</b> {t("selfHost.netD")}</li>

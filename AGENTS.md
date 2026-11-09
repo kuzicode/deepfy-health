@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-11-07
+last_updated: 2026-11-09
 status: active
 owner: kuzicode
 harness_version: 8
@@ -8,7 +8,7 @@ harness_profile: open-source
 
 # deepfy-health — Agent Guidelines
 
-Deepfy 健康档案（app.deepfy.si，官网 deepfy.si）：agent-first 的家庭健康档案。云端 Postgres 为主数据源（健康内容按账号加密存储）；用户自己的 agent（Claude Code、Codex…）经 MCP（`/mcp`）读写档案，网页负责展示与人工编辑；本地 Obsidian vault 用 `kzh push / pull` 推拉作为备份 / 离线入口。推荐自托管（本地或内网）；官方实例是白名单制早鸟。
+Deepfy 健康档案（app.deepfy.si，官网 deepfy.si）：agent-first 的家庭健康档案。云端 Postgres 为主数据源（健康内容按账号加密存储）；用户自己的 agent（Claude Code、Codex…）经 MCP（`/mcp`）读写档案，网页负责展示与人工编辑；本地 Obsidian vault 用 `kzh push / pull` 推拉作为备份 / 离线入口。推荐自托管（本地或内网，`KZ_EDITION=self`）；官方实例是白名单制早鸟（`hosted`）。线上专属功能都要经过 `src/server/edition.ts`。
 
 技术栈：TypeScript、pnpm、Next.js 16 App Router、better-auth、Drizzle + Postgres 16、zod、Recharts、vitest、Docker Compose + nginx
 
@@ -23,7 +23,7 @@ Deepfy 健康档案（app.deepfy.si，官网 deepfy.si）：agent-first 的家�
 | 贡献流程 / 安全上报 | `.github/CONTRIBUTING.md`、`.github/SECURITY.md` | 按需 |
 | 名称和品牌素材的使用范围 | `docs/TRADEMARK.md` | 按需 |
 | 中文 README（改 README 时两份同步） | `docs/README.zh-CN.md` | 按需 |
-| 自托管、导出和导入 | `docs/self-hosting.md` | 按需 |
+| 自托管、导出和导入 | `docs/self-hosting.md`、`docs/self-hosting.en.md`（两份同步） | 按需 |
 | MCP 接入：工具、权限、写入记录与还原、报告录入与字典维护 | `docs/mcp.md` | 按需 |
 | 品牌与 logo 资产 | `docs/brand/` | 按需 |
 | README 配图（只用虚构数据） | `docs/images/` | 按需 |
@@ -84,7 +84,7 @@ Deepfy 健康档案（app.deepfy.si，官网 deepfy.si）：agent-first 的家�
 - **SEC2** 云端每个查询都按当前 userId 限定（`PgRepository`）；跨用户访问一律返回 404，不区分"不存在"和"无权限"
 - **SEC3** `KZ_MASTER_KEY` 只在服务器 `.env`，不进 git、不进备份、不打日志；日志与 API 错误不回显健康内容
 - **SEC6** 导入数据与云端数据一律不可信：拼进文件路径前校验并确认落在目标目录内，渲染为 HTML 前必须清洗（`renderMarkdown`）；服务端不信任表单里的身份字段，以数据库为准（ISS-004）
-- **SEC5** 管理后台只能看账号元数据与聚合数量，不得解密或展示健康内容，不做代登录；管理员只来自 `KZ_ADMIN_EMAILS`
+- **SEC5** 管理后台只能看账号元数据与聚合数量，不得解密或展示健康内容，不做代登录；管理员只来自 `KZ_ADMIN_EMAILS` 和自托管版首次设置创建的所有者
 - **SEC7** 对外入口（公开接口、上传、`/mcp`）都要限速并把外部输入当不可信；agent 写入只能经 `applyChanges({ audit })` 记入可还原的 `agent_change`，同账号写入在 advisory lock 内读—改—写。细则见 `docs/conventions.md`「安全细则」
 
 ### RL — 贡献红线
@@ -114,6 +114,7 @@ pnpm kzh validate        # 校验 vault（agent 每次写完都要跑）
 pnpm health              # 只报告：knip / jscpd
 pnpm db:up               # 本地 Postgres（compose.dev.yml，端口 5433）
 pnpm test:db             # 含 PgRepository 的测试（需要本地 Postgres 与 kzh_test 库）
+pnpm admin reset-password <邮箱>  # 自托管：重置密码并打印新密码
 pnpm db:generate         # schema 变更后生成迁移；pnpm db:migrate 执行
 ```
 
