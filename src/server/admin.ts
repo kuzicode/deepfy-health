@@ -1,7 +1,7 @@
 import { desc, sql } from "drizzle-orm";
 import type { DB } from "@/db/client";
 import { allowedEmail } from "@/db/schema";
-import { adminEmails } from "./access";
+import { adminEmails, ownerId } from "./access";
 
 // 管理后台的数据：只有账号元数据与数量。不解密、不返回任何健康内容（成员姓名也是密文，只统计数量）
 
@@ -37,13 +37,14 @@ export async function listUsers(db: DB): Promise<AdminUserRow[]> {
     from "user" u left join user_status us on us.user_id = u.id left join account_plan ap on ap.user_id = u.id
     order by u.created_at desc`);
   const admins = adminEmails();
+  const owner = await ownerId(db);
   return [...rows].map((r) => ({
     ...r,
     createdAt: new Date(r.createdAt).toISOString(),
     lastSeen: r.lastSeen ? new Date(r.lastSeen).toISOString() : null,
     disabledAt: r.disabledAt ? new Date(r.disabledAt).toISOString() : null,
     attachmentBytes: Number(r.attachmentBytes),
-    isAdmin: admins.includes(r.email.toLowerCase()),
+    isAdmin: admins.includes(r.email.toLowerCase()) || r.id === owner,
   }));
 }
 

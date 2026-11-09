@@ -40,6 +40,12 @@
 .a-add-member summary { cursor: pointer; color: var(--brand); font: 500 13.5px/1 var(--sans); padding: 8px 2px; list-style: none; }
 .a-add-member summary::-webkit-details-marker { display: none; }
 .a-add-member[open] summary { margin-bottom: 10px; }
+/* 后台账号的「管理」：重置密码、删除（自托管版） */
+.a-user-tools { margin-top: 6px; min-width: 260px; }
+.a-user-tools summary { cursor: pointer; color: var(--brand); font: 500 13px/1 var(--sans); list-style: none; }
+.a-user-tools summary::-webkit-details-marker { display: none; }
+.a-user-tools[open] { display: grid; gap: 12px; }
+.a-user-tools[open] summary { margin-bottom: 2px; }
 
 .a-profile-form { display: grid; gap: 14px; margin: 0 0 18px; }
 .a-profile-form .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }

@@ -723,7 +723,11 @@
       "makeSync": "Allow local sync",
       "scopeSyncHint": "Agents should use Can write: every write can be reverted. Local sync is only for kzh push, which overwrites in bulk and keeps no change history.",
       "signOutOthers": "Sign out other devices",
-      "signOutOthersDone": "Other devices have been signed out."
+      "signOutOthersDone": "Other devices have been signed out.",
+      "passwordCurrent": "Current password",
+      "passwordChanged": "Password changed. Your other devices have been signed out.",
+      "passwordWrong": "That didn't work: the current password is wrong, or the new password is shorter than 8 characters.",
+      "passwordForgot": "Forgot your current password? Reset it with an email code"
     },
     "quick": {
       "placeholder": "Tell your agent to log it, or add it here…",
@@ -1085,7 +1089,16 @@
       "dataSummary": "{members, plural, one {# profile} other {# profiles}} · {docs, plural, one {# doc} other {# docs}} · {size}",
       "tokens": "{n, plural, one {# token} other {# tokens}}",
       "quota": "{plan}: ≤{members} members, ≤{size}, ≤{tokens} tokens",
-      "quotaAdmin": "admin: no quota"
+      "quotaAdmin": "admin: no quota",
+      "manage": "Manage",
+      "resetPassword": "Reset password",
+      "newPassword": "New password (at least 8 characters)",
+      "resetDone": "Password reset. This account has been signed out on all devices.",
+      "deleteUser": "Delete account",
+      "deleteConfirm": "Type {email} to confirm",
+      "deleteHint": "The account and all of its records and attachments will be permanently deleted.",
+      "deleteMismatch": "The email doesn't match. Nothing was deleted.",
+      "actionFailed": "That didn't work. Please try again."
     },
     "errors": {
       "self": "You can't disable your own account.",
@@ -1111,7 +1124,8 @@
     },
     "registration": {
       "open": "Registration: open to everyone (for self-hosting only).",
-      "restricted": "Registration: invite-only. Only approved emails and admins can sign up."
+      "restricted": "Registration: invite-only. Only approved emails and admins can sign up.",
+      "self": "Registration: self-hosted. There is no public sign-up; admins add accounts here."
     },
     "allow": {
       "title": "Allowed emails",
@@ -1159,6 +1173,20 @@
       "inviteSent": "Approved. The invitation email was sent.",
       "inviteFailed": "Approved, but the invitation email failed to send. They already have access; use Resend invite in the list.",
       "resend": "Resend invite"
+    },
+    "accounts": {
+      "title": "Add an account",
+      "hint": "Add accounts for family members, then give them the email and initial password. They can change the password in Settings after signing in. To keep a family member's health record you don't need a separate account; add them as a family member in your own account.",
+      "name": "Name",
+      "email": "Email",
+      "password": "Initial password (at least 8 characters)",
+      "add": "Add account",
+      "added": "Added. This email and password can sign in now.",
+      "errors": {
+        "exists": "This email already has an account.",
+        "invalid": "Check the name, email and password (at least 8 characters).",
+        "generic": "That didn't work. Please try again."
+      }
     }
   },
   "setup": {

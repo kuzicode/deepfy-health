@@ -1,9 +1,15 @@
 "use server";
 
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db/client";
+import { user } from "@/db/schema";
 import { addAllowedEmail, disableTarget, removeAllowedEmail, setDisabled } from "@/server/access";
+import { getAuth } from "@/server/auth";
+import { masterKey } from "@/server/crypto";
+import { isSelfHosted } from "@/server/edition";
+import { PgRepository } from "@/server/pg-repository";
 import { requireAdmin } from "@/server/session";
 import { approvedRequest, decide, deliverInvite } from "@/server/waitlist";
 
@@ -56,4 +62,52 @@ function showInviteResult(form: FormData, sent: boolean): never {
   const wl = String(form.get("wl") ?? "");
   if (wl) params.set("wl", wl);
   redirect(`/admin?${params}`);
+}
+
+// ---------- 自托管版：账号管理（所有者添加家人账号、重置密码、删除） ----------
+
+export type AccountFormState = { error?: "exists" | "invalid" | "generic" | "mismatch"; done?: boolean };
+
+const field = (form: FormData, k: string) => String(form.get(k) ?? "");
+const apiCode = (e: unknown) => (e as { body?: { code?: string } }).body?.code;
+const apiStatus = (e: unknown) => (e as { statusCode?: number }).statusCode;
+
+/** 停用、重置密码、删除的目标：不能是自己、其他管理员和所有者（见 disableTarget） */
+async function manageableTarget(form: FormData) {
+  const admin = await requireAdmin();
+  if (!isSelfHosted()) return undefined;
+  return disableTarget(getDb(), admin.id, field(form, "userId"));
+}
+
+export async function addUserAction(_prev: AccountFormState, form: FormData): Promise<AccountFormState> {
+  await requireAdmin();
+  if (!isSelfHosted()) return { error: "generic" };
+  try {
+    await getAuth().api.kzCreateUser({ body: { name: field(form, "name"), email: field(form, "email"), password: field(form, "password") } });
+  } catch (e) {
+    return { error: apiCode(e) === "user_exists" ? "exists" : apiStatus(e) === 400 ? "invalid" : "generic" };
+  }
+  revalidatePath("/admin");
+  return { done: true };
+}
+
+export async function resetUserPasswordAction(_prev: AccountFormState, form: FormData): Promise<AccountFormState> {
+  const target = await manageableTarget(form);
+  const password = field(form, "password");
+  if (!target) return { error: "generic" };
+  if (password.length < 8 || password.length > 128) return { error: "invalid" };
+  await getAuth().api.kzSetUserPassword({ body: { userId: target.id, password } });
+  revalidatePath("/admin");
+  return { done: true };
+}
+
+/** 删除账号：先删磁盘上的附件密文，再删账号（档案、密钥、token、会话级联删除） */
+export async function deleteUserAction(_prev: AccountFormState, form: FormData): Promise<AccountFormState> {
+  const target = await manageableTarget(form);
+  if (!target) return { error: "generic" };
+  if (field(form, "confirm").trim().toLowerCase() !== target.email.toLowerCase()) return { error: "mismatch" };
+  await new PgRepository(getDb(), target.id, masterKey()).purgeAttachmentFiles();
+  await getDb().delete(user).where(eq(user.id, target.id));
+  revalidatePath("/admin");
+  return { done: true };
 }

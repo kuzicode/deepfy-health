@@ -7,7 +7,8 @@ import { requireUser } from "@/server/session";
 import { AVATARS, avatarUrl, presetOf } from "@/avatars";
 import { PageHead, SectionHead } from "@/ui/blocks";
 import { setAvatarAction } from "./actions";
-import { DeleteAccountForm, PasswordForm, SignOutButton, SignOutOthersButton } from "./SettingsForms";
+import { isSelfHosted } from "@/server/edition";
+import { ChangePasswordForm, DeleteAccountForm, PasswordForm, SignOutButton, SignOutOthersButton } from "./SettingsForms";
 
 export default async function SettingsPage() {
   const t = await getTranslations("app.settings");
@@ -38,7 +39,9 @@ export default async function SettingsPage() {
               <SignOutOthersButton />
               <SignOutButton label={nav("signOut")} />
             </div>
-            <div className="a-row a-row-block"><PasswordForm email={u.email} hasPassword={!!cred?.password} /></div>
+            {/* 有密码：凭当前密码修改；官方版另外可以用邮箱验证码重置或设置密码（只用 Google 或验证码登录的账号）。自托管不发信，忘记密码找管理员 */}
+            {cred?.password && <div className="a-row a-row-block"><ChangePasswordForm /></div>}
+            {!isSelfHosted() && <div className="a-row a-row-block"><PasswordForm email={u.email} hasPassword={!!cred?.password} resetOnly={!!cred?.password} /></div>}
           </div>
         </section>
 

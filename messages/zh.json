@@ -723,7 +723,11 @@
       "makeSync": "改为本地同步",
       "scopeSyncHint": "Agent 用「可写入」，每次写入都能还原。「本地同步」只给 kzh push 用，整批覆盖，不留修改记录。",
       "signOutOthers": "退出其他设备",
-      "signOutOthersDone": "其他设备已退出登录。"
+      "signOutOthersDone": "其他设备已退出登录。",
+      "passwordCurrent": "当前密码",
+      "passwordChanged": "密码已修改，其他设备都已退出登录。",
+      "passwordWrong": "没有成功：当前密码不正确，或新密码少于 8 位。",
+      "passwordForgot": "忘记当前密码？用邮箱验证码重置"
     },
     "quick": {
       "placeholder": "告诉 agent 就能记录，也可以在这里手动记…",
@@ -1085,7 +1089,16 @@
       "dataSummary": "{members} 份档案 · {docs} 份文档 · {size}",
       "tokens": "{n} 个 token",
       "quota": "{plan} 档：家人 ≤{members}、附件 ≤{size}、token ≤{tokens}",
-      "quotaAdmin": "管理员：不限额度"
+      "quotaAdmin": "管理员：不限额度",
+      "manage": "管理",
+      "resetPassword": "重置密码",
+      "newPassword": "新密码（至少 8 位）",
+      "resetDone": "已重置，这个账号的所有设备都已退出登录。",
+      "deleteUser": "删除账号",
+      "deleteConfirm": "输入 {email} 确认",
+      "deleteHint": "账号和它的全部档案、附件会被永久删除，无法恢复。",
+      "deleteMismatch": "邮箱不一致，没有删除。",
+      "actionFailed": "没有成功，请重试。"
     },
     "errors": {
       "self": "不能停用自己的账号。",
@@ -1111,7 +1124,8 @@
     },
     "registration": {
       "open": "注册状态：开放，所有人都能注册（只用于自托管）。",
-      "restricted": "注册状态：白名单制，只有已开通的邮箱和管理员能注册。"
+      "restricted": "注册状态：白名单制，只有已开通的邮箱和管理员能注册。",
+      "self": "注册状态：自托管，没有公开注册，账号由管理员在这里添加。"
     },
     "allow": {
       "title": "已开通邮箱",
@@ -1159,6 +1173,20 @@
       "inviteSent": "已通过，邀请邮件已发送。",
       "inviteFailed": "已通过，但邀请邮件发送失败。对方已有资格，可以在列表里点「重发邀请」。",
       "resend": "重发邀请"
+    },
+    "accounts": {
+      "title": "添加账号",
+      "hint": "为家人添加账号，把邮箱和初始密码告诉对方。对方登录后可以在「设置」里改密码。只是记录家人的健康档案，不需要单独的账号，在自己的账号里添加家人就行。",
+      "name": "名字",
+      "email": "邮箱",
+      "password": "初始密码（至少 8 位）",
+      "add": "添加账号",
+      "added": "已添加，现在可以用这个邮箱和密码登录。",
+      "errors": {
+        "exists": "这个邮箱已经有账号了。",
+        "invalid": "请检查名字、邮箱和密码（至少 8 位）。",
+        "generic": "没有成功，请重试。"
+      }
     }
   },
   "setup": {

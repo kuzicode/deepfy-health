@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "kzh": "tsx src/cli/kzh.ts",
+    "admin": "tsx src/cli/admin.ts",
     "health": "knip --no-exit-code; jscpd src app --silent --exit-code 0",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",

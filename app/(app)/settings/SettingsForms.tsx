@@ -45,8 +45,10 @@ export function SignOutOthersButton() {
   );
 }
 
+const passwordButton = (resetOnly: boolean, hasPassword: boolean) => (resetOnly ? "passwordForgot" : hasPassword ? "passwordChange" : "passwordSetup");
+
 /** 设置 / 修改密码：先给本人邮箱发验证码，再设新密码（better-auth 会为只用 Google 的账号新建密码登录方式） */
-export function PasswordForm({ email, hasPassword: initial }: { email: string; hasPassword: boolean }) {
+export function PasswordForm({ email, hasPassword: initial, resetOnly = false }: { email: string; hasPassword: boolean; resetOnly?: boolean }) {
   const t = useTranslations("app.settings");
   const [hasPassword, setHasPassword] = useState(initial);
   const [stage, setStage] = useState<"idle" | "code" | "done">("idle");
@@ -71,7 +73,7 @@ export function PasswordForm({ email, hasPassword: initial }: { email: string; h
 
   return (
     <div className="a-form">
-      <p className="muted" style={{ margin: 0, flexBasis: "100%" }}>{hasPassword ? t("passwordSet") : t("passwordNone")}</p>
+      {!resetOnly && <p className="muted" style={{ margin: 0, flexBasis: "100%" }}>{hasPassword ? t("passwordSet") : t("passwordNone")}</p>}
       {stage === "code" ? (
         <form onSubmit={save} className="a-form" style={{ flexBasis: "100%" }}>
           <p className="muted" style={{ margin: 0, flexBasis: "100%" }}>{t("passwordSent", { email })}</p>
@@ -82,10 +84,36 @@ export function PasswordForm({ email, hasPassword: initial }: { email: string; h
           <button type="button" className="btn btn-glass btn-sm" onClick={() => { setStage("idle"); setOtp(""); setPassword(""); setError(false); }}>{t("passwordCancel")}</button>
         </form>
       ) : (
-        <button type="button" className="btn btn-glass btn-sm" disabled={busy} onClick={send}>{hasPassword ? t("passwordChange") : t("passwordSetup")}</button>
+        <button type="button" className={resetOnly ? "link-btn" : "btn btn-glass btn-sm"} disabled={busy} onClick={send}>{t(passwordButton(resetOnly, hasPassword))}</button>
       )}
       {stage === "done" && <p style={{ color: "var(--ok)", margin: 0, flexBasis: "100%" }}>{t("passwordDone")} <a href="/login">{t("passwordRelogin")}</a></p>}
       {error && <p style={{ color: "var(--high)", margin: 0, flexBasis: "100%" }}>{t("passwordError")}</p>}
     </div>
+  );
+}
+
+/** 凭当前密码改密码；改完其他设备下线 */
+export function ChangePasswordForm() {
+  const t = useTranslations("app.settings");
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [state, setState] = useState<"idle" | "busy" | "done" | "error">("idle");
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setState("busy");
+    const res = await authClient.changePassword({ currentPassword: current, newPassword: next, revokeOtherSessions: true }).catch(() => ({ error: true }));
+    if (res.error) return setState("error");
+    setState("done");
+    setCurrent("");
+    setNext("");
+  };
+  return (
+    <form onSubmit={save} className="a-form">
+      <input className="field" type="password" autoComplete="current-password" placeholder={t("passwordCurrent")} value={current} onChange={(e) => setCurrent(e.target.value)} />
+      <input className="field" type="password" autoComplete="new-password" placeholder={t("passwordNew")} value={next} onChange={(e) => setNext(e.target.value)} />
+      <button className="btn btn-primary" disabled={state === "busy" || !current || next.length < 8}>{t("passwordChange")}</button>
+      {state === "done" && <p style={{ color: "var(--ok)", margin: 0, flexBasis: "100%" }}>{t("passwordChanged")}</p>}
+      {state === "error" && <p style={{ color: "var(--high)", margin: 0, flexBasis: "100%" }}>{t("passwordWrong")}</p>}
+    </form>
   );
 }

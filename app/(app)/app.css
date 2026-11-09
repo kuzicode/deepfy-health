@@ -223,6 +223,8 @@ a.a-row:hover { background: var(--surface-2); }
 .token-once code { display: block; word-break: break-all; background: #fff; padding: 8px 10px; margin: 6px 0; border-radius: 8px; font: 400 12.5px/1.5 var(--mono); }
 .btn-danger { background: var(--high); color: #fff; }
 .link-danger { background: none; border: none; color: var(--high); cursor: pointer; font-size: 13px; }
+.link-btn { background: none; border: none; padding: 0; color: var(--brand); cursor: pointer; font: 500 13px/1.4 var(--sans); }
+.link-btn:disabled { color: var(--faint); cursor: not-allowed; }
 
 @media (max-width: 860px) {
   .a-bar-inner { flex-wrap: wrap; height: auto; padding: 8px 8px 8px 12px; gap: 10px; border-radius: 16px; }
