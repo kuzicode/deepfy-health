@@ -9,8 +9,8 @@ import { isHosted } from "@/server/edition";
 
 // 自托管版没有官网域名
 const SITE_HOSTS = isHosted() ? (process.env.KZ_SITE_HOSTS ?? "deepfy.si,www.deepfy.si").split(",").map((s) => s.trim()) : [];
-// 公开路径（鉴权在路由内自行处理）：MCP、登录、条款、API、官网预览，以及图标 / manifest / 分享图 / 品牌素材（邮件里引用 /brand/*）
-const PUBLIC_APP = /^\/(mcp$|login|legal|api\/|site\/|brand\/|avatars\/|icon|apple-icon|favicon\.ico|manifest\.webmanifest|maskable-512\.png|opengraph-image)/;
+// 公开路径（鉴权在路由内自行处理）：MCP、登录、自托管首次设置、条款、API、官网预览，以及图标 / manifest / 分享图 / 品牌素材（邮件里引用 /brand/*）
+const PUBLIC_APP = /^\/(mcp$|login|setup|legal|api\/|site\/|brand\/|avatars\/|icon|apple-icon|favicon\.ico|manifest\.webmanifest|maskable-512\.png|opengraph-image)/;
 
 function withLocale(req: NextRequest, locale: string) {
   const headers = new Headers(req.headers);

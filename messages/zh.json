@@ -1045,7 +1045,10 @@
     "tab_apply": "申请早鸟资格",
     "title_welcome": "欢迎回来",
     "sub_create": "你的早鸟资格已通过，设置密码就能开始使用。",
-    "backToSite": "返回官网"
+    "backToSite": "返回官网",
+    "self": {
+      "forgot": "忘记密码？请管理员在后台重置。"
+    }
   },
   "legal": {
     "back": "返回",
@@ -1156,6 +1159,22 @@
       "inviteSent": "已通过，邀请邮件已发送。",
       "inviteFailed": "已通过，但邀请邮件发送失败。对方已有资格，可以在列表里点「重发邀请」。",
       "resend": "重发邀请"
+    }
+  },
+  "setup": {
+    "title": "创建管理员账号",
+    "sub": "这是这台 Deepfy 的第一个账号。之后可以在后台给家人添加账号。",
+    "name": "你的名字",
+    "email": "电子邮件地址",
+    "password": "密码（至少 8 位）",
+    "confirm": "再输入一次密码",
+    "submit": "创建并进入",
+    "mismatch": "两次输入的密码不一样。",
+    "localOnly": "请用 localhost 或局域网 IP 地址打开这个页面完成设置，例如 http://localhost:3100。",
+    "errors": {
+      "user_exists": "这个邮箱已经有账号了。",
+      "invalid": "请检查名字、邮箱和密码（至少 8 位）。",
+      "generic": "没有创建成功，请重试。"
     }
   }
 }

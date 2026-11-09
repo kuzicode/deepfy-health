@@ -2,13 +2,16 @@ import { ArrowLeft } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { registrationRestricted } from "@/server/access";
-import { googleEnabled } from "@/server/edition";
+import { getDb } from "@/db/client";
+import { googleEnabled, isSelfHosted } from "@/server/edition";
+import { setupDone } from "@/server/setup";
 import { getSession } from "@/server/session";
 import { siteUrl } from "@/site-links";
 import { Wordmark } from "@/ui/Logo";
 import { LocaleToggle } from "@/ui/LocaleToggle";
 import { ClearSignedInMark } from "@/client/signed-in-mark";
 import { LoginView } from "./LoginView";
+import { SelfLoginView } from "./SelfLoginView";
 import "./login.css";
 
 export async function generateMetadata() {
@@ -20,6 +23,19 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   if (await getSession()) redirect("/");
   const { error, mode } = await searchParams;
   const locale = await getLocale();
+  if (isSelfHosted()) {
+    if (!(await setupDone(getDb()))) redirect("/setup");
+    return (
+      <main className="login" lang={locale}>
+        <header className="login-top">
+          <Wordmark />
+          <div className="login-top-right"><LocaleToggle /></div>
+        </header>
+        <SelfLoginView error={error} />
+        <footer className="login-foot" />
+      </main>
+    );
+  }
   const t = await getTranslations("login");
   const support = process.env.KZ_SUPPORT_EMAIL;
   const site = siteUrl(locale);

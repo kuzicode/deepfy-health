@@ -1045,7 +1045,10 @@
     "tab_apply": "Early bird access",
     "title_welcome": "Welcome back",
     "sub_create": "Your early bird access is approved. Set a password to get started.",
-    "backToSite": "Back to website"
+    "backToSite": "Back to website",
+    "self": {
+      "forgot": "Forgot your password? Ask your admin to reset it."
+    }
   },
   "legal": {
     "back": "Back",
@@ -1156,6 +1159,22 @@
       "inviteSent": "Approved. The invitation email was sent.",
       "inviteFailed": "Approved, but the invitation email failed to send. They already have access; use Resend invite in the list.",
       "resend": "Resend invite"
+    }
+  },
+  "setup": {
+    "title": "Create the admin account",
+    "sub": "This is the first account on this Deepfy instance. You can add accounts for your family later in Admin.",
+    "name": "Your name",
+    "email": "Email address",
+    "password": "Password (at least 8 characters)",
+    "confirm": "Enter the password again",
+    "submit": "Create and continue",
+    "mismatch": "The passwords don't match.",
+    "localOnly": "Open this page from localhost or a local network IP address to finish setup, for example http://localhost:3100.",
+    "errors": {
+      "user_exists": "This email already has an account.",
+      "invalid": "Check your name, email and password (at least 8 characters).",
+      "generic": "The account wasn't created. Please try again."
     }
   }
 }
