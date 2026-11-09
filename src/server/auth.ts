@@ -13,7 +13,8 @@ import { resolveLocale } from "@/i18n/resolve";
 import { clientIp, createLimiter } from "./login-lookup";
 import { assignAvatarOnSignup } from "./avatar";
 import { ensureUserKey } from "./pg-repository";
-import { googleEnabled } from "./edition";
+import { googleEnabled, isSelfHosted } from "./edition";
+import { kzAccounts } from "./auth-accounts";
 
 /** 限流器保存 key、数据库保存姓名，这些字段在 better-auth 校验格式之前就要限长，否则一个请求能占用几十 MB 内存 */
 const MAX_LENGTH = { email: 254, name: 100, image: 2048 } as const;
@@ -76,13 +77,27 @@ function assertSignupQuota(req: Request | undefined) {
   if (!signupBudget("all")) throw new APIError("TOO_MANY_REQUESTS", { code: "signup_busy", message: "Sign-ups are full today" });
 }
 
+/**
+ * 自托管版只有邮箱 + 密码登录：不发信，没有公开注册（首次设置和管理员添加账号走 auth-accounts.ts 的 server-only 端点），
+ * 所以关掉注册、验证码、邮件重置密码、改邮箱和第三方登录的接口
+ */
+const SELF_HOSTED_DISABLED = [
+  "/sign-up/email", "/sign-in/email-otp", "/sign-in/social", "/callback/:id", "/link-social",
+  "/email-otp/send-verification-otp", "/email-otp/verify-email", "/email-otp/check-verification-otp", "/email-otp/request-password-reset",
+  "/email-otp/reset-password", "/email-otp/request-email-change", "/email-otp/change-email", "/forget-password/email-otp",
+  "/request-password-reset", "/reset-password", "/reset-password/:token", "/verify-email", "/change-email",
+];
+
 function createAuth() {
   const db = getDb();
+  const self = isSelfHosted();
   return betterAuth({
     // 登录页只用 send-verification-otp。这个接口绕过上面的发信限制，又可以对任何未验证账号调用
-    disabledPaths: ["/send-verification-email"],
-    // 只信反向代理设置的 X-Real-IP：X-Forwarded-For 可以被客户端带上假值
-    advanced: { ipAddress: { ipAddressHeaders: ["x-real-ip"] } },
+    disabledPaths: ["/send-verification-email", ...(self ? SELF_HOSTED_DISABLED : [])],
+    // 只信反向代理设置的 X-Real-IP：X-Forwarded-For 可以被客户端带上假值。
+    // 来源检查显式打开：生产默认就开着，better-auth 在测试环境会默认关掉，写明后测试也覆盖它。
+    // 自托管版不设 BETTER_AUTH_URL，地址和可信来源从每个请求推导，等于同源检查，localhost 和局域网 IP 都能用
+    advanced: { ipAddress: { ipAddressHeaders: ["x-real-ip"] }, disableOriginCheck: false },
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
         assertAuthRequest(ctx.path, ctx.body, ctx.request ? clientIp(ctx.request) : "local");
@@ -93,8 +108,8 @@ function createAuth() {
       provider: "pg",
       schema: { user: schema.user, session: schema.session, account: schema.account, verification: schema.verification },
     }),
-    // 注册：邮箱 + 密码，必须用邮箱验证码完成验证后才能登录
-    emailAndPassword: { enabled: true, requireEmailVerification: true, minPasswordLength: 8, maxPasswordLength: 128, revokeSessionsOnPasswordReset: true },
+    // 官方版注册：邮箱 + 密码，必须用邮箱验证码完成验证后才能登录。自托管版不能自助注册，账号由所有者添加，邮箱视为已验证
+    emailAndPassword: { enabled: true, requireEmailVerification: !self, disableSignUp: self, minPasswordLength: 8, maxPasswordLength: 128, revokeSessionsOnPasswordReset: true },
     emailVerification: {
       sendOnSignUp: true,
       autoSignInAfterVerification: true,
@@ -158,6 +173,7 @@ function createAuth() {
         // 不 await：避免通过响应时间探测邮箱是否存在
         sendVerificationOTP: async ({ email, otp, type }) => { if (type !== "email-verification" || verificationMailsPerDay("all")) void otpLocale().then((locale) => sendOtpEmail(email, otp, type, locale)).catch((e) => console.error("otp mail failed:", e instanceof Error ? e.message : "unknown")); },
       }),
+      kzAccounts(),
       nextCookies(),
     ],
   });
