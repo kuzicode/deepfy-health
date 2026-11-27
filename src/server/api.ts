@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DOC_KINDS, isSafeDocKey, type RawVault } from "@/core/bundle";
+import { DOC_KINDS, HOUSEHOLD_DOC_KINDS, isSafeDocKey, isSafeHouseholdDocKey, type RawVault } from "@/core/bundle";
 import { CatalogEntrySchema, FamilySchema } from "@/core/schema";
 import { getDb, type DB } from "@/db/client";
 import { masterKey } from "./crypto";
@@ -59,17 +59,21 @@ function apiError(e: unknown) {
   return json({ error: "internal" }, 500);
 }
 
-const RawDocSchema = z.object({
-  kind: z.enum(DOC_KINDS),
+const rawDocFields = {
   key: z.string().max(200),
-  data: z.record(z.string(), z.unknown()),
+  data: z.record(z.string(), z.unknown()).refine((data) => JSON.stringify(data).length <= 1_000_000, "文档内容太大"),
   body: z.string().max(200_000),
   updatedAt: z.string().datetime().optional(),
-}).refine((d) => isSafeDocKey(d.kind, d.key), { message: "非法的文档名", path: ["key"] })
-  .refine((d) => JSON.stringify(d.data).length <= 1_000_000, { message: "文档内容太大", path: ["data"] });
+};
+
+const RawDocSchema = z.object({ ...rawDocFields, kind: z.enum(DOC_KINDS) })
+  .refine((d) => isSafeDocKey(d.kind, d.key), { message: "非法的文档名", path: ["key"] });
+const RawHouseholdDocSchema = z.object({ ...rawDocFields, kind: z.enum(HOUSEHOLD_DOC_KINDS) })
+  .refine((d) => isSafeHouseholdDocKey(d.kind, d.key), { message: "非法的家庭文档名", path: ["key"] });
 
 export const RawVaultSchema: z.ZodType<RawVault> = z.object({
   family: FamilySchema,
   customCatalog: z.array(CatalogEntrySchema).max(2000).default([]),
+  householdDocs: z.array(RawHouseholdDocSchema).max(5000).default([]),
   docs: z.record(z.string(), z.array(RawDocSchema)),
 });

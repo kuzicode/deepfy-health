@@ -5,11 +5,12 @@ import type { Profile } from "./schema";
 export interface MemberTemplateInput { id: string; name: string; dir: string; sex: Profile["sex"]; birthDate: string; linkBase: string }
 
 // 按 YAML 1.1 输出：06:00、2026-01-01、yes 这类值会加引号，按 1.1 解析的工具也不会读错（06:00 在 1.1 里是六十进制数）
-export const toYaml = (data: unknown) => YAML.stringify(data, { nullStr: "", version: "1.1" });
+export const toYaml = (data: unknown) => YAML.stringify(data, { nullStr: "", version: "1.1", compat: "core" });
 
 // frontmatter 一律序列化生成，名字里有冒号、引号等字符也能得到合法 YAML
-export function frontmatter(data: Record<string, unknown>, body: string): string {
-  return `---\n${toYaml(data)}---\n\n${body.trim()}\n`;
+export function frontmatter(data: Record<string, unknown>, body: string, preserveBody = false): string {
+  const content = preserveBody ? body : `\n${body.trim()}\n`;
+  return `---\n${toYaml(data)}---\n${content}`;
 }
 
 function profileData(m: MemberTemplateInput) {

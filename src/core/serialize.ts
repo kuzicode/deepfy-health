@@ -1,6 +1,7 @@
 import { isDeepStrictEqual } from "node:util";
 import YAML from "yaml";
-import { CATALOG_FILE, docPath, parseMd, stripNulls, type RawVault } from "./bundle";
+import { CATALOG_FILE, docPath, householdDocPath, parseMd, stripNulls, type RawVault } from "./bundle";
+import { RECIPE_DIR } from "./recipe";
 import { frontmatter, toYaml } from "./templates";
 
 /** 两份文件内容是否等价：md 比较 frontmatter 与正文，yaml 比较解析结果；只是写法不同不算变化 */
@@ -9,6 +10,7 @@ export function sameContent(rel: string, a: string, b: string): boolean {
   try {
     if (rel.endsWith(".md")) {
       const [pa, pb] = [parseMd(a), parseMd(b)];
+      if (rel.startsWith(`${RECIPE_DIR}/`)) return isDeepStrictEqual(pa.data, pb.data) && pa.content === pb.content;
       return isDeepStrictEqual(stripNulls(pa.data), stripNulls(pb.data)) && pa.content.trim() === pb.content.trim();
     }
     return isDeepStrictEqual(stripNulls(YAML.parse(a)), stripNulls(YAML.parse(b)));
@@ -26,5 +28,6 @@ export function rawToFiles(raw: RawVault): Record<string, string> {
   for (const fm of raw.family.members) {
     for (const d of raw.docs[fm.id] ?? []) files[docPath(fm, d)] = frontmatter(d.data, d.body);
   }
+  for (const d of raw.householdDocs ?? []) files[householdDocPath(d)] = frontmatter(d.data, d.body, true);
   return files;
 }

@@ -1,0 +1,31 @@
+filters:
+  and:
+    - 'file.folder == "{{PREFIX}}菜单"'
+    - 'file.ext == "md" && file.name != "菜单" && !file.name.startsWith("_")'
+    - 'title != null'
+formulas:
+  总用时: 'if(prep_minutes != null && cook_minutes != null, prep_minutes + cook_minutes, null)'
+properties:
+  formula.总用时:
+    displayName: 总用时（分钟）
+views:
+  - type: table
+    name: 全部菜谱
+    order: [file.name, category, formula.总用时, rating]
+  - type: table
+    name: 按分类分组
+    groupBy:
+      property: category
+      direction: ASC
+    order: [file.name, cuisine, difficulty]
+  - type: table
+    name: 快手菜（≤30分钟）
+    filters: 'formula.总用时 != null && formula.总用时 <= 30'
+    order: [file.name, prep_minutes, cook_minutes, formula.总用时]
+  - type: table
+    name: 家人高分
+    filters: 'rating >= 4'
+    sort:
+      - property: rating
+        direction: DESC
+    order: [file.name, rating]

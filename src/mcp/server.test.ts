@@ -2,7 +2,7 @@ import path from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { loadVault } from "@/core/vault";
+import { VaultRepository } from "@/core/vault";
 import { createMcpServer } from "./server";
 
 const SAMPLE = path.resolve(import.meta.dirname, "../../examples/sample-vault/Personal");
@@ -16,7 +16,7 @@ describe("MCP 只读工具（示例 vault）", () => {
   };
 
   beforeAll(async () => {
-    const server = createMcpServer({ snapshot: async () => loadVault(SAMPLE), getMember: async () => undefined }, "2026-11-03");
+    const server = createMcpServer(new VaultRepository(SAMPLE), "2026-11-03");
     const [a, b] = InMemoryTransport.createLinkedPair();
     await Promise.all([server.connect(a), client.connect(b)]);
   });

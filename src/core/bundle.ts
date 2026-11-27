@@ -2,6 +2,7 @@ import matter from "gray-matter";
 import YAML from "yaml";
 import type { z } from "zod";
 import { unitsComparable } from "./analysis";
+import { RECIPE_DIR, RecipeSchema, type Recipe } from "./recipe";
 import { BUILTIN_CATALOG } from "./builtin-catalog";
 import {
 
@@ -21,7 +22,22 @@ export type DocKind = (typeof DOC_KINDS)[number];
 /** updatedAt：本地为文件修改时间，云端为最后写入时间（ISO），用于推送时的冲突判断 */
 export interface RawDoc { kind: DocKind; key: string; data: Record<string, unknown>; body: string; updatedAt?: string }
 
+export const HOUSEHOLD_DOC_KINDS = ["recipe"] as const;
+export type HouseholdDocKind = (typeof HOUSEHOLD_DOC_KINDS)[number];
+export type RawHouseholdDoc = Omit<RawDoc, "kind"> & { kind: HouseholdDocKind };
+
+export function isSafeHouseholdDocKey(kind: HouseholdDocKind, key: string): boolean {
+  return kind === "recipe" && key !== RECIPE_DIR && key.trim().length > 0 && key.length <= 200
+    && !/^[._]|[\\/\p{Cc}]|\.\./u.test(key);
+}
+
+export function householdDocPath({ kind, key }: Pick<RawHouseholdDoc, "kind" | "key">): string {
+  if (!isSafeHouseholdDocKey(kind, key)) throw new Error("非法的家庭文档名");
+  return `${RECIPE_DIR}/${key}.md`;
+}
+
 export interface RawVault {
+  householdDocs?: RawHouseholdDoc[];
   family: Family;
   customCatalog: CatalogEntry[];
   docs: Record<string, RawDoc[]>; // 按成员 id
@@ -32,10 +48,16 @@ export interface VaultSnapshot {
   family: Family;
   catalog: Catalog;
   members: MemberBundle[];
+  recipes: Recipe[];
   issues: ValidationIssue[];
 }
 
+export interface MemberStub { id: string; name: string; dir?: string; role: "admin" | "member" }
+
 export interface HealthReader {
+  listMemberStubs(): Promise<MemberStub[]>;
+  listRecipes(): Promise<Recipe[]>;
+  getRecipe(slug: string): Promise<Recipe | undefined>;
   snapshot(): Promise<VaultSnapshot>;
   getMember(id: string): Promise<{ member: MemberBundle; catalog: Catalog } | undefined>;
 }
@@ -66,7 +88,13 @@ export function docPath(m: { id: string; dir?: string }, d: { kind: DocKind; key
   }
 }
 
-export const parseMd = (raw: string) => matter(raw, { engines: { yaml: (s: string) => YAML.parse(s) ?? {} } });
+export const parseMd = (raw: string) => matter(raw, {
+  engines: {
+    yaml: (s: string) => YAML.parse(s) ?? {},
+    // gray-matter 默认会执行由文件指定的 JavaScript。
+    javascript: () => { throw new Error("不支持 JavaScript frontmatter"); },
+  },
+});
 
 // Obsidian/agent 常留空字段（`height_cm:`），YAML 解析为 null，按“未填写”处理
 export function stripNulls(v: unknown): unknown {
@@ -82,8 +110,8 @@ export class Issues {
   error = (file: string, message: string) => void this.list.push({ level: "error", file, message });
   warn = (file: string, message: string) => void this.list.push({ level: "warning", file, message });
 
-  parse<S extends z.ZodType>(schema: S, data: unknown, file: string): z.infer<S> | undefined {
-    const res = schema.safeParse(stripNulls(data));
+  parse<S extends z.ZodType>(schema: S, data: unknown, file: string, keepNulls = false): z.infer<S> | undefined {
+    const res = schema.safeParse(keepNulls ? data : stripNulls(data));
     if (res.success) return res.data;
     for (const i of res.error.issues) this.error(file, `${i.path.join(".") || "(root)"}: ${i.message}`);
     return undefined;
@@ -204,13 +232,31 @@ function buildMember(ctx: Ctx, fm: FM, docs: RawDoc[]): MemberBundle {
   return { ...empty, profile, ...out, regimen: loadRegimen(mc, single("regimen")), carePlan: carePlanDoc && parse(CarePlanSchema, carePlanDoc) };
 }
 
+export function buildRecipes(docs: RawHouseholdDoc[], issues: Issues, attachmentExists?: (rel: string) => boolean): Recipe[] {
+  const recipes: Recipe[] = [];
+  for (const d of docs) {
+    if (!isSafeHouseholdDocKey(d.kind, d.key)) {
+      issues.error(RECIPE_DIR, `非法的家庭文档名：${JSON.stringify(d.key)}`);
+      continue;
+    }
+    const file = householdDocPath(d);
+    const data = issues.parse(RecipeSchema, d.data, file, true);
+    if (!data) continue;
+    if (data.cover && attachmentExists && !attachmentExists(`${RECIPE_DIR}/${data.cover}`)) issues.warn(file, `封面不存在：${data.cover}`);
+    recipes.push({ ...data, slug: d.key, body: d.body, updatedAt: d.updatedAt });
+  }
+  const updated = (r: Recipe) => r.updated ?? r.updatedAt ?? "";
+  return recipes.sort((a, b) => updated(b).localeCompare(updated(a)) || a.title.localeCompare(b.title, "zh-CN"));
+}
+
 export function buildSnapshot(
   raw: RawVault,
-  opts: { root: string; issues?: Issues; attachmentExists?: Ctx["attachmentExists"] },
+  opts: { root: string; issues?: Issues; attachmentExists?: Ctx["attachmentExists"]; householdAttachmentExists?: (rel: string) => boolean },
 ): VaultSnapshot {
   const issues = opts.issues ?? new Issues();
   const catalog = mergeCatalog(raw.customCatalog);
   const ctx: Ctx = { issues, catalog, attachmentExists: opts.attachmentExists };
   const members = raw.family.members.map((fm) => buildMember(ctx, fm, raw.docs[fm.id] ?? []));
-  return { root: opts.root, family: raw.family, catalog, members, issues: issues.list };
+  const recipes = buildRecipes(raw.householdDocs ?? [], issues, opts.householdAttachmentExists);
+  return { root: opts.root, family: raw.family, catalog, members, recipes, issues: issues.list };
 }

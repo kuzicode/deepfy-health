@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-11-09
+last_updated: 2026-11-28
 status: active
 ---
 
@@ -22,6 +22,7 @@ status: active
 
 | ID | 状态 | 一句话 | 位置 |
 |---|---|---|---|
+| ISS-022 | resolved | `gray-matter` 默认启用可执行 JavaScript frontmatter（`---js`），读取外部或导入 Markdown 时存在代码执行风险 | issues.md |
 | ISS-021 | resolved | 自托管版在 Docker 和局域网 HTTP 下的登录问题：可信来源取到容器内部地址；`__Secure-` cookie 被浏览器丢弃 | issues.md |
 | ISS-020 | resolved | `/mcp` 和导入接口只看 `Content-Length`，分块发送能绕过大小限制；磁盘不足时上传失败，附件清理也等不到触发 | issues.md |
 | ISS-018 | resolved | 公开前审查：Google 未验证邮箱可关联账号；重置密码不结束会话；验证码限次可被用来锁号；附件可能被截断 | issues.md |
@@ -44,6 +45,14 @@ status: active
 | ISS-001 | resolved | 建档未校验即写盘、跨单位套用默认范围等 5 项 review 问题 | archive |
 
 ---
+
+## ISS-022 — `gray-matter` 默认可执行 JavaScript frontmatter [resolved]
+
+- **日期**：2026-11-28（实现菜谱 Markdown 解析回归测试时排查 `parseMd` 发现）
+- **现象**：`gray-matter` 默认注册 `javascript` / `js` 引擎，遇到 `---js` 头部会直接执行其中的 JS 代码，不符合 SEC6「导入与外部 Markdown 一律不可信」原则。
+- **根因**：`src/core/bundle.ts` 的 `parseMd` 只覆盖了 `yaml` 引擎，未禁用默认 `javascript` 引擎。
+- **修复**：在 `parseMd` 的 `engines.javascript` 中显式抛错拒绝，并补充回归测试（`src/core/recipe.test.ts`）。
+- **经验**：引入支持多语言 frontmatter 的解析库时，必须显式禁用除 YAML 外的可执行引擎。
 
 ## ISS-021 — 自托管版在 Docker 和局域网 HTTP 下登录失败 [resolved]
 

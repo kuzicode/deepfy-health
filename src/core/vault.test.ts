@@ -3,6 +3,8 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { abnormalReadings, latestReadings, series } from "./analysis";
+import { Issues } from "./bundle";
+import { RECIPE_ASSETS_DIR, mergeRecipeFrontmatter } from "./recipe";
 import { VaultRepository, loadVault, obsidianLinkPrefix, readVaultRaw, resolveHealthDir, resolveIndexFile } from "./vault";
 
 const SAMPLE = path.resolve(import.meta.dirname, "../../examples/sample-vault/Personal");
@@ -19,6 +21,9 @@ describe("sample vault", () => {
   const mom = s.members.find((m) => m.id === "mom")!;
 
   it("无校验问题", () => expect(s.issues).toEqual([]));
+  it("载入三道示例菜谱", () => {
+    expect(s.recipes.map((r) => r.slug).sort()).toEqual(["清蒸鲈鱼", "番茄炖牛腩", "蒜蓉西兰花"].sort());
+  });
   it("合并自定义 catalog", () => expect(s.catalog.get("NSE")?.name).toBe("神经元特异性烯醇化酶"));
   it("日期保持字符串", () => expect(kz.profile?.birth_date).toBe("1990-05-20"));
 
@@ -62,6 +67,22 @@ describe("校验", () => {
     expect(loadVault(dir).issues).toEqual([]);
     fs.writeFileSync(path.join(recs, "复查.md"), body);
     expect(loadVault(dir).issues).toMatchObject([{ level: "warning", file: "KZ/Health/records/复查.md" }]);
+  });
+
+  it("家庭目录免警告，未知目录仍有警告", () => {
+    const root = tempCopy();
+    for (const name of ["生活", "分类", "OtherDir"]) fs.mkdirSync(path.join(root, name));
+    const issues = new Issues();
+    readVaultRaw(root, issues);
+    expect(issues.list).toMatchObject([{ file: "OtherDir", level: "warning" }]);
+  });
+
+  it("缺少封面时保留菜谱并提示对应文件", () => {
+    const root = tempCopy();
+    fs.unlinkSync(path.join(root, RECIPE_ASSETS_DIR, "番茄炖牛腩.png"));
+    const snapshot = loadVault(root);
+    expect(snapshot.recipes).toHaveLength(3);
+    expect(snapshot.issues).toMatchObject([{ level: "warning", file: "菜单/番茄炖牛腩.md", message: expect.stringContaining("assets/番茄炖牛腩.png") }]);
   });
 
   it("缺 family.yaml 报错", () => {
@@ -145,6 +166,7 @@ describe("createMember", () => {
 
     // 已有 家庭.md 时 init 也不生成多余 Personal.md
     const copied = await repo.init(path.resolve(import.meta.dirname, "../../templates/Personal"));
+    expect(fs.readFileSync(path.join(root, "菜单/菜单.md"), "utf8")).toContain("![[20-家庭/菜单/菜单库.base]]");
     expect(copied.some((f) => path.basename(f) === "Personal.md")).toBe(false);
     expect(fs.existsSync(path.join(root, "Personal.md"))).toBe(false);
   });
@@ -204,13 +226,24 @@ describe("序列化", () => {
   it("rawToFiles 往返后语义一致，时间与日期加引号", async () => {
     const { rawToFiles, sameContent } = await import("./serialize");
     const raw = readVaultRaw(SAMPLE);
+    const recipe = raw.householdDocs!.find((d) => d.key === "番茄炖牛腩")!;
+    recipe.data = mergeRecipeFrontmatter(recipe.data, { aliases: ["周末炖菜"], rating: 4, custom: { note: null, label: "0o17" } });
+    recipe.body += "\n    [[周末菜单|搭配]]  \n";
     const files = rawToFiles(raw);
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "kzh-"));
     for (const [rel, content] of Object.entries(files)) {
       fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true });
       fs.writeFileSync(path.join(dir, rel), content);
     }
+    fs.cpSync(path.join(SAMPLE, RECIPE_ASSETS_DIR), path.join(dir, RECIPE_ASSETS_DIR), { recursive: true });
     expect(loadVault(dir).issues).toEqual([]);
+    const restored = readVaultRaw(dir).householdDocs!.find((d) => d.key === recipe.key)!;
+    expect(restored.data).toEqual(recipe.data);
+    expect(restored.data.source).toBe("家里传承");
+    expect(restored.body).toBe(recipe.body);
+    const content = files["菜单/番茄炖牛腩.md"];
+    expect(sameContent("菜单/番茄炖牛腩.md", content, content.replace("  note:\n", ""))).toBe(false);
+    expect(sameContent("菜单/番茄炖牛腩.md", content, content.trimEnd())).toBe(false);
     expect(files["Mom/Health/regimen.md"]).toContain('- "06:00"');
     const original = fs.readFileSync(path.join(SAMPLE, "Mom/Health/regimen.md"), "utf8");
     expect(sameContent("x.md", original, files["Mom/Health/regimen.md"])).toBe(true);

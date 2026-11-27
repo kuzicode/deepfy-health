@@ -2,13 +2,15 @@ import fs from "node:fs";
 import path from "node:path";
 import YAML from "yaml";
 import {
-  CATALOG_FILE, DOC_KINDS, Issues, buildSnapshot, docPath, parseMd, stripNulls,
-  type DocKind, type HealthReader, type RawDoc, type RawVault, type VaultSnapshot,
+  CATALOG_FILE, DOC_KINDS, Issues, buildRecipes, buildSnapshot, docPath, householdDocPath, isSafeHouseholdDocKey, parseMd, stripNulls,
+  type DocKind, type HealthReader, type HouseholdDocKind, type RawDoc, type RawHouseholdDoc, type RawVault, type VaultSnapshot,
 } from "./bundle";
 import { CatalogFileSchema, FamilyMemberSchema, FamilySchema, ProfileSchema, type Family, type Profile } from "./schema";
+import { RECIPE_DIR } from "./recipe";
 import { memberTemplates } from "./templates";
 
 export { type VaultSnapshot };
+const HOUSEHOLD_DIRS = new Set([RECIPE_DIR, "生活", "分类"]);
 const MEMBERS_END = "%% members:end %%";
 
 export interface NewMember { id: string; name: string; dir?: string; sex: Profile["sex"]; birthDate: string; role?: "admin" | "member" }
@@ -70,13 +72,12 @@ function readYaml(issues: Issues, file: string, rel: string): unknown {
   }
 }
 
-function readDoc(issues: Issues, root: string, kind: DocKind, key: string, fm: { id: string; dir?: string }): RawDoc | undefined {
-  const rel = docPath(fm, { kind, key });
+function readDoc<K extends DocKind | HouseholdDocKind>(issues: Issues, root: string, rel: string, doc: { kind: K; key: string }) {
   const file = path.join(/*turbopackIgnore: true*/ root, rel);
   if (!fs.existsSync(file)) return undefined;
   try {
-    const { data, content } = parseMd(fs.readFileSync(file, "utf8"));
-    return { kind, key, data, body: content, updatedAt: fs.statSync(file).mtime.toISOString() };
+    const { data, content } = parseMd(fs.readFileSync(/*turbopackIgnore: true*/ file, "utf8"));
+    return { ...doc, data, body: content, updatedAt: fs.statSync(/*turbopackIgnore: true*/ file).mtime.toISOString() };
   } catch (e) {
     issues.error(rel, `frontmatter 解析失败：${(e as Error).message}`);
   }
@@ -93,23 +94,55 @@ function readMemberDocs(issues: Issues, root: string, fm: Family["members"][numb
     ...mdKeys(path.join(hd, "indicators")).map((k): [DocKind, string] => ["note", k]),
     ...mdKeys(path.join(hd, "logs")).map((k): [DocKind, string] => ["log", k]),
   ];
-  return keys.map(([kind, key]) => readDoc(issues, root, kind, key, fm)).filter((d): d is RawDoc => !!d);
+  return keys.map(([kind, key]) => readDoc(issues, root, docPath(fm, { kind, key }), { kind, key })).filter((d) => d !== undefined);
+}
+
+function recipeKeys(dir: string, slug?: string): string[] {
+  if (slug !== undefined) {
+    const file = path.join(/*turbopackIgnore: true*/ dir, `${slug}.md`);
+    return fs.lstatSync(/*turbopackIgnore: true*/ file, { throwIfNoEntry: false })?.isFile() ? [slug] : [];
+  }
+  return fs.readdirSync(/*turbopackIgnore: true*/ dir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".md") && !entry.name.startsWith("_"))
+    .map((entry) => entry.name.slice(0, -3));
+}
+
+function readHouseholdDocs(root: string, issues: Issues, slug?: string): RawHouseholdDoc[] {
+  const dir = path.join(/*turbopackIgnore: true*/ root, RECIPE_DIR);
+  if (!fs.lstatSync(/*turbopackIgnore: true*/ dir, { throwIfNoEntry: false })?.isDirectory()) return [];
+  const docs: RawHouseholdDoc[] = [];
+  for (const key of recipeKeys(dir, slug)) {
+    if (key === RECIPE_DIR) continue;
+    const doc = { kind: "recipe" as const, key };
+    if (!isSafeHouseholdDocKey(doc.kind, key)) {
+      issues.error(RECIPE_DIR, `非法的家庭文档名：${JSON.stringify(key)}`);
+      continue;
+    }
+    const data = readDoc(issues, root, householdDocPath(doc), doc);
+    if (data) docs.push(data);
+  }
+  return docs;
+}
+
+function readFamily(root: string, issues: Issues): Family {
+  const file = path.join(/*turbopackIgnore: true*/ root, "family.yaml");
+  if (!fs.existsSync(file)) issues.error("family.yaml", "缺少 family.yaml（可用 kzh init 初始化）");
+  return issues.parse(FamilySchema, readYaml(issues, file, "family.yaml") ?? {}, "family.yaml") ?? { members: [] };
 }
 
 /** 读 vault 为中间格式；family.yaml / indicators.yaml 在这里校验 */
 export function readVaultRaw(root: string, issues = new Issues()): RawVault {
-  if (!fs.existsSync(path.join(root, "family.yaml"))) issues.error("family.yaml", "缺少 family.yaml（可用 kzh init 初始化）");
-  const family = issues.parse(FamilySchema, readYaml(issues, path.join(root, "family.yaml"), "family.yaml") ?? {}, "family.yaml") ?? { members: [] };
+  const family = readFamily(root, issues);
   const custom = issues.parse(CatalogFileSchema, readYaml(issues, path.join(root, CATALOG_FILE), CATALOG_FILE) ?? {}, CATALOG_FILE);
   const docs = Object.fromEntries(family.members.map((fm) => [fm.id, readMemberDocs(issues, root, fm)]));
 
-  const known = new Set(family.members.map((m) => m.dir ?? m.id));
+  const known = new Set([...HOUSEHOLD_DIRS, ...family.members.map((m) => m.dir ?? m.id)]);
   if (fs.existsSync(root)) {
     for (const d of fs.readdirSync(root, { withFileTypes: true })) {
       if (d.isDirectory() && !/^[._]/.test(d.name) && !known.has(d.name)) issues.warn(d.name, "目录不在 family.yaml 的 members 里，已忽略");
     }
   }
-  return { family, customCatalog: custom?.indicators ?? [], docs };
+  return { family, customCatalog: custom?.indicators ?? [], docs, householdDocs: readHouseholdDocs(root, issues) };
 }
 
 export function loadVault(root: string): VaultSnapshot {
@@ -119,6 +152,7 @@ export function loadVault(root: string): VaultSnapshot {
   return buildSnapshot(raw, {
     root,
     issues,
+    householdAttachmentExists: (rel) => fs.existsSync(path.join(/*turbopackIgnore: true*/ root, rel)),
     attachmentExists: (id, rel) => fs.existsSync(path.join(/*turbopackIgnore: true*/ healthDir(root, byId.get(id)!), rel)),
   });
 }
@@ -128,6 +162,24 @@ export class VaultRepository implements HealthRepository {
 
   async snapshot() {
     return loadVault(this.root);
+  }
+
+  async listMemberStubs() {
+    return readFamily(this.root, new Issues()).members.map(({ id, name, dir, role }) => ({ id, name, dir, role }));
+  }
+
+  private recipes(slug?: string) {
+    const issues = new Issues();
+    return buildRecipes(readHouseholdDocs(this.root, issues, slug), issues);
+  }
+
+  async listRecipes() {
+    return this.recipes();
+  }
+
+  async getRecipe(slug: string) {
+    if (!isSafeHouseholdDocKey("recipe", slug)) return undefined;
+    return this.recipes(slug)[0];
   }
 
   async getMember(id: string) {

@@ -1,5 +1,6 @@
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { DOC_KINDS, buildSnapshot, type DocKind, type HealthReader, type RawDoc, type RawVault, type VaultSnapshot } from "@/core/bundle";
+import type { Recipe } from "@/core/recipe";
 import { FamilyMemberSchema } from "@/core/schema";
 import type { DB } from "@/db/client";
 import { agentChange, attachment, doc, household, member } from "@/db/schema";
@@ -12,6 +13,12 @@ import { ImportRejected, NotFound, RevertConflict, docAad, docContent, ensureUse
 
 // 对外入口：类型与错误定义在 repo-base，写文档在 doc-write，附件在 attachment-store；调用方只从这里导入
 export { ImportRejected, KeyTaken, NotFound, RevertConflict, ensureUserKey, type AuditInfo, type Change, type ImportResult } from "./repo-base";
+
+function memberStub(m: typeof member.$inferSelect, dek: Buffer) {
+  return FamilyMemberSchema.parse({
+    id: m.slug, name: open(dek, m.nameCipher, nameAad(m.userId, m.slug)).toString(), role: m.role, dir: m.dir ?? undefined,
+  });
+}
 
 /** 当前登录用户的云端数据；所有查询都按 userId 限定（SEC） */
 export class PgRepository implements HealthReader {
@@ -46,9 +53,7 @@ export class PgRepository implements HealthReader {
     const docs = members.length ? await q.select().from(doc).where(inArray(doc.memberId, members.map((m) => m.id))) : [];
     const family = {
       family: hh?.name ?? undefined,
-      members: members.map((m) => FamilyMemberSchema.parse({
-        id: m.slug, name: open(dek, m.nameCipher, nameAad(this.userId, m.slug)).toString(), role: m.role, dir: m.dir ?? undefined,
-      })),
+      members: members.map((m) => memberStub(m, dek)),
     };
     const out: Record<string, RawDoc[]> = Object.fromEntries(members.map((m) => [m.slug, []]));
     for (const d of docs) {
@@ -65,6 +70,21 @@ export class PgRepository implements HealthReader {
     const atts = members.length ? await this.db.select({ memberId: attachment.memberId, relPath: attachment.relPath }).from(attachment).where(inArray(attachment.memberId, members.map((m) => m.id))) : [];
     const have = new Set(atts.map((a) => `${members.find((m) => m.id === a.memberId)!.slug}/${a.relPath}`));
     return buildSnapshot(raw, { root: "cloud", attachmentExists: (id, rel) => have.has(`${id}/${rel}`) });
+  }
+
+  async listMemberStubs() {
+    const members = await this.members();
+    if (!members.length) return [];
+    const dek = await this.dek();
+    return members.map((m) => memberStub(m, dek));
+  }
+
+  async listRecipes(): Promise<Recipe[]> {
+    return [];
+  }
+
+  async getRecipe(slug: string) {
+    return (await this.listRecipes()).find((recipe) => recipe.slug === slug);
   }
 
   async getMember(id: string) {
