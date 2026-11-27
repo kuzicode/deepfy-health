@@ -20,7 +20,7 @@ const image = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 13, 10, 26, 10, 9]);
 
 vi.mock("@/db/client", () => ({ getDb: () => fixture.db }));
 vi.mock("./tokens", () => ({ tokenAuth: (_db: unknown, header: string | null) =>
-  header && { userId: header === "Bearer other" ? "other" : uid, scope: header.slice(7) } }));
+  header && { userId: header === "Bearer other" ? "other" : uid, domains: null, scope: header.slice(7) } }));
 vi.mock("./session", () => ({ getSession: () => ({ user: { id: uid } }), userRepository: () => repo }));
 
 beforeEach(async () => {

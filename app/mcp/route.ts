@@ -63,7 +63,7 @@ async function serve(req: Request, auth: TokenAuth) {
   const write = auth.scope === "write"
     ? { writer: repo, audit: { tokenId: auth.tokenId, tokenName: auth.name }, appUrl: appOrigin(req) }
     : undefined;
-  const server = createMcpServer(repo, undefined, write);
+  const server = createMcpServer(repo, undefined, write, auth.domains);
   const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
   await server.connect(transport);
   try {

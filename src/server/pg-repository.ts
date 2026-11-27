@@ -1,5 +1,5 @@
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
-import { DOC_KINDS, Issues, buildRecipes, buildSnapshot, isSafeHouseholdDocKey, type HouseholdDocKind, type RawHouseholdDoc, type DocKind, type HealthReader, type RawDoc, type RawVault, type VaultSnapshot } from "@/core/bundle";
+import { DOC_KINDS, Issues, buildRecipes, buildSnapshot, memberFromDocs, isSafeHouseholdDocKey, type HouseholdDocKind, type RawHouseholdDoc, type DocKind, type HealthReader, type RawDoc, type RawVault, type VaultSnapshot } from "@/core/bundle";
 import type { Recipe } from "@/core/recipe";
 import { FamilyMemberSchema } from "@/core/schema";
 import type { DB } from "@/db/client";
@@ -27,6 +27,11 @@ function memberStub(m: typeof member.$inferSelect, dek: Buffer) {
   return FamilyMemberSchema.parse({
     id: m.slug, name: open(dek, m.nameCipher, nameAad(m.userId, m.slug)).toString(), role: m.role, dir: m.dir ?? undefined,
   });
+}
+
+function openDoc(dek: Buffer, row: typeof doc.$inferSelect): RawDoc {
+  const { data, body } = JSON.parse(open(dek, row.ciphertext, docAad(row.memberId, row.kind, row.key)).toString());
+  return { kind: row.kind as DocKind, key: row.key, data, body, updatedAt: row.updatedAt.toISOString() };
 }
 
 /** 当前登录用户的云端数据；所有查询都按 userId 限定（SEC） */
@@ -67,8 +72,7 @@ export class PgRepository implements HealthReader {
     const out: Record<string, RawDoc[]> = Object.fromEntries(members.map((m) => [m.slug, []]));
     for (const d of docs) {
       const m = members.find((x) => x.id === d.memberId)!;
-      const { data, body } = JSON.parse(open(dek, d.ciphertext, docAad(m.id, d.kind, d.key)).toString());
-      out[m.slug].push({ kind: d.kind as DocKind, key: d.key, data, body, updatedAt: d.updatedAt.toISOString() });
+      out[m.slug].push(openDoc(dek, d));
     }
     return { family, customCatalog: (hh?.customCatalog ?? []) as RawVault["customCatalog"], docs: out, householdDocs };
   }
@@ -112,9 +116,13 @@ export class PgRepository implements HealthReader {
   }
 
   async getMember(id: string) {
-    const s = await this.snapshot();
-    const m = s.members.find((x) => x.id === id);
-    return m && { member: m, catalog: s.catalog };
+    const m = await this.db.query.member.findFirst({ where: and(eq(member.userId, this.userId), eq(member.slug, id)) });
+    if (!m) return undefined;
+    const [dek, rows, hh] = await Promise.all([
+      this.dek(), this.db.select().from(doc).where(eq(doc.memberId, m.id)),
+      this.db.query.household.findFirst({ columns: { customCatalog: true }, where: eq(household.userId, this.userId) }),
+    ]);
+    return memberFromDocs(memberStub(m, dek), rows.map((d) => openDoc(dek, d)), (hh?.customCatalog ?? []) as RawVault["customCatalog"]);
   }
 
   /** 保存家人的显示顺序。必须正好是这个账号的全部家人，否则不改（页面过期时刷新后重排） */

@@ -27,6 +27,7 @@ async function authorize(db: DB, req: Request, needSync?: boolean) {
   const auth = await tokenAuth(db, req.headers.get("authorization"));
   if (!auth) return json({ error: "unauthorized" }, 401);
   if (!perUser(auth.userId)) return rateLimited();
+  if (auth.domains !== null) return json({ error: "domain_restricted" }, 403);
   if (needSync && auth.scope !== "sync") return json({ error: "sync_token_required", message: "kzh push needs a token with the local sync permission. Set it at /agents." }, 403);
   return auth;
 }

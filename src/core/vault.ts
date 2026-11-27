@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import YAML from "yaml";
 import {
-  CATALOG_FILE, DOC_KINDS, Issues, buildRecipes, buildSnapshot, docPath, householdDocPath, isSafeHouseholdDocKey, parseMd, stripNulls,
+  CATALOG_FILE, DOC_KINDS, Issues, buildRecipes, buildSnapshot, memberFromDocs, docPath, householdDocPath, isSafeHouseholdDocKey, parseMd, stripNulls,
   type DocKind, type HealthReader, type HouseholdDocKind, type RawDoc, type RawHouseholdDoc, type RawVault, type VaultSnapshot,
 } from "./bundle";
 import { CatalogFileSchema, FamilyMemberSchema, FamilySchema, ProfileSchema, type Family, type Profile } from "./schema";
@@ -130,10 +130,15 @@ function readFamily(root: string, issues: Issues): Family {
   return issues.parse(FamilySchema, readYaml(issues, file, "family.yaml") ?? {}, "family.yaml") ?? { members: [] };
 }
 
+function readCustomCatalog(root: string, issues: Issues) {
+  const custom = issues.parse(CatalogFileSchema, readYaml(issues, path.join(root, CATALOG_FILE), CATALOG_FILE) ?? {}, CATALOG_FILE);
+  return custom?.indicators ?? [];
+}
+
 /** 读 vault 为中间格式；family.yaml / indicators.yaml 在这里校验 */
 export function readVaultRaw(root: string, issues = new Issues()): RawVault {
   const family = readFamily(root, issues);
-  const custom = issues.parse(CatalogFileSchema, readYaml(issues, path.join(root, CATALOG_FILE), CATALOG_FILE) ?? {}, CATALOG_FILE);
+  const customCatalog = readCustomCatalog(root, issues);
   const docs = Object.fromEntries(family.members.map((fm) => [fm.id, readMemberDocs(issues, root, fm)]));
 
   const known = new Set([...HOUSEHOLD_DIRS, ...family.members.map((m) => m.dir ?? m.id)]);
@@ -142,7 +147,7 @@ export function readVaultRaw(root: string, issues = new Issues()): RawVault {
       if (d.isDirectory() && !/^[._]/.test(d.name) && !known.has(d.name)) issues.warn(d.name, "目录不在 family.yaml 的 members 里，已忽略");
     }
   }
-  return { family, customCatalog: custom?.indicators ?? [], docs, householdDocs: readHouseholdDocs(root, issues) };
+  return { family, customCatalog, docs, householdDocs: readHouseholdDocs(root, issues) };
 }
 
 export function loadVault(root: string): VaultSnapshot {
@@ -183,9 +188,9 @@ export class VaultRepository implements HealthRepository {
   }
 
   async getMember(id: string) {
-    const s = loadVault(this.root);
-    const member = s.members.find((m) => m.id === id);
-    return member && { member, catalog: s.catalog };
+    const issues = new Issues();
+    const fm = readFamily(this.root, issues).members.find((m) => m.id === id);
+    return fm && memberFromDocs(fm, readMemberDocs(issues, this.root, fm), readCustomCatalog(this.root, issues));
   }
 
   async createMember(input: NewMember) {

@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { ArrowLeft, Star } from "lucide-react";
+import { assessRecipeForMember } from "@/core/recipe-health";
+import { HealthFitPanel } from "@/ui/kitchen/HealthFitPanel";
 import type { Recipe } from "@/core/recipe";
 import { cloudMode } from "@/db/client";
 import { recipeCategory, recipeDifficulty } from "@/ui/i18n";
@@ -12,8 +15,8 @@ import { RecipeEditor } from "@/ui/kitchen/RecipeEditor";
 import { DeleteRecipe } from "@/ui/kitchen/DeleteRecipe";
 import { IngredientChecklist } from "@/ui/kitchen/IngredientChecklist";
 
-async function RecipeHeader({ recipe: r }: { recipe: Recipe }) {
-  const t = await getTranslations("app.kitchen");
+function RecipeHeader({ recipe: r }: { recipe: Recipe }) {
+  const t = useTranslations("app.kitchen");
   const stats = [
     [t("servings"), r.servings], [t("prep"), r.prep_minutes === undefined ? undefined : t("minutes", { n: r.prep_minutes })],
     [t("cook"), r.cook_minutes === undefined ? undefined : t("minutes", { n: r.cook_minutes })],
@@ -35,10 +38,14 @@ async function RecipeHeader({ recipe: r }: { recipe: Recipe }) {
   );
 }
 
-export default async function RecipePage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function RecipePage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ for?: string | string[] }> }) {
   const slug = decodeURIComponent((await params).slug);
-  const r = await (await getReader()).getRecipe(slug);
+  const reader = await getReader();
+  const [r, members, query] = await Promise.all([reader.getRecipe(slug), reader.listMemberStubs(), searchParams]);
   if (!r) notFound();
+  const selected = members.find((m) => m.id === query.for);
+  const found = selected && await reader.getMember(selected.id);
+  const assessment = found && assessRecipeForMember(r, found.member, found.catalog);
   const t = await getTranslations("app.kitchen");
   return (
     <>
@@ -51,6 +58,7 @@ export default async function RecipePage({ params }: { params: Promise<{ slug: s
         {!!r.ingredients?.length && <IngredientChecklist key={r.slug} ingredients={r.ingredients} />}
         <section className="a-kitchen-panel a-kitchen-method"><h2>{t("steps")}</h2><Markdown source={r.body} /></section>
       </div>
+      <HealthFitPanel slug={r.slug} members={members} selected={selected?.id} assessment={assessment} />
     </>
   );
 }

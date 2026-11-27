@@ -4,6 +4,10 @@ import { MAX_DOC_BODY_LENGTH, isSafeHouseholdDocKey, type HealthReader, type Raw
 import { MAX_RECIPE_COVER_BYTES, availableRecipeSlug, recipeBody, RECIPE_DIR, RecipeSchema, isSafeRecipeCover, mergeRecipeFrontmatter, recipeSlugFromTitle, type Recipe } from "@/core/recipe";
 import { sha256 } from "@/server/crypto";
 import { sniffImage } from "@/server/quick-entry";
+import { abnormalReadings } from "@/core/analysis";
+import { activeConditions, assessRecipeForMember, recordedAllergies } from "@/core/recipe-health";
+import { FamilyMemberSchema, type Catalog, type MemberBundle } from "@/core/schema";
+import { DATA_NOTE } from "./contract";
 import { ToolError } from "./tools";
 import type { ToolFn, WriteDeps, SavedFn } from "./write-tools";
 
@@ -49,6 +53,34 @@ export function registerKitchenReads(server: McpServer, reader: HealthReader) {
   }, async ({ slug }) => {
     const recipe = await reader.getRecipe(slug);
     return recipe ? text(recipe) : { isError: true, content: [{ type: "text", text: "Recipe not found" }] };
+  });
+}
+
+function dietContext(member: MemberBundle, catalog: Catalog) {
+  const allergies = recordedAllergies(member);
+  const abnormal = abnormalReadings(member, catalog).sort((a, b) => b.date.localeCompare(a.date));
+  return {
+    member: { id: member.id, name: member.name },
+    active_conditions: activeConditions(member), allergies, allergies_recorded: allergies.length > 0,
+    diet_habit: member.profile?.habits.diet ?? null,
+    abnormal_markers: abnormal.map(({ code, name, date, value, unit, flag }) => ({ code, name, date, value, unit, flag })),
+    data_note: DATA_NOTE, disclaimer: "For reference only. This assessment cannot replace a clinician’s diagnosis.",
+  };
+}
+
+export function registerDietContext(server: McpServer, reader: HealthReader) {
+  server.registerTool("get_diet_context", {
+    description: `Diet context for one selected member. Include slug to assess one recipe. ${DATA_NOTE}`,
+    inputSchema: { member: FamilyMemberSchema.shape.id, slug: slug.optional() }, annotations,
+  }, async ({ member: id, slug }) => {
+    const found = await reader.getMember(id);
+    if (!found) return { isError: true, content: [{ type: "text", text: "Member not found" }] };
+    const { member, catalog } = found;
+    const context = dietContext(member, catalog);
+    if (!slug) return text({ ...context, recipes: (await reader.listRecipes()).map(summary) });
+    const recipe = await reader.getRecipe(slug);
+    if (!recipe) return { isError: true, content: [{ type: "text", text: "Recipe not found" }] };
+    return text({ ...context, recipe: summary(recipe), assessment: assessRecipeForMember(recipe, member, catalog) });
   });
 }
 

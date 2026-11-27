@@ -4,12 +4,22 @@ import { requireUser, userRepository } from "@/server/session";
 import { asScope, listTokens } from "@/server/tokens";
 import { docsUrl } from "@/site-links";
 import { PageHead, SectionHead } from "@/ui/blocks";
-import { revertChangeAction, revokeTokenAction, setScopeAction } from "./actions";
+import { revertChangeAction, revokeTokenAction, setDomainsAction, setScopeAction } from "./actions";
 import { NewTokenForm, TokenActions } from "./AgentForms";
 
 const SCOPE_LABEL = { read: "scopeRead", write: "scopeWrite", sync: "scopeSync" } as const;
 const MAKE_LABEL = { read: "makeRead", write: "makeWrite", sync: "makeSync" } as const;
 const fmt = (d: Date | null) => (d ? d.toISOString().slice(0, 16).replace("T", " ") : undefined);
+
+async function DomainForm({ id, domain }: { id: string; domain?: string }) {
+  const t = await getTranslations("app.settings");
+  return <form action={setDomainsAction} aria-label={t("domainLabel")}>
+    <input type="hidden" name="id" value={id} />
+    {(["all", "kitchen", "health"] as const).filter((d) => d !== (domain ?? "all")).map((d) => (
+      <button key={d} name="domain" value={d} className="btn btn-glass btn-sm">{t(`domains.${d}`)}</button>
+    ))}
+  </form>;
+}
 
 export default async function AgentsPage() {
   const t = await getTranslations("app.settings");
@@ -28,10 +38,13 @@ export default async function AgentsPage() {
               {tokens.map((tk) => (
                 <div key={tk.id} className="a-row a-row-wrap">
                   <span className="main">
-                    <span className="title">{tk.name} <span className={`a-scope${tk.scope === "read" ? "" : " w"}`}>{t(SCOPE_LABEL[asScope(tk.scope)])}</span></span>
+                    <span className="title">{tk.name} <span className={`a-scope${tk.scope === "read" ? "" : " w"}`}>{t(SCOPE_LABEL[asScope(tk.scope)])}</span>
+                      {tk.domains && <span className="a-scope">{t(`domains.${tk.domains[0]}`)}</span>}
+                    </span>
                     <span className="detail mono" style={{ display: "block", fontSize: 11.5 }}>{t("created", { date: fmt(tk.createdAt)! })} · {t("lastUsed", { date: fmt(tk.lastUsedAt) ?? t("neverUsed") })}</span>
                     {!tk.revealable && <span className="detail" style={{ display: "block", fontSize: 12 }}>{t("legacyToken")}</span>}
                   </span>
+                  <DomainForm id={tk.id} domain={tk.domains?.[0]} />
                   <TokenActions id={tk.id} revealable={tk.revealable} />
                   {(["read", "write", "sync"] as const).filter((s) => s !== asScope(tk.scope)).map((s) => (
                     <form key={s} action={setScopeAction}>

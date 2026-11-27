@@ -35,7 +35,7 @@ function sqliteQuery(sql: string) {
 export function kitchenDb() {
   const sqlite = new DatabaseSync(":memory:");
   for (const t of [schema.userKey, schema.member, schema.doc, schema.attachment, schema.householdDoc,
-    schema.householdAttachment, schema.agentChange, schema.apiToken, schema.household, schema.accountPlan, schema.user]) createTable(sqlite, t);
+    schema.householdAttachment, schema.agentChange, schema.apiToken, schema.household, schema.accountPlan, schema.userStatus, schema.user]) createTable(sqlite, t);
   const queries: string[] = [];
   const driver = drizzle(async (sql, params) => {
     queries.push(sql);

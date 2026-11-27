@@ -1,3 +1,4 @@
+import { z } from "zod";
 import crypto from "node:crypto";
 import { and, desc, eq, sql } from "drizzle-orm";
 import type { DB } from "@/db/client";
@@ -16,8 +17,15 @@ const tokenAad = (userId: string, id: string) => `token:${userId}:${id}`;
 export type TokenScope = "read" | "write" | "sync";
 export const asScope = (v: unknown): TokenScope => (v === "write" || v === "sync" ? v : "read");
 
-export async function createToken(db: DB, userId: string, name: string, opts: { dek?: Buffer; scope?: TokenScope } = {}) {
-  const { dek, scope = "read" } = opts;
+const TOKEN_DOMAINS = ["health", "kitchen"] as const;
+export type TokenDomain = typeof TOKEN_DOMAINS[number];
+const domainScope = z.tuple([z.enum(TOKEN_DOMAINS)]).nullable();
+export type TokenDomains = z.infer<typeof domainScope>;
+export const normalizeDomains = (v: unknown): TokenDomains => domainScope.parse(v);
+export const tokenAllows = (domains: TokenDomains, domain: TokenDomain) => domains === null || domains[0] === domain;
+
+export async function createToken(db: DB, userId: string, name: string, opts: { dek?: Buffer; scope?: TokenScope; domains?: TokenDomains } = {}) {
+  const { dek, scope = "read", domains = null } = opts;
   const token = newSecret();
   const id = randomId();
   // 额度检查与插入在账号写锁内，并发创建不会超出上限
@@ -26,7 +34,7 @@ export async function createToken(db: DB, userId: string, name: string, opts: { 
     await assertQuota(tx, userId, "tokens");
     await tx.insert(apiToken).values({
       id, userId, name: name.trim().slice(0, 60) || "未命名", tokenHash: sha256(token),
-      tokenCipher: dek ? seal(dek, token, tokenAad(userId, id)) : null, scope,
+      tokenCipher: dek ? seal(dek, token, tokenAad(userId, id)) : null, scope, domains: normalizeDomains(domains),
     });
   });
   return token;
@@ -48,9 +56,11 @@ export async function rotateToken(db: DB, userId: string, id: string, dek?: Buff
   return row ? token : undefined;
 }
 
-export const listTokens = (db: DB, userId: string) =>
-  db.select({ id: apiToken.id, name: apiToken.name, createdAt: apiToken.createdAt, lastUsedAt: apiToken.lastUsedAt, scope: apiToken.scope, revealable: sql<boolean>`${apiToken.tokenCipher} is not null` })
+export async function listTokens(db: DB, userId: string) {
+  const rows = await db.select({ id: apiToken.id, name: apiToken.name, createdAt: apiToken.createdAt, lastUsedAt: apiToken.lastUsedAt, scope: apiToken.scope, domains: apiToken.domains, revealable: sql<boolean>`${apiToken.tokenCipher} is not null` })
     .from(apiToken).where(eq(apiToken.userId, userId)).orderBy(desc(apiToken.createdAt));
+  return rows.map((row) => ({ ...row, domains: normalizeDomains(row.domains) }));
+}
 
 export const revokeToken = (db: DB, userId: string, id: string) =>
   db.delete(apiToken).where(and(eq(apiToken.userId, userId), eq(apiToken.id, id)));
@@ -58,16 +68,20 @@ export const revokeToken = (db: DB, userId: string, id: string) =>
 export const setTokenScope = (db: DB, userId: string, id: string, scope: TokenScope) =>
   db.update(apiToken).set({ scope }).where(and(eq(apiToken.userId, userId), eq(apiToken.id, id)));
 
-export interface TokenAuth { userId: string; tokenId: string; name: string; scope: TokenScope }
+export const setTokenDomains = (db: DB, userId: string, id: string, domains: TokenDomains) =>
+  db.update(apiToken).set({ domains: normalizeDomains(domains) }).where(and(eq(apiToken.userId, userId), eq(apiToken.id, id)));
+
+export interface TokenAuth { userId: string; tokenId: string; name: string; scope: TokenScope; domains: TokenDomains }
 
 /** Bearer 鉴权：返回 token 所属用户、名称与权限；停用账号一律拒绝 */
 export async function tokenAuth(db: DB, header: string | null): Promise<TokenAuth | undefined> {
   const token = header?.match(/^Bearer\s+(kzh_[A-Za-z0-9_-]{20,})$/)?.[1];
   if (!token) return undefined;
   const [row] = await db.update(apiToken).set({ lastUsedAt: new Date() }).where(eq(apiToken.tokenHash, sha256(token)))
-    .returning({ userId: apiToken.userId, tokenId: apiToken.id, name: apiToken.name, scope: apiToken.scope });
+    .returning({ userId: apiToken.userId, tokenId: apiToken.id, name: apiToken.name, scope: apiToken.scope, domains: apiToken.domains });
   if (!row || (await isDisabled(db, row.userId))) return undefined;
-  return { ...row, scope: asScope(row.scope) };
+  const domains = domainScope.safeParse(row.domains);
+  return domains.success ? { ...row, scope: asScope(row.scope), domains: domains.data } : undefined;
 }
 
 export const userIdForToken = async (db: DB, header: string | null) => (await tokenAuth(db, header))?.userId;

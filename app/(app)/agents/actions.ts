@@ -6,7 +6,7 @@ import { requireUser, userRepository } from "@/server/session";
 import { masterKey } from "@/server/crypto";
 import { RevertConflict, ensureUserKey } from "@/server/pg-repository";
 import { QuotaExceeded } from "@/server/quota";
-import { asScope, createToken, revealToken, revokeToken, rotateToken, setTokenScope } from "@/server/tokens";
+import { asScope, createToken, revealToken, revokeToken, rotateToken, normalizeDomains, setTokenDomains, setTokenScope } from "@/server/tokens";
 
 // 身份只来自 session（SEC6）：token 的增删改都限定在当前用户名下
 
@@ -18,10 +18,15 @@ export async function revealTokenAction(id: string): Promise<{ token?: string }>
   return { token: await revealToken(getDb(), u.id, id, await dekOf(u.id)) };
 }
 
+function formDomains(form: FormData) {
+  const value = form.get("domain");
+  return normalizeDomains(value === "all" ? null : [value]);
+}
+
 export async function createTokenAction(_prev: { token?: string; quota?: number }, form: FormData): Promise<{ token?: string; quota?: number }> {
   const u = await requireUser();
   try {
-    const token = await createToken(getDb(), u.id, String(form.get("name") ?? ""), { dek: await dekOf(u.id), scope: asScope(form.get("scope")) });
+    const token = await createToken(getDb(), u.id, String(form.get("name") ?? ""), { dek: await dekOf(u.id), scope: asScope(form.get("scope")), domains: formDomains(form) });
     revalidatePath("/agents");
     return { token };
   } catch (e) {
@@ -40,6 +45,12 @@ export async function rotateTokenAction(_prev: { token?: string }, form: FormDat
 export async function revokeTokenAction(form: FormData) {
   const u = await requireUser();
   await revokeToken(getDb(), u.id, String(form.get("id")));
+  revalidatePath("/agents");
+}
+
+export async function setDomainsAction(form: FormData) {
+  const u = await requireUser();
+  await setTokenDomains(getDb(), u.id, String(form.get("id")), formDomains(form));
   revalidatePath("/agents");
 }
 

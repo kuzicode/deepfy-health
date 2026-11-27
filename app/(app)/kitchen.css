@@ -105,3 +105,16 @@
   .a-kitchen *, .a-kitchen-dialog * { animation: none; transition: none; }
   .a-kitchen .a-recipe-card:hover .a-recipe-frame > *, .a-kitchen .btn:hover, .a-kitchen-dialog .btn:hover { transform: none; }
 }
+.a-health-fit { margin-top: 24px; background: linear-gradient(120deg, var(--mint-wash), var(--glass-strong)); }
+.a-fit-members { display: flex; flex-wrap: wrap; gap: 8px; }
+.a-fit-members a { display: inline-flex; align-items: center; min-height: 40px; padding: 5px 16px; border: 1px solid var(--line-strong); border-radius: var(--r-pill); background: var(--glass-strong); }
+.a-fit-members a:hover, .a-fit-members a:focus-visible { border-color: var(--brand); }
+.a-fit-members a[aria-current] { background: var(--brand); color: var(--surface); }
+.a-fit-columns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-block: 20px; }
+.a-fit-columns section { border-top: 1px solid var(--line-strong); padding-top: 12px; }
+.a-fit-columns h3, .a-fit-columns p { margin: 0 0 6px; }
+.a-fit-columns ul { padding-inline-start: 1.2em; margin: 0; }
+.a-fit-columns li + li { margin-top: 6px; }
+.a-fit-columns small { display: block; color: var(--code); }
+.a-health-fit footer { font-size: 13px; color: var(--code); }
+@media (max-width: 700px) { .a-fit-columns { grid-template-columns: 1fr; } }

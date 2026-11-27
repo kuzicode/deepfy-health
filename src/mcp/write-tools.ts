@@ -6,6 +6,7 @@ import { ImportRejected, KeyTaken, NotFound, type AuditInfo, type PgRepository }
 import { conditionFocus, isResolved } from "@/core/health-template";
 import { OtherItemSchema, RELATIONS } from "@/core/schema";
 import { QuotaExceeded } from "@/server/quota";
+import { tokenAllows, type TokenDomains } from "@/server/tokens";
 import { registerKitchenWrites } from "./kitchen-tools";
 import { registerRegimenTools } from "./regimen-tools";
 import { ToolError, conditionOut, findMember } from "./tools";
@@ -155,7 +156,7 @@ const savedResult = (d: WriteDeps): SavedFn => (label, changeIds, extra = {}) =>
   return text({ ok: true, saved: label, ...extra, change_ids: changeIds, undo: `Review or undo at ${d.appUrl}/agents` });
 };
 
-export function registerWriteTools(server: McpServer, d: WriteDeps) {
+export function registerWriteTools(server: McpServer, d: WriteDeps, domains: TokenDomains) {
   const saved = savedResult(d);
   const tool: ToolFn = (name, description, inputSchema, cb) =>
     server.registerTool(name, { description: `${description} ${CONFIRM}`, inputSchema, annotations: WRITE }, (async (args: never) => {
@@ -166,7 +167,8 @@ export function registerWriteTools(server: McpServer, d: WriteDeps) {
       }
     }) as never);
 
-  registerKitchenWrites(tool, d, saved);
+  if (tokenAllows(domains, "kitchen")) registerKitchenWrites(tool, d, saved);
+  if (!tokenAllows(domains, "health")) return;
   registerRegimenTools(tool, d, saved, member);
   registerRecordTools(tool, d, saved);
   registerPlanTools(tool, d, saved);

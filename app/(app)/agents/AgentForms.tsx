@@ -6,6 +6,15 @@ import { CopyButton } from "@/ui/CopyButton";
 import { createTokenAction, revealTokenAction, rotateTokenAction } from "./actions";
 import { mcpSnippets } from "@/mcp-snippets";
 
+function DomainSelect() {
+  const t = useTranslations("app.settings");
+  return (
+    <label>{t("domainLabel")} <select className="field" name="domain" defaultValue="all">
+      {(["all", "kitchen", "health"] as const).map((d) => <option key={d} value={d}>{t(`domains.${d}`)}</option>)}
+    </select></label>
+  );
+}
+
 export function NewTokenForm() {
   const t = useTranslations("app.settings");
   const [state, action, pending] = useActionState(createTokenAction, {});
@@ -18,6 +27,7 @@ export function NewTokenForm() {
         <option value="write">{t("scopeWrite")}</option>
         <option value="sync">{t("scopeSync")}</option>
       </select>
+      <DomainSelect />
       <p className="muted" style={{ margin: 0, flexBasis: "100%", fontSize: 13 }}>{t("scopeSyncHint")}</p>
       {state.token && <TokenSnippets token={state.token} />}
       {state.quota && <p className="a-form-err" style={{ flexBasis: "100%" }}>{t("tokenQuota", { limit: state.quota })}</p>}

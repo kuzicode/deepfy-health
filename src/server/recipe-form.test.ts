@@ -2,6 +2,10 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { NextIntlClientProvider } from "next-intl";
+import zh from "../../messages/zh.json";
 import AppLayout from "../../app/(app)/layout";
 import KitchenPage from "../../app/(app)/kitchen/page";
 import RecipePage from "../../app/(app)/kitchen/[slug]/page";
@@ -84,12 +88,43 @@ it("共享布局与两个菜谱页面只走轻量读取入口", async () => {
   const detail = vi.spyOn(reader, "getRecipe").mockResolvedValue({ title: "豆汤", slug: "豆汤", body: steps });
   await AppLayout({ children: null });
   await KitchenPage();
-  await RecipePage({ params: Promise.resolve({ slug: encodeURIComponent("豆汤") }) });
+  expect(stubs).toHaveBeenCalledOnce();
+  stubs.mockClear();
+  await RecipePage({ params: Promise.resolve({ slug: encodeURIComponent("豆汤") }), searchParams: Promise.resolve({}) });
   expect(stubs).toHaveBeenCalledOnce();
   expect(recipes).toHaveBeenCalledOnce();
   expect(detail).toHaveBeenCalledExactlyOnceWith("豆汤");
   expect(snapshot).not.toHaveBeenCalled();
   expect(member).not.toHaveBeenCalled();
+});
+
+it("仅点选一个已知成员时读取该成员并渲染适配和医疗提示", async () => {
+  const reader = VaultRepository.prototype;
+  const snapshot = vi.spyOn(reader, "snapshot").mockRejectedValue(new Error("Unexpected health snapshot"));
+  const selected = { id: "kz", dir: undefined, name: "阿甲", role: "member" as const };
+  const other = { ...selected, id: "b", name: "阿乙" };
+  vi.spyOn(reader, "listMemberStubs").mockResolvedValue([selected, other]);
+  vi.spyOn(reader, "getRecipe").mockResolvedValue({ slug: "soup", title: "Soup", body: steps });
+  const getMember = vi.spyOn(reader, "getMember").mockResolvedValue({
+    member: { ...selected, records: [], notes: new Map(), logs: [] }, catalog: new Map(),
+  });
+  async function render(forMember?: string | string[]) {
+    const page = await RecipePage({ params: Promise.resolve({ slug: "soup" }), searchParams: Promise.resolve({ for: forMember }) });
+    return renderToStaticMarkup(createElement(NextIntlClientProvider, { locale: "zh", messages: zh, timeZone: "UTC", children: page }));
+  }
+  for (const query of [undefined, "unknown", ["kz", "b"]]) {
+    const html = await render(query);
+    expect(html).toContain('/kitchen/soup?for=kz');
+    expect(html).not.toContain(zh.common.disclaimer);
+  }
+  expect(getMember).not.toHaveBeenCalled();
+  const html = await render("kz");
+  expect(getMember).toHaveBeenCalledExactlyOnceWith("kz");
+  expect(snapshot).not.toHaveBeenCalled();
+  expect(html).toContain(zh.app.kitchen.fit.gaps.profile);
+  expect(html).toContain(zh.common.disclaimer);
+  expect(html).toContain('href="/kitchen/soup"');
+  expect(html).not.toContain('/kitchen/soup?for=kz');
 });
 
 const jpg = Uint8Array.of(0xff, 0xd8, 0xff, 8);

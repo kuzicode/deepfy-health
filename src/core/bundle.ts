@@ -234,6 +234,11 @@ function buildMember(ctx: Ctx, fm: FM, docs: RawDoc[]): MemberBundle {
   return { ...empty, profile, ...out, regimen: loadRegimen(mc, single("regimen")), carePlan: carePlanDoc && parse(CarePlanSchema, carePlanDoc) };
 }
 
+export function memberFromDocs(fm: FM, docs: RawDoc[], customCatalog: CatalogEntry[]) {
+  const catalog = mergeCatalog(customCatalog);
+  return { member: buildMember({ catalog, issues: new Issues() }, fm, docs), catalog };
+}
+
 export function buildRecipes(docs: RawHouseholdDoc[], issues: Issues, attachmentExists?: (rel: string) => boolean): Recipe[] {
   const recipes: Recipe[] = [];
   for (const d of docs) {
