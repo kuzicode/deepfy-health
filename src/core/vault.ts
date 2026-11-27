@@ -41,6 +41,24 @@ export function resolveHealthDir(env: Record<string, string | undefined> = proce
   return path.join(/*turbopackIgnore: true*/ vault, env.PERSONAL_SUBDIR || "Personal");
 }
 
+/** 解析成员总索引文件：优先 PERSONAL_INDEX_FILE；否则先找 Personal.md，再回退去掉数字前缀的同名目录索引（如 20-家庭 → 家庭.md） */
+export function resolveIndexFile(root: string, env: Record<string, string | undefined> = process.env): string | undefined {
+  const absRoot = path.resolve(root);
+  const explicit = env.PERSONAL_INDEX_FILE?.trim();
+  if (explicit) {
+    const file = path.resolve(/*turbopackIgnore: true*/ absRoot, explicit);
+    if (path.dirname(file) !== absRoot) throw new Error(`索引文件 ${explicit} 不在 ${root} 之下`);
+    return fs.existsSync(file) ? file : undefined;
+  }
+  const stem = path.basename(absRoot).replace(/^\d+-/, "");
+  const candidates = stem && stem !== "Personal" ? ["Personal.md", `${stem}.md`] : ["Personal.md"];
+  for (const name of candidates) {
+    const file = path.join(/*turbopackIgnore: true*/ absRoot, name);
+    if (fs.existsSync(file)) return file;
+  }
+  return undefined;
+}
+
 
 
 function readYaml(issues: Issues, file: string, rel: string): unknown {
@@ -132,13 +150,15 @@ export class VaultRepository implements HealthRepository {
 
   async init(templatesDir: string) {
     const prefix = obsidianLinkPrefix(this.root);
+    const hasIndex = !!resolveIndexFile(this.root);
     const copied: string[] = [];
     const walk = (dir: string) => {
       for (const d of fs.readdirSync(dir, { withFileTypes: true })) {
         const from = path.join(dir, d.name);
-        const to = path.join(this.root, path.relative(templatesDir, from));
+        const rel = path.relative(templatesDir, from);
+        const to = path.join(this.root, rel);
         if (d.isDirectory()) walk(from);
-        else if (!fs.existsSync(to)) {
+        else if (!(rel === "Personal.md" && hasIndex) && !fs.existsSync(to)) {
           fs.mkdirSync(path.dirname(to), { recursive: true });
           fs.writeFileSync(to, fs.readFileSync(from, "utf8").replaceAll("{{PREFIX}}", prefix));
           copied.push(to);
@@ -187,9 +207,9 @@ function planMember(root: string, input: NewMember): MemberPlan {
 }
 
 function planIndex(root: string, linkBase: string, dir: string, name: string) {
-  const file = path.join(root, "Personal.md");
-  if (!fs.existsSync(file)) return undefined;
-  const text = fs.readFileSync(file, "utf8");
+  const file = resolveIndexFile(root);
+  if (!file) return undefined;
+  const text = fs.readFileSync(/*turbopackIgnore: true*/ file, "utf8");
   const line = `- [[${linkBase}${dir}/${dir}|${name}]]`;
   if (text.includes(`[[${linkBase}${dir}/${dir}|`)) return undefined;
   const content = text.includes(MEMBERS_END) ? text.replace(MEMBERS_END, `${line}\n${MEMBERS_END}`) : `${text.trimEnd()}\n${line}\n`;

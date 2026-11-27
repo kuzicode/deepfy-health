@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { abnormalReadings, latestReadings, series } from "./analysis";
-import { VaultRepository, loadVault, obsidianLinkPrefix, readVaultRaw, resolveHealthDir } from "./vault";
+import { VaultRepository, loadVault, obsidianLinkPrefix, readVaultRaw, resolveHealthDir, resolveIndexFile } from "./vault";
 
 const SAMPLE = path.resolve(import.meta.dirname, "../../examples/sample-vault/Personal");
 
@@ -122,6 +122,32 @@ describe("createMember", () => {
     expect(s.issues).toEqual([]);
     expect(s.members.find((m) => m.id === "tp")?.profile?.name).toBe("Test: Person");
   });
+
+  it("20-家庭 目录无 Personal.md 时回退写入 家庭.md，不创建多余 Personal.md，且不误扫非成员目录", async () => {
+    const vault = fs.mkdtempSync(path.join(os.tmpdir(), "kzh-"));
+    fs.mkdirSync(path.join(vault, ".obsidian"));
+    const root = path.join(vault, "20-家庭");
+    fs.cpSync(SAMPLE, root, { recursive: true });
+    fs.renameSync(path.join(root, "Personal.md"), path.join(root, "家庭.md"));
+    fs.mkdirSync(path.join(root, "生活"));
+    fs.mkdirSync(path.join(root, "分类"));
+
+    const repo = new VaultRepository(root);
+    await repo.createMember({ id: "dad", name: "爸爸", dir: "Dad", sex: "male", birthDate: "1960-01-01" });
+    expect(fs.existsSync(path.join(root, "Personal.md"))).toBe(false);
+    expect(fs.readFileSync(path.join(root, "家庭.md"), "utf8")).toMatch(/- \[\[20-家庭\/Dad\/Dad\|爸爸\]\]\n%% members:end %%/);
+    expect(fs.readFileSync(path.join(root, "Dad/Dad.md"), "utf8")).toContain("[[20-家庭/Dad/Health/Health|健康档案]]");
+
+    const s = loadVault(root);
+    expect(s.issues.filter((i) => i.level === "error")).toEqual([]);
+    expect(s.members.map((m) => m.id)).not.toContain("生活");
+    expect(s.members.map((m) => m.id)).not.toContain("分类");
+
+    // 已有 家庭.md 时 init 也不生成多余 Personal.md
+    const copied = await repo.init(path.resolve(import.meta.dirname, "../../templates/Personal"));
+    expect(copied.some((f) => path.basename(f) === "Personal.md")).toBe(false);
+    expect(fs.existsSync(path.join(root, "Personal.md"))).toBe(false);
+  });
 });
 
 describe("档案 id 与 family 不一致", () => {
@@ -146,8 +172,31 @@ describe("路径", () => {
     const vault = fs.mkdtempSync(path.join(os.tmpdir(), "kzh-"));
     fs.mkdirSync(path.join(vault, ".obsidian"));
     fs.mkdirSync(path.join(vault, "Vault/Personal"), { recursive: true });
+    fs.mkdirSync(path.join(vault, "20-家庭"), { recursive: true });
     expect(obsidianLinkPrefix(path.join(vault, "Vault/Personal"))).toBe("Vault/Personal/");
+    expect(obsidianLinkPrefix(path.join(vault, "20-家庭"))).toBe("20-家庭/");
     expect(obsidianLinkPrefix(SAMPLE)).toBe("");
+  });
+
+  it("resolveIndexFile 优先 Personal.md，回退去数字前缀目录索引，并支持 PERSONAL_INDEX_FILE", () => {
+    const vault = fs.mkdtempSync(path.join(os.tmpdir(), "kzh-"));
+    const root = path.join(vault, "20-家庭");
+    fs.mkdirSync(root, { recursive: true });
+    expect(resolveIndexFile(root, {})).toBeUndefined();
+
+    const familyIdx = path.join(root, "家庭.md");
+    fs.writeFileSync(familyIdx, "# 家庭\n");
+    expect(resolveIndexFile(root, {})).toBe(familyIdx);
+
+    const personalIdx = path.join(root, "Personal.md");
+    fs.writeFileSync(personalIdx, "# Personal\n");
+    expect(resolveIndexFile(root, {})).toBe(personalIdx);
+
+    const customIdx = path.join(root, "Index.md");
+    fs.writeFileSync(customIdx, "# Index\n");
+    expect(resolveIndexFile(root, { PERSONAL_INDEX_FILE: "Index.md" })).toBe(customIdx);
+    expect(resolveIndexFile(root, { PERSONAL_INDEX_FILE: "Missing.md" })).toBeUndefined();
+    expect(() => resolveIndexFile(root, { PERSONAL_INDEX_FILE: "../escape.md" })).toThrow("不在");
   });
 });
 
