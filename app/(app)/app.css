@@ -12,7 +12,6 @@
 .a-menu a:hover, .a-menu button:hover { background: rgba(15, 118, 110, 0.07); color: var(--ink); }
 .a-menu a.on { color: var(--brand); font-weight: 600; }
 .a-menu hr { border: none; border-top: 1px solid var(--line); margin: 4px 6px; }
-.a-menu .count { margin-left: auto; font: 500 11px/1 var(--mono); color: var(--high); }
 .a-tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
 .a-tabs::-webkit-scrollbar { display: none; }
 .a-tabs a { padding: 8px 12px; border-radius: 999px; font: 500 13.5px/1 var(--sans); color: var(--muted); white-space: nowrap; transition: color 0.2s, background 0.2s; }
@@ -32,7 +31,7 @@
 .a-head .sub { color: var(--muted); font-size: 14px; margin-top: 8px; }
 .a-back { display: inline-flex; align-items: center; gap: 4px; font: 500 12px/1 var(--mono); letter-spacing: 0.04em; color: var(--muted); }
 .a-back:hover { color: var(--brand); }
-.a-foot { text-align: center; color: var(--faint); font-size: 12px; padding: 0 16px 28px; }
+.a-foot { margin-top: 40px; text-align: center; color: var(--faint); font-size: 12px; padding: 0 16px 28px; }
 
 .a-section { margin-top: 36px; }
 .a-section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
@@ -375,4 +374,3 @@ a.a-row:hover { background: var(--surface-2); }
 .a-card-item > .sortable-handle { top: 12px; right: 12px; }
 .a-menu-item > a { padding-right: 34px; }
 .a-menu .a-menu-item > .sortable-handle { top: 50%; right: 4px; margin-top: -14px; padding: 0; width: 28px; height: 28px; }
-.a-menu-item > a .count { margin-right: 2px; }

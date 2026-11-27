@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { MAX_DOC_BODY_LENGTH, isSafeHouseholdDocKey, type HealthReader, type RawVault, type RawHouseholdDoc } from "@/core/bundle";
-import { RECIPE_DIR, RecipeSchema, isSafeRecipeCover, mergeRecipeFrontmatter, recipeSlugFromTitle, type Recipe } from "@/core/recipe";
+import { MAX_RECIPE_COVER_BYTES, availableRecipeSlug, recipeBody, RECIPE_DIR, RecipeSchema, isSafeRecipeCover, mergeRecipeFrontmatter, recipeSlugFromTitle, type Recipe } from "@/core/recipe";
 import { sha256 } from "@/server/crypto";
 import { sniffImage } from "@/server/quick-entry";
 import { ToolError } from "./tools";
@@ -60,23 +60,6 @@ const recipeInput = {
 };
 const current = (raw: RawVault, key: string) => raw.householdDocs?.find((doc) => doc.kind === "recipe" && doc.key === key);
 
-function availableSlug(raw: RawVault, base: string) {
-  const used = new Set((raw.householdDocs ?? []).filter((d) => d.kind === "recipe").map((d) => d.key.toLowerCase()));
-  for (let n = 1; n <= 100; n++) {
-    const candidate = n === 1 ? base : `${base}-${n}`;
-    if (!used.has(candidate.toLowerCase())) return candidate;
-  }
-  throw new ToolError("All 100 recipe slugs for this title are in use. Provide an unused slug.");
-}
-
-function recipeBody(previous: string, replacement?: string) {
-  if (replacement === undefined) return previous;
-  const links = /!?\[\[[^\[\]\r\n]+\]\]/gu;
-  const included = new Set(replacement.match(links));
-  const missing = [...new Set(previous.match(links))].filter((link) => !included.has(link));
-  return missing.length ? [replacement, missing.join("\n")].join("\n\n") : replacement;
-}
-
 function saveChange(raw: RawVault, key: string, input: Omit<z.infer<z.ZodObject<typeof recipeInput>>, "slug">, today: string): RawHouseholdDoc & { op: "put_household" | "create_household" } {
   const prev = current(raw, key);
   const { body, ...fields } = input;
@@ -85,10 +68,9 @@ function saveChange(raw: RawVault, key: string, input: Omit<z.infer<z.ZodObject<
   return { op: prev ? "put_household" : "create_household", kind: "recipe", key, data, body: recipeBody(prev?.body ?? "", body) };
 }
 
-const MAX_IMAGE = 2 * 1024 * 1024;
 function decodeImage(encoded: string) {
   const data = Buffer.from(encoded, "base64");
-  if (data.length > MAX_IMAGE) throw new ToolError("Cover must be at most 2 MiB.");
+  if (data.length > MAX_RECIPE_COVER_BYTES) throw new ToolError("Cover must be at most 2 MiB.");
   if (data.toString("base64") !== encoded) throw new ToolError("Invalid base64 image.");
   const image = sniffImage(data);
   if (!image) throw new ToolError("Expected a JPEG, PNG or WebP image.");
@@ -102,13 +84,15 @@ export function registerKitchenWrites(tool: ToolFn, deps: WriteDeps, saved: Save
       const base = slug ?? recipeSlugFromTitle(input.title!);
       let key = base;
       const ids = await deps.writer.applyChanges((raw) => {
-        key = slug ?? availableSlug(raw, base);
+        const available = slug ?? availableRecipeSlug(raw, base);
+        if (!available) throw new ToolError("All 100 recipe slugs for this title are in use. Provide an unused slug.");
+        key = available;
         return [saveChange(raw, key, input, deps.today)];
       }, { audit, scope: "household" });
       return saved(`recipe ${key}`, ids, { slug: key });
     });
   tool("upload_recipe_image", "Attach a user-confirmed recipe cover (JPEG, PNG or WebP, up to 2 MiB).", {
-    slug, image_base64: z.string().min(1).max(Math.ceil(MAX_IMAGE / 3) * 4), cover_style: fields.cover_style.default("comic"),
+    slug, image_base64: z.string().min(1).max(Math.ceil(MAX_RECIPE_COVER_BYTES / 3) * 4), cover_style: fields.cover_style.default("comic"),
   }, async ({ slug, image_base64, cover_style }, audit) => {
     const { data, mime, ext } = decodeImage(image_base64);
     const cover = `assets/${recipeSlugFromTitle(slug)}-${sha256(data).slice(0, 8)}.${ext}`;

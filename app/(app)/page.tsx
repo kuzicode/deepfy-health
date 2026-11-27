@@ -60,6 +60,7 @@ function MemberGrid({ items, label }: { items: { id: string; node: React.ReactNo
 export default async function Home() {
   const s = await (await getReader()).snapshot();
   const t = await getTranslations("app");
+  const common = await getTranslations("common");
   const locale = await getLocale();
   const today = todayISO();
   const names = new Map(s.members.map((m) => [m.id, m.name]));
@@ -107,6 +108,7 @@ export default async function Home() {
           <ReminderRows items={all} names={names} />
         </section>
       )}
+      <footer className="a-foot">{common("disclaimer")}</footer>
     </>
   );
 }

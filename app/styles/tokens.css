@@ -34,6 +34,18 @@
   --warn: #c2700c;
   --warn-soft: #fff4e2;
 
+  --kitchen-paper: #fdfaf5;
+  --kitchen-warm: #984b24;
+  --kitchen-warm-soft: #fff2e6;
+  --kitchen-ink-line: rgba(56, 36, 20, 0.14);
+  --kitchen-pencil: #574331;
+  --kitchen-steam: #9b8978;
+  --kitchen-clay: #e9a16f;
+  --kitchen-sage: #b6c8a8;
+  --kitchen-print: #fcf0d9;
+  --kitchen-scrim: rgba(18, 34, 30, 0.38);
+  --r-pill: 999px;
+
   --sans: "Inter Variable", "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
   --serif: "Newsreader Variable", "Newsreader", "Noto Serif SC", "Songti SC", Georgia, serif;
   --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;

@@ -1,9 +1,8 @@
-import { getLocale, getTranslations } from "next-intl/server";
-import { attentionCount } from "@/core/health-template";
+import { getLocale } from "next-intl/server";
+import { memberAvatars } from "@/avatars";
 import { cloudMode, getDb } from "@/db/client";
 import { isAdmin } from "@/server/access";
 import { ensureAvatar } from "@/server/avatar";
-import { familyAvatars } from "@/server/member-avatars";
 import { getSession } from "@/server/session";
 import { syncUserLocale } from "@/server/user-locale";
 import { isSelfHosted } from "@/server/edition";
@@ -16,15 +15,14 @@ import "./forms.css";
 import { reorderMembersAction } from "./actions";
 
 async function shellMembers(): Promise<ShellMember[]> {
-  const s = await (await getReader()).snapshot();
-  const avatars = await familyAvatars(s.members);
-  return s.members.map((m) => ({ id: m.id, name: m.name, attention: attentionCount(m, s.catalog) ?? 0, avatar: avatars.get(m.id) }));
+  const members = await (await getReader()).listMemberStubs();
+  const avatars = memberAvatars(members);
+  return members.map(({ id, name }) => ({ id, name, avatar: avatars.get(id) }));
 }
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = cloudMode() ? await getSession() : null;
   const locale = await getLocale();
-  const t = await getTranslations("common");
   // 同步失败不影响页面，邮件继续用上次的语言
   if (session) await syncUserLocale(getDb(), session.user.id, locale).catch((e) => console.error("locale sync failed", e instanceof Error ? e.name : "error"));
   const user = session && {
@@ -36,7 +34,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <Interactions />
       <AppShell homeHref={homeUrl(locale)} docsHref={docsUrl(locale)} selfHosted={isSelfHosted()} members={await shellMembers()} user={user || undefined} reorderMembers={reorderMembersAction}>
         <main className="a-main">{children}</main>
-        <footer className="a-foot">{t("disclaimer")}</footer>
       </AppShell>
     </div>
   );

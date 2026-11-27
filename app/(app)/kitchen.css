@@ -1,0 +1,107 @@
+.a-kitchen { min-width: 0; overflow-wrap: anywhere; }
+.a-recipe-intro :is(h1, dl, dd), .a-recipe-card-copy :is(h2, p), .a-kitchen-panel > h2, .a-kitchen-empty :is(h2, p), .a-kitchen-dialog h2 { margin: 0; }
+.a-kitchen .a-head h1 { margin-top: 10px; }
+.a-kitchen .eyebrow, .a-recipe-kicker { color: var(--kitchen-warm); }
+.a-kitchen-local, .a-kitchen-field-hint { font-size: 13px; color: var(--code); }
+.a-kitchen-filters { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 0; margin-bottom: 24px; border-block: 1px solid var(--line-strong); }
+.a-kitchen-categories, .a-kitchen-tools, .a-kitchen-toolbar, .a-kitchen-toolbar > div { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.a-kitchen-filters button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; padding: 6px 12px; border-radius: var(--r-pill); cursor: pointer; font-size: 13px; background: transparent; color: var(--body); border: 1px solid transparent; }
+.a-kitchen-filters button:hover { background: var(--glass-strong); }
+.a-kitchen-filters button[aria-pressed="true"] { background: var(--brand); color: var(--surface); }
+.a-kitchen-tools { gap: 8px; max-width: 100%; }
+.a-kitchen-tools button, .a-kitchen-search { border: 1px solid var(--line-strong); background: var(--glass-strong); }
+.a-kitchen-search { display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px; border-radius: var(--r-pill); color: var(--brand); }
+.a-kitchen-search input { min-width: 0; width: 21ch; font: inherit; font-size: 13px; border: 0; background: transparent; color: var(--ink); }
+.a-kitchen-search:focus-within { outline: 2px solid var(--brand); }
+.a-kitchen-search input:focus { outline: none; }
+.a-recipe-grid { display: grid; grid-template-columns: repeat(3, minmax(270px, 1fr)); gap: clamp(16px, 2vw, 26px); }
+.a-recipe-card, .a-recipe-hero, .a-kitchen-panel, .a-kitchen-empty { border: 1px solid var(--kitchen-ink-line); border-radius: var(--r-lg); background: var(--kitchen-paper); box-shadow: var(--shadow); }
+.a-recipe-card { display: block; min-width: 0; overflow: hidden; transition: box-shadow .2s var(--ease), border-color .2s; }
+.a-recipe-card:hover { border-color: var(--kitchen-steam); }
+.a-recipe-cover { position: relative; min-width: 0; width: 100%; aspect-ratio: 16/10; background: var(--kitchen-paper); }
+.a-recipe-comic { padding: 10px; }
+.a-recipe-frame { width: 100%; height: 100%; overflow: hidden; background-color: var(--kitchen-print);
+  background-image: radial-gradient(var(--kitchen-ink-line) .7px, transparent .9px); background-size: 5px 5px; }
+.a-recipe-comic .a-recipe-frame { border: 1.5px solid var(--kitchen-pencil); border-radius: var(--r); }
+.a-recipe-frame > img, .a-dish-art { width: 100%; height: 100%; display: block; object-fit: cover; transition: transform .4s var(--ease); }
+.a-recipe-comic .a-recipe-frame > img { object-fit: contain; }
+.a-recipe-frame:has(.a-dish-art) { background-image: radial-gradient(var(--kitchen-ink-line) .7px, transparent .9px), linear-gradient(145deg, var(--kitchen-paper), var(--kitchen-print)); background-size: 5px 5px, cover; }
+.a-recipe-badge { position: absolute; top: 19px; right: 19px; display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border: 1px solid var(--kitchen-ink-line); border-radius: var(--r-pill); background: var(--kitchen-paper); color: var(--kitchen-pencil); font: 500 11px var(--mono); }
+@media (hover: hover) { .a-recipe-card:hover .a-recipe-frame > :is(img, svg) { transform: scale(1.035); } }
+.a-recipe-card-copy { display: grid; gap: 9px; padding: 14px 22px 22px; }
+.a-recipe-card-copy h2, .a-kitchen-panel h2, .a-kitchen-empty h2, .a-kitchen-dialog h2 { font: 500 clamp(23px, 2.2vw, 30px)/1.22 var(--serif); color: var(--ink); }
+.a-recipe-card-copy > p { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--body); font-size: 14px; line-height: 1.6; }
+.a-recipe-meta { display: flex; flex-wrap: wrap; align-items: center; color: var(--kitchen-warm); font: 500 12px/1.5 var(--mono); }
+.a-recipe-meta:empty, .a-recipe-kicker:empty { display: none; }
+.a-recipe-meta span, .a-recipe-tags { display: inline-flex; align-items: center; gap: 4px; }
+.a-recipe-meta span + span::before { content: "·"; padding-inline: 3px; }
+.a-recipe-meta svg, .a-recipe-stars svg { fill: currentColor; }
+.a-recipe-tags { flex-wrap: wrap; gap: 6px; }
+.a-recipe-tags span { padding: 2px 9px; border-radius: var(--r-pill); background: var(--kitchen-warm-soft); color: var(--kitchen-warm); border: 1px solid var(--kitchen-ink-line); font-size: 12px; }
+.a-recipe-tags b { margin-right: 4px; color: var(--body); font-size: 13px; }
+.a-kitchen-empty { display: grid; justify-items: center; gap: 16px; text-align: center; padding: clamp(32px, 7vw, 80px) 18px; }
+.a-kitchen-empty > svg { color: var(--kitchen-warm); }
+.a-kitchen-toolbar { justify-content: space-between; margin-bottom: 20px; }
+.a-kitchen-toolbar .a-back { margin: 0; }
+.a-recipe-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); overflow: hidden; align-items: center; }
+.a-recipe-intro { padding: clamp(20px, 3vw, 40px); display: grid; gap: 12px; min-width: 0; }
+.a-recipe-kicker { font: 500 13px var(--mono); }
+.a-recipe-intro h1 { color: var(--ink); font: 500 clamp(32px, 4vw, 54px)/1.18 var(--serif); }
+.a-recipe-stars { display: flex; gap: 2px; color: var(--kitchen-warm); }
+.a-recipe-intro dl { display: flex; flex-wrap: wrap; gap: 14px 22px; padding-block: 12px; border-block: 1px solid var(--kitchen-ink-line); }
+.a-recipe-intro dt { font-size: 12px; color: var(--body); }
+.a-recipe-intro dd { font: 500 15px var(--mono); color: var(--ink); }
+.a-recipe-sections { margin-top: 22px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.85fr); gap: 22px; align-items: start; }
+.a-kitchen-method:only-child { grid-column: 1/-1; }
+.a-kitchen-panel { min-width: 0; padding: clamp(20px, 3vw, 32px); }
+.a-kitchen-panel h2 { margin-bottom: 18px; }
+.a-ingredient-list fieldset, .a-kitchen-form fieldset { padding: 0; margin: 0; border: 0; min-width: 0; }
+.a-ingredient-list fieldset + fieldset { margin-top: 18px; }
+.a-ingredient-list legend { font: 500 13px var(--mono); color: var(--kitchen-warm); }
+.a-ingredient-list label { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, auto); align-items: center; gap: 10px; min-height: 48px; padding: 6px 0; border-bottom: 1px dashed var(--kitchen-ink-line); cursor: pointer; }
+.a-ingredient-list input { accent-color: var(--brand); width: 19px; height: 19px; margin: 0; }
+.a-ingredient-list label:has(:checked) span { color: var(--code); text-decoration: line-through; }
+.a-ingredient-amount { font: 400 13px/1.55 var(--mono); text-align: end; }
+.a-kitchen-method .prose { font-size: 15.5px; line-height: 1.75; min-width: 0; overflow-x: auto; }
+.a-kitchen-method .prose ol { padding-left: 2em; }
+.a-kitchen-method .prose li { margin: 0 0 .6em; padding-left: .3em; }
+.a-kitchen-method .prose li::marker { font: 500 1em var(--mono); color: var(--kitchen-warm); }
+.a-kitchen-method .prose pre { white-space: pre-wrap; }
+.a-kitchen-dialog { width: min(620px, calc(100% - 24px)); max-height: 90dvh; padding: clamp(16px, 4vw, 28px); border: 1px solid var(--kitchen-ink-line); border-radius: var(--r-lg); background: var(--kitchen-paper); color: var(--body); box-shadow: var(--shadow); overflow-y: auto; overscroll-behavior: contain; }
+.a-kitchen-dialog::backdrop { background: var(--kitchen-scrim); }
+.a-kitchen-dialog header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.a-kitchen-form > fieldset, .a-kitchen-fields { display: grid; gap: 14px; }
+.a-kitchen-form label { display: grid; align-content: start; gap: 5px; min-width: 0; color: var(--body); font-size: 13px; }
+.a-kitchen-form .field, .a-kitchen-form input[type=file] { width: 100%; min-width: 0; }
+.a-kitchen-form textarea.field { height: auto; padding: 10px 14px; resize: vertical; line-height: 1.65; }
+.a-kitchen-form > fieldset > button { justify-self: end; }
+.a-kitchen-fields, .a-kitchen-cover-field { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.a-kitchen-cover-field { display: grid; align-items: end; gap: 12px; }
+.a-kitchen-cover-preview { width: min(100%, 280px); grid-column: 1/-1; }
+.a-kitchen-cover-field input::file-selector-button { padding: 8px; margin-right: 6px; border-radius: var(--r-sm); background: var(--surface); border: 1px solid var(--line-strong); cursor: pointer; }
+.a-kitchen-details { padding-block: 12px; border-block: 1px solid var(--kitchen-ink-line); }
+.a-kitchen-details summary { color: var(--brand); cursor: pointer; }
+.a-kitchen-details[open] summary { margin-bottom: 14px; }
+.a-kitchen-form .a-kitchen-ingredient-editor { margin: 18px 0; }
+.a-kitchen-ingredient-row { display: grid; grid-template-columns: 1.4fr 1fr 1fr auto; gap: 6px; align-items: end; margin-block: 8px; }
+.a-kitchen-form .a-kitchen-field-hint { margin-bottom: 8px; }
+@media (max-width: 930px) { .a-recipe-grid { grid-template-columns: repeat(2, minmax(270px, 1fr)); } }
+@media (max-width: 700px) {
+  .a-recipe-hero, .a-recipe-sections { grid-template-columns: minmax(0, 1fr); }
+  .a-recipe-sections { gap: 16px; }
+}
+@media (max-width: 600px) {
+  .a-recipe-grid { grid-template-columns: minmax(0, 1fr); }
+  .a-kitchen-filters button { min-height: 42px; }
+  .a-kitchen-tools { width: 100%; }
+  .a-kitchen-search { flex: 1 1 140px; min-width: 0; }
+  .a-kitchen-search input { width: 100%; min-height: 40px; }
+  .a-kitchen-ingredient-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .a-kitchen-ingredient-row button { justify-self: end; min-height: 44px; }
+  .a-kitchen-cover-field { grid-template-columns: minmax(0, 1fr); }
+  .a-kitchen-form .field { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .a-kitchen *, .a-kitchen-dialog * { animation: none; transition: none; }
+  .a-kitchen .a-recipe-card:hover .a-recipe-frame > *, .a-kitchen .btn:hover, .a-kitchen-dialog .btn:hover { transform: none; }
+}

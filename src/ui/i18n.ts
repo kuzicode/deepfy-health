@@ -1,3 +1,6 @@
+import type { useTranslations } from "next-intl";
+import type { Recipe } from "@/core/recipe";
+import type { RecipeError } from "@/server/recipe-form";
 import type { Reminder } from "@/core/analysis";
 import type { CatalogEntry } from "@/core/schema";
 
@@ -30,3 +33,8 @@ export function reminderHref(r: Reminder) {
   if (r.kind === "recheck" && r.code) return `/m/${r.memberId}/indicators/${r.code}`;
   return `/m/${r.memberId}/${r.kind === "regimen-review" || r.kind === "supply-expiry" ? "regimen" : "records"}`;
 }
+
+type KitchenT = ReturnType<typeof useTranslations<"app.kitchen">>;
+export const recipeCategory = (t: KitchenT, category: NonNullable<Recipe["category"]>) => t(`categories.${category}`);
+export const recipeDifficulty = (t: KitchenT, difficulty: NonNullable<Recipe["difficulty"]>) => t(`difficulties.${difficulty}`);
+export const recipeError = (t: KitchenT, code: RecipeError) => t(`errors.${code}`);

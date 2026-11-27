@@ -1,5 +1,7 @@
 import { z } from "zod";
+import type { RawVault } from "./bundle";
 
+export const MAX_RECIPE_COVER_BYTES = 2 * 1024 * 1024;
 export const RECIPE_DIR = "菜单";
 export const RECIPE_ASSETS_DIR = "菜单/assets";
 export const RECIPE_CATEGORIES = ["炒菜", "炖菜", "蒸菜", "汤羹", "凉拌", "主食", "早餐", "饮品"] as const;
@@ -53,4 +55,20 @@ export function mergeRecipeFrontmatter(existing: Record<string, unknown>, patch:
     if (value === undefined) delete merged[key];
   }
   return merged;
+}
+
+export function availableRecipeSlug(raw: RawVault, base: string) {
+  const used = new Set((raw.householdDocs ?? []).filter((d) => d.kind === "recipe").map((d) => d.key.toLowerCase()));
+  for (let n = 1; n <= 100; n++) {
+    const candidate = n === 1 ? base : `${base}-${n}`;
+    if (!used.has(candidate.toLowerCase())) return candidate;
+  }
+}
+
+export function recipeBody(previous: string, replacement?: string) {
+  if (replacement === undefined) return previous;
+  const links = /!?\[\[[^\[\]\r\n]+\]\]/gu;
+  const included = new Set(replacement.match(links));
+  const missing = [...new Set(previous.match(links))].filter((link) => !included.has(link));
+  return missing.length ? [replacement, missing.join("\n")].join("\n\n") : replacement;
 }

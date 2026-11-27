@@ -14,7 +14,7 @@ const OPTIONS: sanitizeHtml.IOptions = {
 };
 
 // Obsidian 的 [[链接|别名]] 只保留文字
-const stripWikilinks = (md: string) => md.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_m, target, alias) => alias ?? target);
+export const stripWikilinks = (md: string) => md.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_m, target, alias) => alias ?? target);
 
 export function renderMarkdown(source: string): string {
   return sanitizeHtml(marked.parse(stripWikilinks(source), { async: false }), OPTIONS);

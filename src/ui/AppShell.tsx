@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { BookOpen, Bot, ChevronDown, LogOut, Mail, MessageSquare, Settings, ShieldCheck, Users } from "lucide-react";
+import { BookOpen, Bot, ChevronDown, LogOut, Mail, MessageSquare, Settings, ShieldCheck, Users, UtensilsCrossed } from "lucide-react";
+import type { MemberStub } from "@/core/bundle";
 import { avatarSrc, avatarUrl } from "@/avatars";
 import { authClient } from "@/client/auth-client";
 import { clearSignedInMark, setSignedInMark } from "@/client/signed-in-mark";
@@ -14,7 +15,7 @@ import { Logo, Wordmark } from "./Logo";
 import { Sortable } from "./Sortable";
 import { useDropdown } from "./useDropdown";
 
-export interface ShellMember { id: string; name: string; attention: number; avatar?: string }
+export type ShellMember = Pick<MemberStub, "id" | "name"> & { avatar?: string };
 /** avatar：预设头像 id（没有时显示首字母） */
 export interface ShellUser { name: string; email: string; isAdmin?: boolean; avatar?: string }
 
@@ -52,55 +53,76 @@ function AccountMenu({ user, path, selfHosted }: { user: ShellUser; path: string
   );
 }
 
+type MemberNavProps = {
+  members: ShellMember[]; current?: ShellMember; path: string;
+  sortable: boolean; reorderMembers: (ids: string[]) => Promise<void>;
+};
+
+function MemberMenu({ members, current, path, sortable, reorderMembers }: MemberNavProps) {
+  const t = useTranslations("app.nav");
+  const memberMenu = useDropdown();
+  const closeMember = memberMenu.setOpen;
+  useEffect(() => { closeMember(false); }, [path, closeMember]);
+
+  const memberLink = (m: ShellMember) => (
+    <Link href={`/m/${m.id}`} className={m.id === current?.id ? "on" : ""}>
+      <Avatar id={m.id} name={m.name} size={22} src={avatarSrc(m.avatar)} />{m.name}
+    </Link>
+  );
+  return (
+    <div className="a-member" ref={memberMenu.ref}>
+      <button type="button" onClick={() => memberMenu.setOpen(!memberMenu.open)} aria-expanded={memberMenu.open}>
+        {current ? <Avatar id={current.id} name={current.name} size={26} src={avatarSrc(current.avatar)} /> : <Users size={16} style={{ marginLeft: 6 }} />}
+        <span>{current?.name ?? t("family")}</span>
+        <ChevronDown size={14} />
+      </button>
+      {memberMenu.open && (
+        <div className="a-menu glass" style={{ background: "var(--glass-strong)" }}>
+          <Link href="/" className={path === "/" ? "on" : ""}><Users size={16} />{t("family")}</Link>
+          <hr />
+          {/* 只有云端模式有登录用户，本地 vault 模式不能排序 */}
+          {sortable ? (
+            <Sortable className="a-menu-sort" itemClassName="a-menu-item" save={reorderMembers} label={t("reorder")}
+              items={members.map((m) => ({ id: m.id, node: memberLink(m) }))} />
+          ) : members.map((m) => <div key={m.id}>{memberLink(m)}</div>)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MemberTabs({ id, path }: { id: string; path: string }) {
+  const t = useTranslations("app.nav");
+  const tabs = [
+    [`/m/${id}`, t("overview")], [`/m/${id}/browse`, t("indicators")], [`/m/${id}/records`, t("records")],
+    [`/m/${id}/regimen`, t("regimen")], [`/m/${id}/profile`, t("profile")],
+  ];
+  const tabOn = (href: string) => path === href || (href.endsWith("/browse") && path.includes("/indicators/"));
+
+  return (
+    <nav className="a-tabs">
+      {tabs.map(([href, label]) => <Link key={href} href={href} className={tabOn(href) ? "on" : ""}>{label}</Link>)}
+    </nav>
+  );
+}
+
 export function AppShell({ members, user, homeHref, docsHref, selfHosted, reorderMembers, children }: { members: ShellMember[]; user?: ShellUser; homeHref: string; docsHref: string; selfHosted: boolean; reorderMembers: (ids: string[]) => Promise<void>; children: React.ReactNode }) {
   const t = useTranslations("app.nav");
   const path = usePathname();
   const currentId = decodeURIComponent(path.match(/^\/m\/([^/]+)/)?.[1] ?? "");
   const current = members.find((m) => m.id === currentId);
-  const memberMenu = useDropdown();
-  const closeMember = memberMenu.setOpen;
-  useEffect(() => { closeMember(false); }, [path, closeMember]);
-
-  const tabs = current ? [
-    [`/m/${current.id}`, t("overview")], [`/m/${current.id}/browse`, t("indicators")], [`/m/${current.id}/records`, t("records")],
-    [`/m/${current.id}/regimen`, t("regimen")], [`/m/${current.id}/profile`, t("profile")],
-  ] : [];
-  const memberLink = (m: ShellMember) => (
-    <Link href={`/m/${m.id}`} className={m.id === currentId ? "on" : ""}>
-      <Avatar id={m.id} name={m.name} size={22} src={avatarSrc(m.avatar)} />{m.name}{m.attention > 0 && <span className="count">{m.attention}</span>}
-    </Link>
-  );
-  const tabOn = (href: string) => path === href || (href.endsWith("/browse") && path.includes("/indicators/"));
-
+  const inKitchen = path === "/kitchen" || path.startsWith("/kitchen/");
   return (
     <>
       <header className="a-bar">
         <div className="a-bar-inner glass">
           {/* 「家庭」已经回到 App 首页，logo 指向官网（自托管版回首页） */}
           <a href={homeHref} aria-label="Deepfy" className="logo"><span className="logo-full"><Wordmark size={20} /></span><span className="logo-mark"><Logo size={22} /></span></a>
-          <div className="a-member" ref={memberMenu.ref}>
-            <button type="button" onClick={() => memberMenu.setOpen(!memberMenu.open)} aria-expanded={memberMenu.open}>
-              {current ? <Avatar id={current.id} name={current.name} size={26} src={avatarSrc(current.avatar)} /> : <Users size={16} style={{ marginLeft: 6 }} />}
-              <span>{current?.name ?? t("family")}</span>
-              <ChevronDown size={14} />
-            </button>
-            {memberMenu.open && (
-              <div className="a-menu glass" style={{ background: "var(--glass-strong)" }}>
-                <Link href="/" className={path === "/" ? "on" : ""}><Users size={16} />{t("family")}</Link>
-                <hr />
-                {/* 只有云端模式有登录用户，本地 vault 模式不能排序 */}
-                {user ? (
-                  <Sortable className="a-menu-sort" itemClassName="a-menu-item" save={reorderMembers} label={t("reorder")}
-                    items={members.map((m) => ({ id: m.id, node: memberLink(m) }))} />
-                ) : members.map((m) => <div key={m.id}>{memberLink(m)}</div>)}
-              </div>
-            )}
-          </div>
-          {tabs.length > 0 && (
-            <nav className="a-tabs">
-              {tabs.map(([href, label]) => <Link key={href} href={href} className={tabOn(href) ? "on" : ""}>{label}</Link>)}
-            </nav>
-          )}
+          <MemberMenu members={members} path={path} current={current} sortable={!!user} reorderMembers={reorderMembers} />
+          <Link href="/kitchen" className={`a-agents${inKitchen ? " on" : ""}`} aria-current={inKitchen ? "page" : undefined} aria-label={t("kitchen")}>
+            <UtensilsCrossed size={16} /><span>{t("kitchen")}</span>
+          </Link>
+          {current && <MemberTabs id={current.id} path={path} />}
           <div className="a-bar-right">
             {user && TOP_LINKS.map(([href, key, Icon]) => (
               <Link key={href} href={href} className={`a-agents${path === href ? " on" : ""}`} aria-label={t(key)}>
