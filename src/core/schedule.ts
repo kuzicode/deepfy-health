@@ -1,12 +1,12 @@
 import { activeItems } from "./regimen";
-import type { MemberBundle, Profile } from "./schema";
+import { isoDate, type MemberBundle, type Profile } from "./schema";
 
 // 日期、年龄与日程：年度体检 / 复查 / 方案复评的提醒、「接下来」日程、用药方案的当天剂量。
 // 从 analysis.ts 拆出（行数阈值）；analysis.ts 重新导出这里的全部内容，调用方不用改导入。
 
 export interface Reminder {
   memberId: string;
-  kind: "annual-checkup" | "recheck" | "regimen-review" | "supply-expiry";
+  kind: "annual-checkup" | "recheck" | "regimen-review" | "supply-expiry" | "insurance-renewal";
   due: string;
   overdue: boolean;
   /** 中文文案（CLI 使用）；网页按 kind + params 生成对应语言的文案 */
@@ -108,6 +108,13 @@ function checkupReminder(m: MemberBundle, today: string): Omit<Reminder, "member
   return { kind: "annual-checkup", due: next ?? today, message, params };
 }
 
+function insuranceRenewals(m: MemberBundle): Omit<Reminder, "memberId" | "overdue">[] {
+  return (m.insurance?.policies ?? []).flatMap(({ category, product, renewal_date: due }) =>
+    due && isoDate.safeParse(due).success
+      ? [{ kind: "insurance-renewal", due, message: `${category}续保到期（${due}）`, params: { category, product, due } }]
+      : []);
+}
+
 /** 全部待办（不截断时间窗口）：体检、指标分析约定的复查、用药结束——网页「接下来」、提醒、邮件 / agent 共用这一个来源 */
 function allReminders(m: MemberBundle, today: string): Reminder[] {
   const out: Reminder[] = [];
@@ -116,6 +123,7 @@ function allReminders(m: MemberBundle, today: string): Reminder[] {
     out.push({ ...r, memberId: m.id, due, overdue: due < today, ...(due !== r.due ? { originalDue: r.due } : {}) });
   };
 
+  for (const renewal of insuranceRenewals(m)) push(renewal, false);
   push(checkupReminder(m, today), nextCheckup(m) !== undefined);
   for (const r of upcomingRechecks(m)) {
     push({ kind: "recheck", due: r.due, message: `复查 ${r.code}：${r.summary}`, params: { code: r.code, summary: r.summary }, code: r.code, newResult: r.newResult });

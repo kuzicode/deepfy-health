@@ -4,6 +4,7 @@ import {
 } from "@/core/analysis";
 import type { VaultSnapshot } from "@/core/bundle";
 import { checkupPlan, conditionFocus, type ConditionFocus } from "@/core/health-template";
+import { DATA_NOTE } from "./contract";
 import { normName } from "@/core/names";
 import type { Catalog, MemberBundle, RegimenItem } from "@/core/schema";
 
@@ -45,6 +46,16 @@ const reminderOut = (r: ReturnType<typeof reminders>[number]) => ({ member: r.me
 const logOut = (l: MemberBundle["logs"][number]) => ({
   date: l.date, time: l.time, type: l.type, title: l.title, severity: l.severity, tags: l.tags, detail: l.body || undefined, photos: l.attachments.length,
 });
+
+export function getInsurance(s: VaultSnapshot, id: string, today: string) {
+  const m = findMember(s, id);
+  return {
+    data_note: DATA_NOTE,
+    policies: m.insurance?.policies ?? [],
+    reminders: reminders(m, today).filter((r) => r.kind === "insurance-renewal").map(({ due, overdue, params }) => ({ ...params, due, overdue })),
+    body: m.insurance?.body ?? "",
+  };
+}
 
 export function listMembers(s: VaultSnapshot, today: string) {
   return s.members.map((m) => {

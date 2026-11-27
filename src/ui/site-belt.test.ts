@@ -34,7 +34,7 @@ it("has matching Chinese and English keys, including array entries", () => {
 // Exercise ICU plurals and rich text with sample arguments. A new argument
 // needs a sample here so a misspelled or unbound placeholder fails the test.
 const args = Object.fromEntries((
-  "age allergy app code codes condition count covered date days email end errors expiry family id interval kw last limit list login " +
+  "age allergy app category product code codes condition count covered date days email end errors expiry family id interval kw last limit list login " +
   "n name names other pct range ref site start summary text title token total url warnings who"
 ).split(" ").map((name) => [name, 2]));
 

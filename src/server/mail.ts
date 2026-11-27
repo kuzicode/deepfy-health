@@ -45,8 +45,8 @@ const COPY = {
       text: (email: string, url: string) => `${BRAND.zh}\n\n你用 ${email} 提交的早鸟申请已通过。登录开始使用：${url}`,
     },
     reminder: {
-      title: "接下来要做的检查",
-      subject: (n: number) => `${n} 项检查即将到期 · ${BRAND.zh}`,
+      title: "家庭到期提醒",
+      subject: (n: number) => `${n} 项待办即将到期 · ${BRAND.zh}`,
       separator: "；",
       empty: "目前没有到提醒时间的项目。",
       open: "打开档案",
@@ -81,7 +81,7 @@ const COPY = {
     },
     reminder: {
       title: "Coming up",
-      subject: (n: number) => `${n} ${n === 1 ? "check" : "checks"} coming up · ${BRAND.en}`,
+      subject: (n: number) => `${n} ${n === 1 ? "reminder" : "reminders"} coming up · ${BRAND.en}`,
       separator: "; ",
       empty: "Nothing is due for a reminder right now.",
       open: "Open your record",

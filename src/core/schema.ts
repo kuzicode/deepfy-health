@@ -1,10 +1,11 @@
+import type { InsuranceBundle } from "./insurance";
 import { z } from "zod";
 
 const isRealDate = (s: string) => {
   const d = new Date(`${s}T00:00:00Z`);
   return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
 };
-const isoDate = z.preprocess(
+export const isoDate = z.preprocess(
   (v) => (v instanceof Date ? v.toISOString().slice(0, 10) : v),
   z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "日期需为 YYYY-MM-DD").refine(isRealDate, "不是有效的日历日期"),
 );
@@ -217,6 +218,7 @@ export interface MemberBundle {
   logs: HealthLog[];
   regimen?: Regimen;
   carePlan?: CarePlan;
+  insurance?: InsuranceBundle;
 }
 
 export interface ValidationIssue {

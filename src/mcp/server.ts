@@ -7,7 +7,7 @@ import { registerDietContext, registerKitchenReads } from "./kitchen-tools";
 import { CONTRACT, DATA_NOTE } from "./contract";
 import { registerWriteTools, type WriteDeps } from "./write-tools";
 import {
-  ToolError, getCheckupSuggestions, getIndicator, getOverview, getRecord, getRegimen, getReminders, listLogs, listMembers, listRecords, lookupIndicator,
+  ToolError, getCheckupSuggestions, getIndicator, getInsurance, getOverview, getRecord, getRegimen, getReminders, listLogs, listMembers, listRecords, lookupIndicator,
 } from "./tools";
 
 // Deepfy MCP：每个请求新建一个 server，按 token 对应用户的数据回答；token 可写入时另注册写入工具（M3.2）
@@ -62,6 +62,8 @@ function registerHealthReads(server: McpServer, snapshot: () => Promise<VaultSna
     () => run((s) => listMembers(s, today)));
   tool("get_overview", "One member's health overview: profile, markers needing attention, reminders, today's medication, recent symptom logs, checkup suggestions, care plan.", { member },
     ({ member: id }) => run((s) => getOverview(s, id, today)));
+  tool("get_insurance", "Read one member's policies, overdue and next-30-day renewals, and Markdown notes.", { member },
+    ({ member: id }) => run((s) => getInsurance(s, id, today)));
   tool("get_indicator", "One marker for a member: latest value with flag and reference range, history series (same unit), analysis note.", { member, code: z.string().describe("Indicator code, e.g. ALT, LDL_C, SBP") },
     ({ member: id, code }) => run((s) => getIndicator(s, id, code)));
   tool("list_records", "List a member's test records (newest first, max 50) with abnormal counts.", { member, from: date.optional(), to: date.optional() },

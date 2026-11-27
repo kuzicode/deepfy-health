@@ -1,8 +1,8 @@
 import type { useTranslations } from "next-intl";
 import type { Recipe } from "@/core/recipe";
 import type { RecipeError } from "@/server/recipe-form";
-import type { Reminder } from "@/core/analysis";
-import type { CatalogEntry } from "@/core/schema";
+import type { Reminder, ScheduleItem } from "@/core/analysis";
+import type { Catalog, CatalogEntry } from "@/core/schema";
 
 // 动态 key（分类名、提醒类型）在这里集中处理，调用方传入 app 命名空间的 t
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,12 +24,23 @@ export const categoryLabel = (t: T, has: Has, cat: string) => (has(`categories.$
 export function reminderText(t: T, r: Reminder): string {
   const p = r.params ?? {};
   if (r.kind === "annual-checkup") return p.last ? t("reminder.annual", p) : p.scheduled ? t("reminder.annualScheduled") : t("reminder.annualFirst");
+  if (r.kind === "insurance-renewal") return t("reminder.insuranceRenewal", p);
   if (r.kind === "recheck") return t("reminder.recheck", p);
   if (r.kind === "supply-expiry") return t("reminder.expiry", p);
   return t("reminder.regimen", p);
 }
 
+export function scheduleTitle(t: T, item: ScheduleItem, catalog: Catalog, locale: string) {
+  if (item.kind === "recheck") {
+    const names = item.codes.map((code) => indicatorName(catalog.get(code), code, locale));
+    return t("reminder.recheckMany", { names: names.join("、") });
+  }
+  if (item.kind === "annual-checkup" && !item.soon && item.params.last) return t("reminder.annualNext", { last: String(item.params.last) });
+  return reminderText(t, item);
+}
+
 export function reminderHref(r: Reminder) {
+  if (r.kind === "insurance-renewal") return "/insurance";
   if (r.kind === "recheck" && r.code) return `/m/${r.memberId}/indicators/${r.code}`;
   return `/m/${r.memberId}/${r.kind === "regimen-review" || r.kind === "supply-expiry" ? "regimen" : "records"}`;
 }

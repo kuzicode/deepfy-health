@@ -13,6 +13,7 @@ export const CONTRACT = `# Deepfy 健康档案 · Agent 数据说明
 - 指标笔记（note）：针对单项指标的分析，status: attention | watch | normal。
 - 健康日志（log）：症状 / 备注的快速记录，含日期、一句话、严重程度 1–3、标签、照片数量（照片内容不经 MCP 提供）。
 - 用药与补剂（regimen）：status 为 active 在用 / suggested 建议中（还没吃）/ stopped 已停用；健康计划（care plan）；提醒（reminders：年度体检、复查、方案复评、有效期）。
+- 保险配置（get_insurance）：health 分域的成员只读工具，返回保单、已逾期及未来 30 天的续保提醒与 Markdown 正文。续保日逾期后仍保留原日期。
 - 体检建议（checkup suggestions）：按职场人群常规观察项，对照已有记录给出「已覆盖 / 已过期 / 未查过」，并标出与异常指标或近期症状的关联。
 
 ## 回答原则

@@ -50,6 +50,7 @@ const LINE = {
   zh: {
     recheck: (names: string[]) => `复查 ${names.join("、")}`,
     annual: "年度体检",
+    renewal: (category: string) => `${category}续保到期`,
     fallback: "用药",
     expiry: (name: string) => `${name} 有效期到期`,
     end: (name: string) => `${name} 计划结束，评估是否继续`,
@@ -58,6 +59,7 @@ const LINE = {
   en: {
     recheck: (names: string[]) => `Recheck ${names.join(", ")}`,
     annual: "Annual checkup",
+    renewal: (category: string) => `${category} renewal due`,
     fallback: "Medication",
     expiry: (name: string) => `${name} expires`,
     end: (name: string) => `${name} ends as planned; review whether to continue`,
@@ -73,6 +75,7 @@ const LINE = {
 export function itemLine(d: DueItem, catalog: Catalog, today: string, locale: Locale = "zh"): { who: string; what: string; when: string } {
   const x = d.item;
   const c = LINE[locale];
+  if (x.kind === "insurance-renewal") return { who: d.memberName, what: c.renewal(String(x.params.category)), when: x.due };
   const names = x.codes.map((code) => { const e = catalog.get(code); return (locale === "en" ? e?.name_en : e?.name) ?? e?.name ?? code; });
   const item = String(x.params.name ?? c.fallback);
   const what = x.kind === "recheck" ? c.recheck(names)

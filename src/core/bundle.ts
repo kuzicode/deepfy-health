@@ -2,6 +2,7 @@ import matter from "gray-matter";
 import YAML from "yaml";
 import type { z } from "zod";
 import { unitsComparable } from "./analysis";
+import { InsuranceSchema, parseInsuranceTable } from "./insurance";
 import { RECIPE_DIR, RecipeSchema, type Recipe } from "./recipe";
 import { BUILTIN_CATALOG } from "./builtin-catalog";
 import {
@@ -16,7 +17,8 @@ export const altUnitWithRange = (r: { unit?: string; ref_low?: number; ref_high?
 
 // 本地 vault 与云端数据库共用的中间格式：frontmatter 原样保留，校验与组装统一在 buildSnapshot 里做
 
-export const DOC_KINDS = ["profile", "record", "note", "regimen", "care_plan", "log"] as const;
+export const SINGLETON_DOC_KINDS = ["profile", "regimen", "care_plan", "insurance"] as const;
+export const DOC_KINDS = [...SINGLETON_DOC_KINDS, "record", "note", "log"] as const;
 export type DocKind = (typeof DOC_KINDS)[number];
 
 /** updatedAt：本地为文件修改时间，云端为最后写入时间（ISO），用于推送时的冲突判断 */
@@ -71,7 +73,7 @@ export const CATALOG_FILE = "_health/indicators.yaml";
  * 单例文档为空；指标笔记是 code；检测记录不含路径分隔符、控制字符和 ".."，不以 "." 开头
  */
 export function isSafeDocKey(kind: DocKind, key: string): boolean {
-  if (kind === "profile" || kind === "regimen" || kind === "care_plan") return key === "";
+  if (SINGLETON_DOC_KINDS.some((k) => k === kind)) return key === "";
   if (kind === "note") return /^[A-Z0-9_]{1,40}$/.test(key);
   if (kind === "log") return /^\d{8}-\d{4}(-\d{1,2})?$/.test(key);
   return key.length > 0 && key.length <= 200 && !/[/\\\u0000-\u001f]/.test(key) && !key.includes("..") && !key.startsWith(".");
@@ -81,6 +83,7 @@ export function isSafeDocKey(kind: DocKind, key: string): boolean {
 export function docPath(m: { id: string; dir?: string }, d: { kind: DocKind; key: string }): string {
   const base = `${m.dir ?? m.id}/Health`;
   switch (d.kind) {
+    case "insurance": return `${m.dir ?? m.id}/保险配置.md`;
     case "profile": return `${base}/profile.md`;
     case "regimen": return `${base}/regimen.md`;
     case "care_plan": return `${base}/care-plan.md`;
@@ -210,6 +213,13 @@ function loadRegimen({ ctx, fm, parse }: MemberCtx, doc: RawDoc | undefined) {
   return regimen;
 }
 
+function loadInsurance({ ctx, fm }: MemberCtx, doc?: RawDoc) {
+  if (!doc) return;
+  const data = ctx.issues.parse(InsuranceSchema, doc.data, docPath(fm, doc), true);
+  if (!data) return;
+  return { policies: data.policies ?? parseInsuranceTable(doc.body), secret: data.secret ?? false, updated: data.updated, body: doc.body };
+}
+
 const newestFirst = (a: HealthLog, b: HealthLog) => `${b.date}${b.time ?? ""}${b.slug}`.localeCompare(`${a.date}${a.time ?? ""}${a.slug}`);
 
 function buildMember(ctx: Ctx, fm: FM, docs: RawDoc[]): MemberBundle {
@@ -231,7 +241,12 @@ function buildMember(ctx: Ctx, fm: FM, docs: RawDoc[]): MemberBundle {
   }
   out.logs.sort(newestFirst);
   const carePlanDoc = single("care_plan");
-  return { ...empty, profile, ...out, regimen: loadRegimen(mc, single("regimen")), carePlan: carePlanDoc && parse(CarePlanSchema, carePlanDoc) };
+  return {
+    ...empty, profile, ...out,
+    insurance: loadInsurance(mc, single("insurance")),
+    regimen: loadRegimen(mc, single("regimen")),
+    carePlan: carePlanDoc && parse(CarePlanSchema, carePlanDoc),
+  };
 }
 
 export function memberFromDocs(fm: FM, docs: RawDoc[], customCatalog: CatalogEntry[]) {

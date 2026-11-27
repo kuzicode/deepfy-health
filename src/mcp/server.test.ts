@@ -25,7 +25,7 @@ describe("MCP 只读工具（示例 vault）", () => {
   it("工具全部是只读，并声明返回内容是用户数据", async () => {
     const { tools } = await client.listTools();
     expect(tools.map((t) => t.name).sort()).toEqual([
-      "get_checkup_suggestions", "get_diet_context", "get_indicator", "get_overview", "get_recipe", "get_record", "get_regimen", "get_reminders",
+      "get_checkup_suggestions", "get_diet_context", "get_indicator", "get_insurance", "get_overview", "get_recipe", "get_record", "get_regimen", "get_reminders",
       "list_logs", "list_members", "list_recipes", "list_records", "lookup_indicator",
     ]);
     for (const t of tools) {

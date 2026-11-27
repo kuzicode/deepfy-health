@@ -1,0 +1,32 @@
+.insurance-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 0 22px; padding: 18px 0; }
+.insurance-summary > div { padding: 0 clamp(10px, 3vw, 32px); }
+.insurance-summary > div + div { border-left: 1px solid var(--line); }
+.insurance-summary dt, .insurance-empty { color: var(--muted); font-size: 13px; }
+.insurance-summary dd { margin: 4px 0 0; font: 500 28px/1.2 var(--mono); color: var(--brand); }
+.insurance-member { min-width: 0; padding: clamp(14px, 2.5vw, 28px); margin-bottom: 18px; overflow-wrap: anywhere; }
+.insurance-member header, .insurance-private { display: flex; align-items: center; gap: 8px; }
+.insurance-member header { justify-content: space-between; margin-bottom: 16px; }
+.insurance-member h2 { margin: 0; }
+.insurance-private { background: var(--surface-2); color: var(--brand); padding: 5px 10px; border-radius: 20px; font-size: 12px; }
+.insurance-table { border-collapse: collapse; width: 100%; table-layout: fixed; font-size: 13px; }
+.insurance-table th, .insurance-table td { padding: 9px 6px; text-align: start; vertical-align: top; border-bottom: 1px solid var(--line); }
+.insurance-table th { color: var(--muted); font-weight: 500; }
+.insurance-member .prose { margin-top: 18px; max-width: 100%; overflow-x: auto; }
+.insurance-editor { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+.insurance-editor summary { cursor: pointer; color: var(--brand); }
+.insurance-editor form, .insurance-editor label { display: grid; gap: 7px; }
+.insurance-editor form { gap: 12px; margin-top: 14px; }
+.insurance-editor fieldset { min-width: 0; border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+.insurance-editor legend, .insurance-editor label { font-size: 13px; }
+.insurance-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 10px; }
+.insurance-editor .field { min-width: 0; width: 100%; }
+.insurance-editor textarea.field { height: auto; padding: 10px; resize: vertical; font-family: var(--mono); }
+.insurance-editor button { justify-self: start; }
+@media (max-width: 720px) {
+  .insurance-table, .insurance-table tbody { display: block; }
+  .insurance-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .insurance-table tr { display: grid; padding: 12px; border-radius: 12px; background: var(--surface-2); }
+  .insurance-table tr + tr { margin-top: 10px; }
+  .insurance-table td { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); gap: 10px; padding: 4px 0; border: 0; }
+  .insurance-table td::before { content: attr(data-label); color: var(--muted); }
+}

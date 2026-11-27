@@ -325,6 +325,37 @@
     }
   },
   "app": {
+    "insurance": {
+      "family": "Family",
+      "title": "Family insurance",
+      "total": "Policies",
+      "renewing": "Renewals within 60 days",
+      "registered": "Members with policies",
+      "empty": "No policies recorded",
+      "encrypted": "Private · Encrypted",
+      "private": "Private",
+      "edit": "Edit insurance",
+      "body": "Markdown body",
+      "append": "Add a policy",
+      "dateHint": "May include YYYY-MM-DD",
+      "save": "Save",
+      "saved": "Saved",
+      "invalid": "Check the category, product and document length.",
+      "conflict": "This document has changed. Reload before editing again.",
+      "busy": "Too many changes. Try again shortly.",
+      "quota": "Account quota reached.",
+      "fields": {
+        "category": "Category",
+        "product": "Insurer / product",
+        "coverage": "Coverage",
+        "premium": "Annual premium",
+        "payment_term": "Payment term",
+        "term": "Coverage term / expiry",
+        "beneficiary": "Beneficiary",
+        "note": "Notes",
+        "renewal_date": "Renewal date"
+      }
+    },
     "kitchen": {
       "fit": {
         "title": "Who is this dish for?",
@@ -429,6 +460,7 @@
       }
     },
     "nav": {
+      "insurance": "Insurance",
       "kitchen": "Recipes",
       "overview": "Overview",
       "indicators": "Markers",
@@ -484,6 +516,7 @@
       "眼科": "Eye"
     },
     "reminder": {
+      "insuranceRenewal": "{category} renewal · {product}",
       "annualFirst": "No checkup on record yet — schedule a full checkup",
       "annualScheduled": "First checkup scheduled",
       "annual": "It's been {interval} months since your last checkup ({last}) — time for the next one",
@@ -495,6 +528,7 @@
       "overdue": "Overdue · {date}",
       "due": "Due {date}",
       "kind": {
+        "insurance-renewal": "Renewal",
         "annual-checkup": "Checkup",
         "recheck": "Recheck",
         "regimen-review": "Medication",
@@ -812,6 +846,7 @@
       "superseded": "Changed again later",
       "household": "Household",
       "kind": {
+        "insurance": "Insurance",
         "recipe": "Recipe",
         "profile": "Profile",
         "record": "Record",

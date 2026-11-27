@@ -325,6 +325,37 @@
     }
   },
   "app": {
+    "insurance": {
+      "family": "家庭",
+      "title": "家庭保单",
+      "total": "保单总数",
+      "renewing": "60 天内待续保",
+      "registered": "已登记成员",
+      "empty": "尚未登记保单",
+      "encrypted": "私密 · 加密存储",
+      "private": "私密",
+      "edit": "编辑保险配置",
+      "body": "Markdown 正文",
+      "append": "快捷追加一份保单",
+      "dateHint": "可填写 YYYY-MM-DD",
+      "save": "保存",
+      "saved": "已保存",
+      "invalid": "请检查险种、产品和正文长度。",
+      "conflict": "配置已更新。请刷新后重新编辑。",
+      "busy": "保存过于频繁，请稍后再试。",
+      "quota": "已达账号配额。",
+      "fields": {
+        "category": "险种",
+        "product": "保险公司 / 产品",
+        "coverage": "保额",
+        "premium": "年缴保费",
+        "payment_term": "缴费期",
+        "term": "保障期 / 到期",
+        "beneficiary": "受益人",
+        "note": "备注",
+        "renewal_date": "续保日"
+      }
+    },
     "kitchen": {
       "fit": {
         "title": "看看给谁吃合适",
@@ -429,6 +460,7 @@
       }
     },
     "nav": {
+      "insurance": "保险",
       "kitchen": "菜谱",
       "overview": "概览",
       "indicators": "指标",
@@ -484,6 +516,7 @@
       "眼科": "眼科"
     },
     "reminder": {
+      "insuranceRenewal": "{category}续保 · {product}",
       "annualFirst": "还没有体检记录，建议安排一次全面体检",
       "annualScheduled": "已安排首次体检",
       "annual": "距上次体检（{last}）已满 {interval} 个月，该安排体检了",
@@ -495,6 +528,7 @@
       "overdue": "已过期 · {date}",
       "due": "到期 {date}",
       "kind": {
+        "insurance-renewal": "续保",
         "annual-checkup": "体检",
         "recheck": "复查",
         "regimen-review": "用药",
@@ -812,6 +846,7 @@
       "superseded": "之后又被修改过",
       "household": "我家",
       "kind": {
+        "insurance": "保险",
         "recipe": "菜谱",
         "profile": "档案",
         "record": "检测记录",

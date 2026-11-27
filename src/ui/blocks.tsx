@@ -34,8 +34,8 @@ export function ReminderRows({ items, names }: { items: Reminder[]; names?: Map<
   const t = useTranslations("app");
   return (
     <div className="a-panel a-rows">
-      {items.map((r) => (
-        <Link key={`${r.memberId}-${r.kind}-${r.due}-${r.code ?? ""}`} href={reminderHref(r)} className="a-row">
+      {items.map((r, index) => (
+        <Link key={`${r.memberId}-${r.kind}-${r.due}-${r.code ?? ""}-${index}`} href={reminderHref(r)} className="a-row">
           <span className="kind">{t(`reminder.kind.${r.kind}`)}</span>
           <span className="dot" style={{ background: r.overdue ? "var(--high)" : "var(--warn)" }} />
           <span className="main">

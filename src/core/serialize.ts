@@ -10,7 +10,7 @@ export function sameContent(rel: string, a: string, b: string): boolean {
   try {
     if (rel.endsWith(".md")) {
       const [pa, pb] = [parseMd(a), parseMd(b)];
-      if (rel.startsWith(`${RECIPE_DIR}/`)) return isDeepStrictEqual(pa.data, pb.data) && pa.content === pb.content;
+      if (rel.startsWith(`${RECIPE_DIR}/`) || /^[^/]+\/保险配置\.md$/.test(rel)) return isDeepStrictEqual(pa.data, pb.data) && pa.content === pb.content;
       return isDeepStrictEqual(stripNulls(pa.data), stripNulls(pb.data)) && pa.content.trim() === pb.content.trim();
     }
     return isDeepStrictEqual(stripNulls(YAML.parse(a)), stripNulls(YAML.parse(b)));
@@ -26,7 +26,7 @@ export function rawToFiles(raw: RawVault): Record<string, string> {
     [CATALOG_FILE]: toYaml({ indicators: raw.customCatalog }),
   };
   for (const fm of raw.family.members) {
-    for (const d of raw.docs[fm.id] ?? []) files[docPath(fm, d)] = frontmatter(d.data, d.body);
+    for (const d of raw.docs[fm.id] ?? []) files[docPath(fm, d)] = frontmatter(d.data, d.body, d.kind === "insurance");
   }
   for (const d of raw.householdDocs ?? []) files[householdDocPath(d)] = frontmatter(d.data, d.body, true);
   return files;

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { BookOpen, Bot, ChevronDown, LogOut, Mail, MessageSquare, Settings, ShieldCheck, Users, UtensilsCrossed } from "lucide-react";
+import { BookOpen, Bot, ChevronDown, LogOut, Mail, MessageSquare, Settings, Shield, ShieldCheck, Users, UtensilsCrossed } from "lucide-react";
 import type { MemberStub } from "@/core/bundle";
 import { avatarSrc, avatarUrl } from "@/avatars";
 import { authClient } from "@/client/auth-client";
@@ -106,12 +106,22 @@ function MemberTabs({ id, path }: { id: string; path: string }) {
   );
 }
 
+function FamilyLinks({ path }: { path: string }) {
+  const t = useTranslations("app.nav");
+  return ([["kitchen", UtensilsCrossed], ["insurance", Shield]] as const).map(([key, Icon]) => {
+    const href = `/${key}`;
+    const active = path === href || path.startsWith(`${href}/`);
+    return <Link key={key} href={href} className={`a-agents${active ? " on" : ""}`} aria-current={active ? "page" : undefined} aria-label={t(key)}>
+      <Icon size={16} /><span>{t(key)}</span>
+    </Link>;
+  });
+}
+
 export function AppShell({ members, user, homeHref, docsHref, selfHosted, reorderMembers, children }: { members: ShellMember[]; user?: ShellUser; homeHref: string; docsHref: string; selfHosted: boolean; reorderMembers: (ids: string[]) => Promise<void>; children: React.ReactNode }) {
   const t = useTranslations("app.nav");
   const path = usePathname();
   const currentId = decodeURIComponent(path.match(/^\/m\/([^/]+)/)?.[1] ?? "");
   const current = members.find((m) => m.id === currentId);
-  const inKitchen = path === "/kitchen" || path.startsWith("/kitchen/");
   return (
     <>
       <header className="a-bar">
@@ -119,9 +129,7 @@ export function AppShell({ members, user, homeHref, docsHref, selfHosted, reorde
           {/* 「家庭」已经回到 App 首页，logo 指向官网（自托管版回首页） */}
           <a href={homeHref} aria-label="Deepfy" className="logo"><span className="logo-full"><Wordmark size={20} /></span><span className="logo-mark"><Logo size={22} /></span></a>
           <MemberMenu members={members} path={path} current={current} sortable={!!user} reorderMembers={reorderMembers} />
-          <Link href="/kitchen" className={`a-agents${inKitchen ? " on" : ""}`} aria-current={inKitchen ? "page" : undefined} aria-label={t("kitchen")}>
-            <UtensilsCrossed size={16} /><span>{t("kitchen")}</span>
-          </Link>
+          <FamilyLinks path={path} />
           {current && <MemberTabs id={current.id} path={path} />}
           <div className="a-bar-right">
             {user && TOP_LINKS.map(([href, key, Icon]) => (

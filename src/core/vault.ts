@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import YAML from "yaml";
 import {
-  CATALOG_FILE, DOC_KINDS, Issues, buildRecipes, buildSnapshot, memberFromDocs, docPath, householdDocPath, isSafeHouseholdDocKey, parseMd, stripNulls,
+  CATALOG_FILE, SINGLETON_DOC_KINDS, Issues, buildRecipes, buildSnapshot, memberFromDocs, docPath, householdDocPath, isSafeHouseholdDocKey, parseMd, stripNulls,
   type DocKind, type HealthReader, type HouseholdDocKind, type RawDoc, type RawHouseholdDoc, type RawVault, type VaultSnapshot,
 } from "./bundle";
 import { CatalogFileSchema, FamilyMemberSchema, FamilySchema, ProfileSchema, type Family, type Profile } from "./schema";
@@ -76,10 +76,14 @@ function readDoc<K extends DocKind | HouseholdDocKind>(issues: Issues, root: str
   const file = path.join(/*turbopackIgnore: true*/ root, rel);
   if (!fs.existsSync(file)) return undefined;
   try {
+    if (doc.kind === "insurance" && (!fs.lstatSync(/*turbopackIgnore: true*/ file).isFile() || !fs.lstatSync(/*turbopackIgnore: true*/ path.dirname(file)).isDirectory())) {
+      issues.error(rel, "保险配置需为成员目录中的普通文件");
+      return undefined;
+    }
     const { data, content } = parseMd(fs.readFileSync(/*turbopackIgnore: true*/ file, "utf8"));
     return { ...doc, data, body: content, updatedAt: fs.statSync(/*turbopackIgnore: true*/ file).mtime.toISOString() };
   } catch (e) {
-    issues.error(rel, `frontmatter 解析失败：${(e as Error).message}`);
+    issues.error(rel, doc.kind === "insurance" ? "保险配置 frontmatter 解析失败" : `frontmatter 解析失败：${(e as Error).message}`);
   }
 }
 
@@ -89,7 +93,7 @@ const mdKeys = (dir: string) =>
 function readMemberDocs(issues: Issues, root: string, fm: Family["members"][number]): RawDoc[] {
   const hd = healthDir(root, fm);
   const keys: [DocKind, string][] = [
-    ...DOC_KINDS.filter((k) => k !== "record" && k !== "note" && k !== "log").map((k): [DocKind, string] => [k, ""]),
+    ...SINGLETON_DOC_KINDS.map((k): [DocKind, string] => [k, ""]),
     ...mdKeys(path.join(hd, "records")).map((k): [DocKind, string] => ["record", k]),
     ...mdKeys(path.join(hd, "indicators")).map((k): [DocKind, string] => ["note", k]),
     ...mdKeys(path.join(hd, "logs")).map((k): [DocKind, string] => ["log", k]),

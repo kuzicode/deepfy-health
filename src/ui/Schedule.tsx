@@ -4,9 +4,10 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { daysBetween, type ScheduleItem } from "@/core/analysis";
 import type { Catalog } from "@/core/schema";
 import { ScheduleActions } from "./forms/ScheduleActions";
-import { indicatorName, reminderHref, reminderText } from "./i18n";
+import { reminderHref, scheduleTitle } from "./i18n";
 
 const SHOWN = 3;
+const tone = (x: ScheduleItem) => (x.overdue ? " over" : x.soon ? " soon" : "");
 
 // 「接下来」：成员的全部待办（复查 / 体检 / 用药结束），放在「需要关注」上面。
 // 数据来自 schedule()——提醒、邮件、agent 定时任务共用同一个来源，网页上不会出现两套日期。
@@ -15,12 +16,6 @@ export async function Schedule({ items, today, catalog, action }: { items: Sched
   const locale = await getLocale();
   if (!items.length) return <div className="a-panel a-empty">{t("member.scheduleEmpty")}</div>;
 
-  const title = (x: ScheduleItem) => {
-    if (x.kind === "recheck") return t("reminder.recheckMany", { names: x.codes.map((c) => indicatorName(catalog.get(c), c, locale)).join("、") });
-    // 还早的年度体检不说「该安排了」，只说下次在什么时候
-    if (x.kind === "annual-checkup" && !x.soon && x.params.last) return t("reminder.annualNext", { last: String(x.params.last) });
-    return reminderText(t, x);
-  };
   const when = (x: ScheduleItem) => {
     const d = daysBetween(today, x.due);
     if (d < 0) return t("member.daysOver", { days: -d });
@@ -32,16 +27,15 @@ export async function Schedule({ items, today, catalog, action }: { items: Sched
     if (x.kind === "recheck" && x.codes.length === 1 && x.params.summary) return <span className="detail">{String(x.params.summary)}</span>;
     return null;
   };
-  const tone = (x: ScheduleItem) => (x.overdue ? " over" : x.soon ? " soon" : "");
-  const row = (x: ScheduleItem) => {
+  const row = (x: ScheduleItem, index: number) => {
     const editable = action && (x.kind === "recheck" || x.kind === "annual-checkup"); // 用药结束、有效期到用药页处理
     return (
-      <div key={`${x.kind}-${x.due}-${x.codes.join()}-${String(x.params.name ?? "")}`} className={`a-row sched${tone(x)}`}>
+      <div key={`${x.kind}-${x.due}-${x.codes.join()}-${index}`} className={`a-row sched${tone(x)}`}>
         <Link href={reminderHref({ ...x, code: x.codes[0] })} className="sched-link">
           <span className="kind">{t(`reminder.kind.${x.kind}`)}</span>
           <span className="dot" />
           <span className="main">
-            <span className="title">{title(x)}</span>
+            <span className="title">{scheduleTitle(t, x, catalog, locale)}</span>
             {detail(x)}
           </span>
           <span className="when">

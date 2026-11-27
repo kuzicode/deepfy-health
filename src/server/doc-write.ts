@@ -1,5 +1,5 @@
 import { and, eq, lt } from "drizzle-orm";
-import { DOC_KINDS, HOUSEHOLD_DOC_KINDS, MAX_DOC_BODY_LENGTH, MAX_DOC_DATA_LENGTH, docPath, householdDocPath, isSafeDocKey, isSafeHouseholdDocKey, type RawHouseholdDoc, type RawVault } from "@/core/bundle";
+import { DOC_KINDS, HOUSEHOLD_DOC_KINDS, MAX_DOC_BODY_LENGTH, MAX_DOC_DATA_LENGTH, docPath, householdDocPath, isSafeDocKey, isSafeHouseholdDocKey, type RawDoc, type RawHouseholdDoc, type RawVault } from "@/core/bundle";
 import { FamilyMemberSchema } from "@/core/schema";
 import { agentChange, doc, householdDoc } from "@/db/schema";
 import { randomId, seal, sha256 } from "./crypto";
@@ -118,6 +118,11 @@ function mergeMemberDoc(raw: RawVault, c: Extract<Change, { member: string }>, t
     return;
   }
   removeMemberDoc(docs, i, c, removed);
+}
+
+/** Insurance frontmatter is opaque, including any user-defined field named attachments. */
+export function referencesAttachment(d: RawDoc, rel: string) {
+  return d.kind !== "insurance" && Array.isArray(d.data.attachments) && d.data.attachments.includes(rel);
 }
 
 function removeMemberDoc(docs: RawVault["docs"][string], i: number, c: Extract<Change, { op: "delete" }>, removed: { member: string; relPath: string }[]) {

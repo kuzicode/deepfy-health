@@ -6,7 +6,7 @@ import type { DB } from "@/db/client";
 import { attachment, doc, household, householdDoc, member } from "@/db/schema";
 import { open, randomId, seal, sha256 } from "./crypto";
 import { AttachmentStore } from "./attachment-store";
-import { assertHouseholdDocSize, mergeChange, writeDoc, writeHouseholdDoc } from "./doc-write";
+import { assertHouseholdDocSize, mergeChange, referencesAttachment, writeDoc, writeHouseholdDoc } from "./doc-write";
 import { listAgentChanges, revertChange } from "./agent-changes";
 import { importDoc, importHouseholdDocs } from "./import-doc";
 import { logKey as logKeyFor } from "./quick-entry";
@@ -192,7 +192,7 @@ export class PgRepository implements HealthReader {
       const removedAttachments: { member: string; relPath: string }[] = [];
       for (const c of changes) mergeChange(raw, c, touched, removedAttachments);
       // 只删除改动后已无任何文档引用的附件（导入的数据里多份记录可能共用同一个文件）
-      const stillUsed = (m: string, rel: string) => (raw.docs[m] ?? []).some((d) => ((d.data.attachments as string[] | undefined) ?? []).includes(rel));
+      const stillUsed = (m: string, rel: string) => (raw.docs[m] ?? []).some((d) => referencesAttachment(d, rel));
       const orphaned = removedAttachments.filter((a) => !stillUsed(a.member, a.relPath));
       const errors = buildSnapshot(raw, { root: "web" }).issues.filter((x) => x.level === "error" && touched.has(x.file));
       if (errors.length) throw new ImportRejected(errors);

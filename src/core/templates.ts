@@ -1,3 +1,4 @@
+import { POLICY_HEADER } from "./insurance";
 import YAML from "yaml";
 import { todayISO } from "./analysis";
 import type { Profile } from "./schema";
@@ -51,7 +52,7 @@ export function memberTemplates(m: MemberTemplateInput): Record<string, string> 
     "保险配置.md": frontmatter({ type: "ledger", date: null, summary: null, tags: ["insurance"] }, `
 # 保险配置
 
-| 险种 | 保险公司 / 产品 | 保额 | 年缴保费 | 缴费期 | 保障期 / 到期 | 受益人 | 备注 |
+${POLICY_HEADER}
 | --- | --- | --- | --- | --- | --- | --- | --- |
 
 保单号、账号等敏感信息记录后在 frontmatter 加 \`secret: true\`。
