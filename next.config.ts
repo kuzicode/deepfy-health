@@ -17,6 +17,7 @@ const CSP = [
 ].join("; ");
 const nextConfig: NextConfig = {
   output: "standalone",
+  outputFileTracingIncludes: { "/settings/export": ["./templates/Personal/菜单/菜单.md", "./templates/Personal/菜单/菜单库.base"] },
   poweredByHeader: false,
   headers: async () => (process.env.NODE_ENV === "production" ? [{ source: "/:path*", headers: [{ key: "Content-Security-Policy", value: CSP }] }] : []),
   // 日志照片：前端先缩到 ≤2048px JPEG（顺带去掉 EXIF / GPS），单张 ≤8MB、单次 ≤6 张；nginx client_max_body_size 30m

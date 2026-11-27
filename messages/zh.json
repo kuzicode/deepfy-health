@@ -697,7 +697,9 @@
       "revert": "还原",
       "reverted": "已还原",
       "superseded": "之后又被修改过",
+      "household": "我家",
       "kind": {
+        "recipe": "菜谱",
         "profile": "档案",
         "record": "检测记录",
         "note": "指标分析",

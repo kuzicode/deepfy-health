@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import type { DocKind, RawDoc } from "@/core/bundle";
+import type { DocKind, RawDoc, RawHouseholdDoc } from "@/core/bundle";
 import type { DB } from "@/db/client";
 import { userKey } from "@/db/schema";
 import { newDek, unwrapDek, wrapDek } from "./crypto";
@@ -12,12 +12,22 @@ export type Tx = Parameters<Parameters<DB["transaction"]>[0]>[0];
 export interface ImportResult { created: number; updated: number; unchanged: number; conflicts: string[] }
 
 /** 网页 / agent 的单点修改（不经过整份 vault） */
+export type HouseholdChange =
+  | ({ op: "put_household" } & Omit<RawHouseholdDoc, "updatedAt">)
+  | ({ op: "create_household" } & Omit<RawHouseholdDoc, "updatedAt">)
+  | ({ op: "delete_household" } & Pick<RawHouseholdDoc, "kind" | "key">);
+
 export type Change =
+  | HouseholdChange
   | { op: "add_member"; id: string; name: string; profile: Record<string, unknown> }
   | { op: "put"; member: string; kind: DocKind; key: string; data: Record<string, unknown>; body: string }
   /** 只新建：同 key 已存在（含并发请求刚写入）则抛 KeyTaken，不覆盖 */
   | { op: "create"; member: string; kind: DocKind; key: string; data: Record<string, unknown>; body: string }
   | { op: "delete"; member: string; kind: "log" | "record"; key: string };
+export function isHouseholdChange(c: Change): c is HouseholdChange {
+  return c.op === "put_household" || c.op === "create_household" || c.op === "delete_household";
+}
+
 /** agent 写入的来源（MCP token），记入 agent_change 以便展示与还原 */
 export interface AuditInfo { tokenId: string; tokenName: string; tool: string }
 export const CHANGE_RETENTION_DAYS = 90;
@@ -46,6 +56,8 @@ export class NotFound extends Error {
 export const docAad = (memberId: string, kind: string, key: string) => `doc:${memberId}:${kind}:${key}`;
 export const nameAad = (userId: string, slug: string) => `member:${userId}:${slug}`;
 export const attAad = (memberId: string, relPath: string) => `att:${memberId}:${relPath}`;
+export const hdocAad = (userId: string, kind: string, key: string) => `hdoc:${userId}:${kind}:${key}`;
+export const hattAad = (userId: string, relPath: string) => `hatt:${userId}:${relPath}`;
 export const docContent = (d: Pick<RawDoc, "data" | "body">) => JSON.stringify({ data: d.data, body: d.body });
 
 export async function ensureUserKey(db: DB, userId: string, kek: Buffer): Promise<Buffer> {

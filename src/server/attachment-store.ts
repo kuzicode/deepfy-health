@@ -3,11 +3,11 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { and, eq, inArray } from "drizzle-orm";
 import type { DB } from "@/db/client";
-import { attachment, member } from "@/db/schema";
+import { attachment, householdAttachment, member } from "@/db/schema";
 import { open, randomId, seal, sha256 } from "./crypto";
-import { assertAttachmentPath, attachmentDir, gcOrphansThrottled } from "./attachments";
+import { assertAttachmentPath, assertHouseholdAttachmentPath, attachmentDir, gcOrphansThrottled } from "./attachments";
 import { QuotaExceeded, assertQuota, consumeUpload } from "./quota";
-import { NotFound, attAad, type Tx } from "./repo-base";
+import { NotFound, attAad, hattAad, type Tx } from "./repo-base";
 
 // 一个账号的附件读写（密文文件 + attachment 表）。由 PgRepository 持有并委托，所有查询按 userId 限定（SEC）。
 
@@ -17,7 +17,7 @@ interface Ctx {
   dek: () => Promise<Buffer>;
   /** 账号写锁（与 PgRepository 的其他写入共用） */
   lock: (tx: Tx) => Promise<unknown>;
-  members: () => Promise<{ id: string; slug: string }[]>;
+  members: (tx?: Tx) => Promise<{ id: string; slug: string }[]>;
 }
 
 /** 数据库和备份在同一块盘上：剩余空间不够时停止接收附件，保住数据库 */
@@ -46,32 +46,73 @@ export class AttachmentStore {
     return m;
   }
 
+  private async putFile(data: Buffer, mime: string, aad: string, target: {
+    tx?: Tx;
+    read: (tx: Tx, hash: string) => Promise<{ size: number; sha256: string } | undefined>;
+    write: (tx: Tx, values: { mime: string; size: number; sha256: string; storageKey: string }) => Promise<unknown>;
+  }) {
+    const { db, userId } = this.ctx;
+    const dek = await this.ctx.dek();
+    const hash = sha256(data);
+    const write = async (tx: Tx) => {
+      const prev = await target.read(tx, hash);
+      if (prev?.sha256 === hash) return true;
+      await assertQuota(tx, userId, "attachmentBytes", data.length - (prev?.size ?? 0));
+      if (!prev) await assertQuota(tx, userId, "attachmentCount");
+      await consumeUpload(tx, userId, data.length);
+      const storageKey = randomId();
+      await fs.mkdir(/*turbopackIgnore: true*/ attachmentDir(), { recursive: true });
+      await assertDiskRoom(db, data.length);
+      await fs.writeFile(path.join(/*turbopackIgnore: true*/ attachmentDir(), storageKey), seal(dek, data, aad));
+      await target.write(tx, { mime, size: data.length, sha256: hash, storageKey });
+      return false;
+    };
+    const unchanged = target.tx ? await write(target.tx) : await db.transaction(async (tx) => {
+      await this.ctx.lock(tx);
+      return write(tx);
+    });
+    // 事务失败和替换留下的磁盘密文由 GC 延迟清理，给备份留出窗口。
+    if (!unchanged) void gcOrphansThrottled(db);
+    return { unchanged };
+  }
+
   async put(slug: string, relPath: string, data: Buffer, mime: string) {
     assertAttachmentPath(relPath);
     const m = await this.memberBySlug(slug);
-    const dek = await this.ctx.dek();
-    const hash = sha256(data);
-    // 额度检查与写入在账号写锁内：并发上传不能各自看到「还没满」再一起写进去；事务回滚时多出的密文文件由 GC 清理
-    const unchanged = await this.ctx.db.transaction(async (tx) => {
-      await this.ctx.lock(tx);
-      const [prev] = await tx.select().from(attachment).where(and(eq(attachment.memberId, m.id), eq(attachment.relPath, relPath)));
-      if (prev?.sha256 === hash) return true;
-      await assertQuota(tx, this.ctx.userId, "attachmentBytes", data.length - (prev?.size ?? 0));
-      if (!prev) await assertQuota(tx, this.ctx.userId, "attachmentCount");
-      await consumeUpload(tx, this.ctx.userId, data.length);
-      const storageKey = randomId();
-      await fs.mkdir(/*turbopackIgnore: true*/ attachmentDir(), { recursive: true });
-      await assertDiskRoom(this.ctx.db, data.length);
-      await fs.writeFile(path.join(/*turbopackIgnore: true*/ attachmentDir(), storageKey), seal(dek, data, attAad(m.id, relPath)));
-      const values = { mime, size: data.length, sha256: hash, storageKey };
-      await tx.insert(attachment).values({ id: randomId(), memberId: m.id, relPath, ...values })
-        .onConflictDoUpdate({ target: [attachment.memberId, attachment.relPath], set: values });
-      return false;
+    return this.putFile(data, mime, attAad(m.id, relPath), {
+      read: (tx) => tx.query.attachment.findFirst({ where: and(eq(attachment.memberId, m.id), eq(attachment.relPath, relPath)) }),
+      write: (tx, values) => tx.insert(attachment).values({ id: randomId(), memberId: m.id, relPath, ...values })
+        .onConflictDoUpdate({ target: [attachment.memberId, attachment.relPath], set: values }),
     });
-    if (unchanged) return { unchanged: true };
-    // 旧文件不立即删除：备份先 pg_dump 再打包附件，快照里引用的旧文件必须在打包时仍然存在；由 GC 延迟清理
-    void gcOrphansThrottled(this.ctx.db);
-    return { unchanged: false };
+  }
+
+  async putHousehold(relPath: string, data: Buffer, mime: string, lockedTx?: Tx) {
+    assertHouseholdAttachmentPath(relPath);
+    const { userId } = this.ctx;
+    const where = and(eq(householdAttachment.userId, userId), eq(householdAttachment.relPath, relPath));
+    const suffix = /-([0-9a-f]{8})\.[^.]+$/.exec(relPath)?.[1];
+    return this.putFile(data, mime, hattAad(userId, relPath), {
+      tx: lockedTx,
+      read: async (tx, hash) => {
+        const prev = await tx.query.householdAttachment.findFirst({ where });
+        if (prev && suffix === prev.sha256.slice(0, 8) && hash !== prev.sha256) {
+          throw new Error("覆盖内容哈希封面的路径不合法，请使用新的文件名");
+        }
+        return prev;
+      },
+      write: (tx, values) => tx.insert(householdAttachment).values({ id: randomId(), userId, relPath, ...values })
+        .onConflictDoUpdate({ target: [householdAttachment.userId, householdAttachment.relPath], set: values }),
+    });
+  }
+
+  async removeHousehold(relPath: string) {
+    assertHouseholdAttachmentPath(relPath);
+    await this.ctx.db.transaction(async (tx) => {
+      await this.ctx.lock(tx);
+      const rows = await tx.delete(householdAttachment).where(and(eq(householdAttachment.userId, this.ctx.userId), eq(householdAttachment.relPath, relPath)))
+        .returning({ id: householdAttachment.id });
+      if (!rows.length) throw new NotFound();
+    });
   }
 
   /** 撤销刚上传的附件记录（写入日志失败时回滚）；密文文件由 GC 延迟清理 */
@@ -85,9 +126,25 @@ export class AttachmentStore {
     assertAttachmentPath(relPath);
     const m = await this.memberBySlug(slug);
     const row = await this.ctx.db.query.attachment.findFirst({ where: and(eq(attachment.memberId, m.id), eq(attachment.relPath, relPath)) });
+    return this.readFile(row, attAad(m.id, relPath));
+  }
+
+  async getHousehold(relPath: string) {
+    assertHouseholdAttachmentPath(relPath);
+    const { db, userId } = this.ctx;
+    const row = await db.query.householdAttachment.findFirst({ where: and(eq(householdAttachment.userId, userId), eq(householdAttachment.relPath, relPath)) });
+    return this.readFile(row, hattAad(userId, relPath));
+  }
+
+  private async readFile(row: { storageKey: string; mime: string } | undefined, aad: string) {
     if (!row) throw new NotFound();
     const sealed = await fs.readFile(path.join(/*turbopackIgnore: true*/ attachmentDir(), row.storageKey), "utf8");
-    return { data: open(await this.ctx.dek(), sealed, attAad(m.id, relPath)), mime: row.mime };
+    return { data: open(await this.ctx.dek(), sealed, aad), mime: row.mime };
+  }
+
+  listHousehold() {
+    const { relPath, sha256, size, mime } = householdAttachment;
+    return this.ctx.db.select({ relPath, sha256, size, mime }).from(householdAttachment).where(eq(householdAttachment.userId, this.ctx.userId));
   }
 
   async list() {
@@ -99,9 +156,13 @@ export class AttachmentStore {
 
   /** 删除账号前清理附件文件；数据库行随 user 级联删除 */
   async purgeFiles() {
-    const members = await this.ctx.members();
-    if (!members.length) return;
-    const rows = await this.ctx.db.select({ storageKey: attachment.storageKey }).from(attachment).where(inArray(attachment.memberId, members.map((m) => m.id)));
-    await Promise.all(rows.map((r) => fs.rm(path.join(/*turbopackIgnore: true*/ attachmentDir(), r.storageKey), { force: true })));
+    const { db, userId } = this.ctx;
+    await db.transaction(async (tx) => {
+      await this.ctx.lock(tx);
+      const ids = (await this.ctx.members(tx)).map((m) => m.id);
+      const rows = ids.length ? await tx.select({ storageKey: attachment.storageKey }).from(attachment).where(inArray(attachment.memberId, ids)) : [];
+      const covers = await tx.select({ storageKey: householdAttachment.storageKey }).from(householdAttachment).where(eq(householdAttachment.userId, userId));
+      await Promise.all([...rows, ...covers].map((r) => fs.rm(path.join(/*turbopackIgnore: true*/ attachmentDir(), r.storageKey), { force: true })));
+    });
   }
 }

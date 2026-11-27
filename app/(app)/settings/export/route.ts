@@ -1,4 +1,5 @@
 import { strToU8 } from "fflate";
+import { recipeTemplates } from "@/core/recipe-templates";
 import { rawToFiles } from "@/core/serialize";
 import { createLimiter } from "@/server/login-lookup";
 import { getDb } from "@/db/client";
@@ -31,9 +32,16 @@ export async function GET() {
   try {
     const repo = await userRepository();
     const raw = await repo.exportRaw();
-    const attachments = await repo.listAttachments();
+    const [attachments, covers] = await Promise.all([repo.listAttachments(), repo.listHouseholdAttachments()]);
+    const files = {
+      ...(raw.householdDocs?.some((d) => d.kind === "recipe") ? recipeTemplates(process.cwd(), "Personal/") : {}),
+      ...rawToFiles(raw),
+    };
     async function* entries(): AsyncGenerator<ZipEntry> {
-      for (const [rel, content] of Object.entries(rawToFiles(raw))) yield { name: `Personal/${rel}`, data: strToU8(content), compress: true };
+      for (const [rel, content] of Object.entries(files)) yield { name: `Personal/${rel}`, data: strToU8(content), compress: true };
+      for (const a of covers) {
+        yield { name: `Personal/${a.relPath}`, data: (await repo.getHouseholdAttachment(a.relPath)).data, compress: false };
+      }
       for (const a of attachments) {
         const fm = raw.family.members.find((m) => m.id === a.member);
         if (fm) yield { name: `Personal/${fm.dir ?? fm.id}/Health/${a.relPath}`, data: (await repo.getAttachment(a.member, a.relPath)).data, compress: false };

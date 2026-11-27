@@ -6,6 +6,7 @@ import { ImportRejected, KeyTaken, NotFound, type AuditInfo, type PgRepository }
 import { conditionFocus, isResolved } from "@/core/health-template";
 import { OtherItemSchema, RELATIONS } from "@/core/schema";
 import { QuotaExceeded } from "@/server/quota";
+import { registerKitchenWrites } from "./kitchen-tools";
 import { registerRegimenTools } from "./regimen-tools";
 import { ToolError, conditionOut, findMember } from "./tools";
 import { MEASURE_ARGS, currentDoc, measuresDoc, patchProfileDoc, previewRecord, recordDoc, recordKey, scheduleChanges, stripDatePrefix, type RecordInput } from "./write";
@@ -165,7 +166,13 @@ export function registerWriteTools(server: McpServer, d: WriteDeps) {
       }
     }) as never);
 
+  registerKitchenWrites(tool, d, saved);
   registerRegimenTools(tool, d, saved, member);
+  registerRecordTools(tool, d, saved);
+  registerPlanTools(tool, d, saved);
+}
+
+function registerRecordTools(tool: ToolFn, d: WriteDeps, saved: SavedFn) {
 
   tool("add_log", "Record a symptom or note for a member (what the user felt / noticed, in their words).", {
     member, title: z.string().min(1).max(120).describe("One-line summary, e.g. 右上腹隐痛"),
@@ -211,6 +218,9 @@ export function registerWriteTools(server: McpServer, d: WriteDeps) {
 
   tool("add_record", "Import a test report (checkup / lab / device) as structured markers — ALL of it, not a selection. First read every page and list the report's sections (vitals incl. height / weight / blood pressure, blood count, urine, liver, kidney, lipids, glucose, thyroid, tumor markers, ECG / ultrasound / X-ray / CT conclusions, specialist exams, summary). Map each item with lookup_indicator; exam conclusions go in as text values under the 检查结论 codes (ECG, US_LIVER, CHEST_XRAY…). Keep the report's units and reference ranges; pass flag explicitly when the report's own ↑/↓ or remark differs. Put the doctor's summary and advice in notes. One record per test date. dry_run=true (default) returns a preview with flags, sections and possibly_missing — show it to the user, then call again with dry_run=false. Items with no catalog code go to other_items verbatim (never invent codes); pass report_item_count when the report prints a total. See deepfy://contract for the full intake guide.", RECORD_SHAPE, (a, audit) => addRecordTool(d, a, audit, saved));
 
+}
+
+function registerPlanTools(tool: ToolFn, d: WriteDeps, saved: SavedFn) {
   tool("save_indicator_note", "Write or replace your analysis of one marker for a member (status, one-line summary, full reasoning, recheck date). Shown on the marker's page.", {
     member, code, status: z.enum(["attention", "watch", "normal"]), summary: z.string().min(1).max(200),
     text: z.string().max(10000).describe("Analysis in Markdown: likely causes, what to change, sources"), recheck: date.optional(),

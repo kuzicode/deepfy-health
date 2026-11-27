@@ -22,6 +22,8 @@ export type DocKind = (typeof DOC_KINDS)[number];
 /** updatedAt：本地为文件修改时间，云端为最后写入时间（ISO），用于推送时的冲突判断 */
 export interface RawDoc { kind: DocKind; key: string; data: Record<string, unknown>; body: string; updatedAt?: string }
 
+export const MAX_DOC_BODY_LENGTH = 200_000;
+export const MAX_DOC_DATA_LENGTH = 1_000_000;
 export const HOUSEHOLD_DOC_KINDS = ["recipe"] as const;
 export type HouseholdDocKind = (typeof HOUSEHOLD_DOC_KINDS)[number];
 export type RawHouseholdDoc = Omit<RawDoc, "kind"> & { kind: HouseholdDocKind };

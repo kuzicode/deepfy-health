@@ -1,6 +1,6 @@
 import { and, count, eq, gt, inArray, sql, sum } from "drizzle-orm";
 import type { DB } from "@/db/client";
-import { accountPlan, agentChange, apiToken, attachment, doc, member, user } from "@/db/schema";
+import { accountPlan, agentChange, apiToken, attachment, doc, householdAttachment, householdDoc, member, user } from "@/db/schema";
 import { isAdminEmail } from "./access";
 import { isSelfHosted } from "./edition";
 import { createBudget } from "./throttle";
@@ -59,14 +59,17 @@ const DAY_MS = 86_400_000;
 /** 当前用量（设置页、后台展示，也用于超额判断） */
 export async function usageOf(db: Q, userId: string, now = new Date()) {
   const ids = (await db.select({ id: member.id }).from(member).where(eq(member.userId, userId))).map((m) => m.id);
-  const [[{ bytes, files }], [{ docs, docBytes }], [{ changeBytes }], [{ tokens }], [{ writes }]] = await Promise.all([
+  const [[{ bytes, files }], [{ docs, docBytes }], [householdFiles], [householdDocs], [{ changeBytes }], [{ tokens }], [{ writes }]] = await Promise.all([
     ids.length ? db.select({ bytes: sum(attachment.size), files: count() }).from(attachment).where(inArray(attachment.memberId, ids)) : Promise.resolve([{ bytes: "0", files: 0 }]),
     ids.length ? db.select({ docs: count(), docBytes: sum(sql`octet_length(${doc.ciphertext})`) }).from(doc).where(inArray(doc.memberId, ids)) : Promise.resolve([{ docs: 0, docBytes: "0" }]),
+    db.select({ bytes: sum(householdAttachment.size), files: count() }).from(householdAttachment).where(eq(householdAttachment.userId, userId)),
+    db.select({ docs: count(), bytes: sum(sql`octet_length(${householdDoc.ciphertext})`) }).from(householdDoc).where(eq(householdDoc.userId, userId)),
     db.select({ changeBytes: sum(sql`octet_length(${agentChange.prevCiphertext})`) }).from(agentChange).where(eq(agentChange.userId, userId)),
     db.select({ tokens: count() }).from(apiToken).where(eq(apiToken.userId, userId)),
     db.select({ writes: count() }).from(agentChange).where(and(eq(agentChange.userId, userId), gt(agentChange.createdAt, new Date(now.getTime() - DAY_MS)))),
   ]);
-  return { members: ids.length, attachmentBytes: Number(bytes ?? 0), attachmentCount: files, docs, docBytes: Number(docBytes ?? 0), changeBytes: Number(changeBytes ?? 0), tokens, mcpWritesPerDay: writes };
+  return { members: ids.length, attachmentBytes: Number(bytes) + Number(householdFiles.bytes), attachmentCount: files + householdFiles.files,
+    docs: docs + householdDocs.docs, docBytes: Number(docBytes) + Number(householdDocs.bytes), changeBytes: Number(changeBytes ?? 0), tokens, mcpWritesPerDay: writes };
 }
 
 /** 加上 adding 之后是否超额；超额抛 QuotaExceeded（调用方不写入任何东西）。要防并发，在 lockUser 之后用同一个事务调用 */

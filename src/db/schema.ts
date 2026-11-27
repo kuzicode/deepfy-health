@@ -102,6 +102,27 @@ export const attachment = pgTable("attachment", {
   createdAt: created(),
 }, (t) => [uniqueIndex("attachment_member_path_uq").on(t.memberId, t.relPath)]);
 
+export const householdDoc = pgTable("household_doc", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  kind: text("kind").notNull(),
+  key: text("key").notNull().default(""),
+  contentSha256: text("content_sha256").notNull(),
+  ciphertext: text("ciphertext").notNull(),
+  updatedAt: updated(),
+}, (t) => [uniqueIndex("household_doc_user_kind_key_uq").on(t.userId, t.kind, t.key)]);
+
+export const householdAttachment = pgTable("household_attachment", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  relPath: text("rel_path").notNull(),
+  mime: text("mime").notNull(),
+  size: bigint("size", { mode: "number" }).notNull(),
+  sha256: text("sha256").notNull(),
+  storageKey: text("storage_key").notNull(),
+  createdAt: created(),
+}, (t) => [uniqueIndex("household_attachment_user_path_uq").on(t.userId, t.relPath)]);
+
 export const apiToken = pgTable("api_token", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
@@ -111,6 +132,7 @@ export const apiToken = pgTable("api_token", {
   tokenCipher: text("token_cipher"),
   /** read：只读；write：MCP 写入工具与 kzh push 可用 */
   scope: text("scope").notNull().default("read"),
+  domains: text("domains").array(),
   lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
   createdAt: created(),
 });
@@ -122,7 +144,8 @@ export const apiToken = pgTable("api_token", {
 export const agentChange = pgTable("agent_change", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
-  memberId: text("member_id").notNull().references(() => member.id, { onDelete: "cascade" }),
+  scope: text("scope", { enum: ["member", "household"] }).notNull().default("member"),
+  memberId: text("member_id").references(() => member.id, { onDelete: "cascade" }),
   tokenId: text("token_id"),
   tokenName: text("token_name").notNull(),
   tool: text("tool").notNull(),

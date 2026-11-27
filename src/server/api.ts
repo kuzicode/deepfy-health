@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DOC_KINDS, HOUSEHOLD_DOC_KINDS, isSafeDocKey, isSafeHouseholdDocKey, type RawVault } from "@/core/bundle";
+import { DOC_KINDS, HOUSEHOLD_DOC_KINDS, MAX_DOC_BODY_LENGTH, MAX_DOC_DATA_LENGTH, isSafeDocKey, isSafeHouseholdDocKey, type RawVault } from "@/core/bundle";
 import { CatalogEntrySchema, FamilySchema } from "@/core/schema";
 import { getDb, type DB } from "@/db/client";
 import { masterKey } from "./crypto";
@@ -61,8 +61,8 @@ function apiError(e: unknown) {
 
 const rawDocFields = {
   key: z.string().max(200),
-  data: z.record(z.string(), z.unknown()).refine((data) => JSON.stringify(data).length <= 1_000_000, "文档内容太大"),
-  body: z.string().max(200_000),
+  data: z.record(z.string(), z.unknown()).refine((data) => JSON.stringify(data).length <= MAX_DOC_DATA_LENGTH, "文档内容太大"),
+  body: z.string().max(MAX_DOC_BODY_LENGTH),
   updatedAt: z.string().datetime().optional(),
 };
 

@@ -697,7 +697,9 @@
       "revert": "Undo",
       "reverted": "Undone",
       "superseded": "Changed again later",
+      "household": "Household",
       "kind": {
+        "recipe": "Recipe",
         "profile": "Profile",
         "record": "Record",
         "note": "Marker analysis",

@@ -1,7 +1,9 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { DB } from "@/db/client";
-import { attachment } from "@/db/schema";
+import { attachment, householdAttachment } from "@/db/schema";
+
+export { assertHouseholdAttachmentPath } from "@/core/household-attachment";
 
 // 附件密文文件：存放目录、路径校验、孤儿文件延迟清理（数据库行由 PgRepository 维护）
 
@@ -28,7 +30,11 @@ export async function gcOrphanAttachments(db: DB, minAgeMs = ORPHAN_MIN_AGE_MS, 
   const dir = attachmentDir();
   const files = await fs.readdir(/*turbopackIgnore: true*/ dir).catch(() => [] as string[]);
   if (!files.length) return [];
-  const referenced = new Set((await db.select({ k: attachment.storageKey }).from(attachment)).map((r) => r.k));
+  const keys = await Promise.all([
+    db.select({ k: attachment.storageKey }).from(attachment),
+    db.select({ k: householdAttachment.storageKey }).from(householdAttachment),
+  ]);
+  const referenced = new Set(keys.flat().map((r) => r.k));
   const removed: string[] = [];
   for (const f of files) {
     if (referenced.has(f)) continue;

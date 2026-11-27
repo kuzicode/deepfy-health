@@ -22,6 +22,7 @@ status: active
 
 | ID | 状态 | 一句话 | 位置 |
 |---|---|---|---|
+| ISS-023 | resolved | 附件孤儿 GC 仅扫成员 `attachment` 表，新增家庭级 `household_attachment` 表时会在 48 小时后误删菜谱封面密文 | issues.md |
 | ISS-022 | resolved | `gray-matter` 默认启用可执行 JavaScript frontmatter（`---js`），读取外部或导入 Markdown 时存在代码执行风险 | issues.md |
 | ISS-021 | resolved | 自托管版在 Docker 和局域网 HTTP 下的登录问题：可信来源取到容器内部地址；`__Secure-` cookie 被浏览器丢弃 | issues.md |
 | ISS-020 | resolved | `/mcp` 和导入接口只看 `Content-Length`，分块发送能绕过大小限制；磁盘不足时上传失败，附件清理也等不到触发 | issues.md |
@@ -45,6 +46,14 @@ status: active
 | ISS-001 | resolved | 建档未校验即写盘、跨单位套用默认范围等 5 项 review 问题 | archive |
 
 ---
+
+## ISS-023 — 附件孤儿 GC 只查成员表会误删家庭级附件 [resolved]
+
+- **日期**：2026-11-28（实现家庭菜谱封面存储前复核 `src/server/attachments.ts` 发现）
+- **现象**：`gcOrphanAttachments` 遍历共享密文目录 `KZ_ATTACHMENT_DIR` 时仅查 `attachment.storageKey`，新增 `household_attachment` 表后，家庭菜谱封面密文会在 48 小时后被当成孤儿误删。
+- **根因**：多张附件表共用同一磁盘密文目录，GC 查询只覆盖了第一张表。
+- **修复**：`gcOrphanAttachments` 联合查询 `attachment` 与 `household_attachment` 的 `storageKey`，`purgeFiles` 与 `usageOf` 同步覆盖家庭表，并补充 72 小时模拟 GC 回归测试（`src/server/household-gc.test.ts`）。
+- **经验**：凡新增共享密文目录的附件表，必须同步更新孤儿 GC、账号配额与删号文件清理三处集合查询。
 
 ## ISS-022 — `gray-matter` 默认可执行 JavaScript frontmatter [resolved]
 

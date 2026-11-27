@@ -45,12 +45,12 @@ afterAll(async () => {
 });
 
 describe.skipIf(!URL)("MCP 写入工具（需要 KZ_TEST_DATABASE_URL）", () => {
-  it("只读 token 看不到写入工具；可写入 token 有 9 个写入工具且不标只读", async () => {
+  it("只读 token 看不到写入工具；可写入 token 有 11 个写入工具且不标只读", async () => {
     const ro = await connect(repo, false);
     expect((await ro.client.listTools()).tools.some((t) => t.name.startsWith("add_"))).toBe(false);
     const rw = await connect(repo, true);
     const writes = (await rw.client.listTools()).tools.filter((t) => t.annotations?.readOnlyHint === false).map((t) => t.name).sort();
-    expect(writes).toEqual(["add_log", "add_measurements", "add_record", "save_indicator_note", "save_regimen_item", "stop_regimen_item", "update_care_plan", "update_profile", "update_schedule"]);
+    expect(writes).toEqual(["add_log", "add_measurements", "add_record", "save_indicator_note", "save_recipe", "save_regimen_item", "stop_regimen_item", "update_care_plan", "update_profile", "update_schedule", "upload_recipe_image"]);
   });
 
   it("记录症状、更新诊断、记血压、写分析与方案，同一请求里读工具能看到新数据", async () => {

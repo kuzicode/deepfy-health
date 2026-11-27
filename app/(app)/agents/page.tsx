@@ -16,10 +16,6 @@ export default async function AgentsPage() {
   if (!cloudMode()) return <><PageHead eyebrow="MCP" title={t("tokens")} /><div className="a-panel a-empty">{t("localMode")}</div></>;
   const u = await requireUser();
   const tokens = await listTokens(getDb(), u.id);
-  const repo = await userRepository();
-  const changes = await repo.listAgentChanges(30);
-  const names = changes.length ? new Map((await repo.snapshot()).members.map((m) => [m.id, m.name])) : new Map<string, string>();
-  const target = (kind: string, key: string) => (key ? `${t(`kind.${kind}` as never)} · ${key}` : t(`kind.${kind}` as never));
   return (
     <>
       <PageHead eyebrow="MCP" title={t("tokens")} />
@@ -50,25 +46,36 @@ export default async function AgentsPage() {
           )}
         </section>
 
-        <section>
-          <SectionHead title={t("changesTitle")} />
-          <p className="muted a-lead">{t("changesHint")}</p>
-          <div className="a-panel a-rows">
-            {changes.length === 0 && <div className="a-empty">{t("noChanges")}</div>}
-            {changes.map((c) => (
-              <div key={c.id} className="a-row">
-                <span className="main">
-                  <span className="title">{names.get(c.member) ?? c.member} · {target(c.kind, c.key)}</span>
-                  <span className="detail mono" style={{ display: "block", fontSize: 11.5 }}>{fmt(c.createdAt)} · {c.tokenName} · {c.tool}</span>
-                </span>
-                {c.revertedAt ? <span className="muted" style={{ fontSize: 13 }}>{t("reverted")}</span>
-                  : c.revertible ? <form action={revertChangeAction}><input type="hidden" name="id" value={c.id} /><button className="btn btn-glass btn-sm">{t("revert")}</button></form>
-                  : <span className="muted" style={{ fontSize: 12.5 }}>{t("superseded")}</span>}
-              </div>
-            ))}
-          </div>
-        </section>
+        <ChangeHistory />
       </div>
     </>
+  );
+}
+
+async function ChangeHistory() {
+  const t = await getTranslations("app.settings");
+  const repo = await userRepository();
+  const changes = await repo.listAgentChanges(30);
+  const names = changes.some((c) => c.member !== null) ? new Map((await repo.listMemberStubs()).map((m) => [m.id, m.name])) : new Map<string, string>();
+  const target = (kind: string, key: string) => (key ? `${t(`kind.${kind}` as never)} · ${key}` : t(`kind.${kind}` as never));
+  return (
+    <section>
+      <SectionHead title={t("changesTitle")} />
+      <p className="muted a-lead">{t("changesHint")}</p>
+      <div className="a-panel a-rows">
+        {changes.length === 0 && <div className="a-empty">{t("noChanges")}</div>}
+        {changes.map((c) => (
+          <div key={c.id} className="a-row">
+            <span className="main">
+              <span className="title">{c.member === null ? t("household") : names.get(c.member) ?? c.member} · {target(c.kind, c.key)}</span>
+              <span className="detail mono" style={{ display: "block", fontSize: 11.5 }}>{fmt(c.createdAt)} · {c.tokenName} · {c.tool}</span>
+            </span>
+            {c.revertedAt ? <span className="muted" style={{ fontSize: 13 }}>{t("reverted")}</span>
+              : c.revertible ? <form action={revertChangeAction}><input type="hidden" name="id" value={c.id} /><button className="btn btn-glass btn-sm">{t("revert")}</button></form>
+              : <span className="muted" style={{ fontSize: 12.5 }}>{t("superseded")}</span>}
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

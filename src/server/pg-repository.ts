@@ -1,18 +1,27 @@
-import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
-import { DOC_KINDS, buildSnapshot, type DocKind, type HealthReader, type RawDoc, type RawVault, type VaultSnapshot } from "@/core/bundle";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { DOC_KINDS, Issues, buildRecipes, buildSnapshot, isSafeHouseholdDocKey, type HouseholdDocKind, type RawHouseholdDoc, type DocKind, type HealthReader, type RawDoc, type RawVault, type VaultSnapshot } from "@/core/bundle";
 import type { Recipe } from "@/core/recipe";
 import { FamilyMemberSchema } from "@/core/schema";
 import type { DB } from "@/db/client";
-import { agentChange, attachment, doc, household, member } from "@/db/schema";
+import { attachment, doc, household, householdDoc, member } from "@/db/schema";
 import { open, randomId, seal, sha256 } from "./crypto";
 import { AttachmentStore } from "./attachment-store";
-import { mergeChange, writeDoc } from "./doc-write";
+import { assertHouseholdDocSize, mergeChange, writeDoc, writeHouseholdDoc } from "./doc-write";
+import { listAgentChanges, revertChange } from "./agent-changes";
+import { importDoc, importHouseholdDocs } from "./import-doc";
 import { logKey as logKeyFor } from "./quick-entry";
 import { QuotaExceeded, assertDocQuota, assertQuota, limitsOf, lockUser } from "./quota";
-import { ImportRejected, NotFound, RevertConflict, docAad, docContent, ensureUserKey, nameAad, type AuditInfo, type Change, type ImportResult, type Tx } from "./repo-base";
+import { ImportRejected, NotFound, hdocAad, isHouseholdChange, docAad, docContent, ensureUserKey, nameAad, type AuditInfo, type Change, type ImportResult, type Tx } from "./repo-base";
 
 // 对外入口：类型与错误定义在 repo-base，写文档在 doc-write，附件在 attachment-store；调用方只从这里导入
 export { ImportRejected, KeyTaken, NotFound, RevertConflict, ensureUserKey, type AuditInfo, type Change, type ImportResult } from "./repo-base";
+
+interface ChangeOptions {
+  audit?: AuditInfo;
+  scope?: "household";
+  /** 与文档和审计一同提交，事务回滚后的无引用密文由 GC 延迟回收。 */
+  coverUpload?: { relPath: string; data: Buffer; mime: string };
+}
 
 function memberStub(m: typeof member.$inferSelect, dek: Buffer) {
   return FamilyMemberSchema.parse({
@@ -25,7 +34,7 @@ export class PgRepository implements HealthReader {
   private dekPromise?: Promise<Buffer>;
   private readonly files: AttachmentStore;
   constructor(private readonly db: DB, readonly userId: string, private readonly kek: Buffer) {
-    this.files = new AttachmentStore({ db, userId, dek: () => this.dek(), lock: (tx) => this.lock(tx), members: () => this.members() });
+    this.files = new AttachmentStore({ db, userId, dek: () => this.dek(), lock: (tx) => this.lock(tx), members: (tx) => this.members(tx) });
   }
 
   private dek() {
@@ -46,9 +55,9 @@ export class PgRepository implements HealthReader {
   /** q 传事务时在锁内读取（applyChanges 用） */
   async exportRaw(q: DB | Tx = this.db): Promise<RawVault> {
     const dek = await this.dek();
-    const [hh, members] = await Promise.all([
+    const [hh, members, householdDocs] = await Promise.all([
       q.query.household.findFirst({ where: eq(household.userId, this.userId) }),
-      this.members(q),
+      this.members(q), this.readHouseholdDocs(q, dek),
     ]);
     const docs = members.length ? await q.select().from(doc).where(inArray(doc.memberId, members.map((m) => m.id))) : [];
     const family = {
@@ -61,7 +70,7 @@ export class PgRepository implements HealthReader {
       const { data, body } = JSON.parse(open(dek, d.ciphertext, docAad(m.id, d.kind, d.key)).toString());
       out[m.slug].push({ kind: d.kind as DocKind, key: d.key, data, body, updatedAt: d.updatedAt.toISOString() });
     }
-    return { family, customCatalog: (hh?.customCatalog ?? []) as RawVault["customCatalog"], docs: out };
+    return { family, customCatalog: (hh?.customCatalog ?? []) as RawVault["customCatalog"], docs: out, householdDocs };
   }
 
   async snapshot(): Promise<VaultSnapshot> {
@@ -69,7 +78,8 @@ export class PgRepository implements HealthReader {
     const members = await this.members();
     const atts = members.length ? await this.db.select({ memberId: attachment.memberId, relPath: attachment.relPath }).from(attachment).where(inArray(attachment.memberId, members.map((m) => m.id))) : [];
     const have = new Set(atts.map((a) => `${members.find((m) => m.id === a.memberId)!.slug}/${a.relPath}`));
-    return buildSnapshot(raw, { root: "cloud", attachmentExists: (id, rel) => have.has(`${id}/${rel}`) });
+    const covers = new Set((await this.listHouseholdAttachments()).map((a) => a.relPath));
+    return buildSnapshot(raw, { root: "cloud", householdAttachmentExists: (rel) => covers.has(rel), attachmentExists: (id, rel) => have.has(`${id}/${rel}`) });
   }
 
   async listMemberStubs() {
@@ -79,12 +89,26 @@ export class PgRepository implements HealthReader {
     return members.map((m) => memberStub(m, dek));
   }
 
+  private async readHouseholdDocs(q: DB | Tx, dek: Buffer, filter?: { kind: HouseholdDocKind; key?: string }): Promise<RawHouseholdDoc[]> {
+    const rows = await q.select().from(householdDoc).where(and(
+      eq(householdDoc.userId, this.userId), filter && eq(householdDoc.kind, filter.kind),
+      filter?.key !== undefined ? eq(householdDoc.key, filter.key) : undefined,
+    ));
+    return rows.map((row) => {
+      const { data, body } = JSON.parse(open(dek, row.ciphertext, hdocAad(this.userId, row.kind, row.key)).toString());
+      return { kind: row.kind as HouseholdDocKind, key: row.key, data, body, updatedAt: row.updatedAt.toISOString() };
+    });
+  }
+
   async listRecipes(): Promise<Recipe[]> {
-    return [];
+    const docs = await this.readHouseholdDocs(this.db, await this.dek(), { kind: "recipe" });
+    return buildRecipes(docs, new Issues());
   }
 
   async getRecipe(slug: string) {
-    return (await this.listRecipes()).find((recipe) => recipe.slug === slug);
+    if (!isSafeHouseholdDocKey("recipe", slug)) return undefined;
+    const docs = await this.readHouseholdDocs(this.db, await this.dek(), { kind: "recipe", key: slug });
+    return buildRecipes(docs, new Issues())[0];
   }
 
   async getMember(id: string) {
@@ -108,7 +132,8 @@ export class PgRepository implements HealthReader {
   /** 整批校验通过才写入；云端版本比本地新时不覆盖（除非 force） */
   async importRaw(raw: RawVault, opts: { force?: boolean } = {}): Promise<ImportResult> {
     const maxDocs = (await limitsOf(this.db, this.userId)).docs;
-    if (Object.values(raw.docs).flat().length > maxDocs) throw new QuotaExceeded("docs", maxDocs);
+    const householdDocs = raw.householdDocs ?? [];
+    if (Object.values(raw.docs).flat().length + householdDocs.length > maxDocs) throw new QuotaExceeded("docs", maxDocs);
     validateImport(raw);
     const dek = await this.dek();
     const result: ImportResult = { created: 0, updated: 0, unchanged: 0, conflicts: [] };
@@ -133,6 +158,7 @@ export class PgRepository implements HealthReader {
           else result[outcome]++;
         }
       }
+      await importHouseholdDocs(tx, householdDocs, result, { userId: this.userId, dek, force: !!opts.force });
       await assertDocQuota(tx, this.userId);
     });
     return result;
@@ -142,19 +168,18 @@ export class PgRepository implements HealthReader {
    * 单点修改：在当前数据上合并改动，用 buildSnapshot 校验（只看被改文件的错误，已有数据的旧问题不阻塞网页编辑），
    * 通过后只写改动的文档；不碰 household 与自定义指标。删除日志时一并删掉它的附件记录（密文文件由 GC 延迟清理）。
    * changes 可以是函数：在锁内拿到最新数据再算出改动（读—改—写不会被并发请求覆盖）。
-   * 返回 agent 修改记录的 id（只有传入 audit 的 put / create 才记录）。
+   * 返回 agent 修改记录的 id（成员写入与家庭变更在传入 audit 时记录）。
    */
-  async applyChanges(input: Change[] | ((raw: RawVault) => Change[] | Promise<Change[]>), opts: { audit?: AuditInfo } = {}): Promise<string[]> {
+  async applyChanges(input: Change[] | ((raw: RawVault) => Change[] | Promise<Change[]>), opts: ChangeOptions = {}): Promise<string[]> {
     const dek = await this.dek();
     return this.db.transaction(async (tx) => {
       await this.lock(tx);
-      const raw = await this.exportRaw(tx);
+      const raw: RawVault = opts.scope === "household"
+        ? { family: { members: [] }, docs: {}, customCatalog: [], householdDocs: await this.readHouseholdDocs(tx, dek) }
+        : await this.exportRaw(tx);
       const changes = typeof input === "function" ? await input(structuredClone(raw)) : input;
-      // 额度在锁内按实际改动数检查：家人数；agent 写入按会产生修改记录的 put / create 条数（一次改多项就扣多条）
-      const newMembers = changes.filter((c) => c.op === "add_member").length;
-      if (newMembers) await assertQuota(tx, this.userId, "members", newMembers);
-      const audited = opts.audit ? changes.filter((c) => c.op === "put" || c.op === "create").length : 0;
-      if (audited) await assertQuota(tx, this.userId, "mcpWritesPerDay", audited);
+      if (opts.scope === "household" && !changes.every(isHouseholdChange)) throw new NotFound();
+      await this.checkChangeQuota(tx, changes, opts.audit);
       const touched = new Set<string>();
       const removedAttachments: { member: string; relPath: string }[] = [];
       for (const c of changes) mergeChange(raw, c, touched, removedAttachments);
@@ -163,10 +188,21 @@ export class PgRepository implements HealthReader {
       const orphaned = removedAttachments.filter((a) => !stillUsed(a.member, a.relPath));
       const errors = buildSnapshot(raw, { root: "web" }).issues.filter((x) => x.level === "error" && touched.has(x.file));
       if (errors.length) throw new ImportRejected(errors);
+      if (opts.coverUpload) {
+        const { relPath, data, mime } = opts.coverUpload;
+        await this.files.putHousehold(relPath, data, mime, tx);
+      }
       const ids = await this.writeChanges(tx, { dek, raw, changes, orphaned, audit: opts.audit });
       await assertDocQuota(tx, this.userId);
       return ids;
     });
+  }
+
+  private async checkChangeQuota(tx: Tx, changes: Change[], audit?: AuditInfo) {
+    const newMembers = changes.filter((c) => c.op === "add_member").length;
+    if (newMembers) await assertQuota(tx, this.userId, "members", newMembers);
+    const audited = audit ? changes.filter((c) => c.op === "put" || c.op === "create" || isHouseholdChange(c)).length : 0;
+    if (audited) await assertQuota(tx, this.userId, "mcpWritesPerDay", audited);
   }
 
   private async writeChanges(tx: Tx, { dek, raw, changes, orphaned, audit }: { dek: Buffer; raw: RawVault; changes: Change[]; orphaned: { member: string; relPath: string }[]; audit?: AuditInfo }) {
@@ -174,7 +210,10 @@ export class PgRepository implements HealthReader {
     const memberId = async (slug: string) =>
       (await tx.select({ id: member.id }).from(member).where(and(eq(member.userId, this.userId), eq(member.slug, slug))))[0].id;
     for (const c of changes) {
-      if (c.op === "add_member") {
+      if (isHouseholdChange(c)) {
+        const id = await writeHouseholdDoc(tx, { dek, userId: this.userId, c, audit });
+        if (id) changeIds.push(id);
+      } else if (c.op === "add_member") {
         await tx.insert(household).values({ userId: this.userId }).onConflictDoNothing();
         const fm = raw.family.members.find((m) => m.id === c.id)!;
         const [m] = await tx.insert(member).values({ id: randomId(), userId: this.userId, slug: fm.id, role: fm.role, dir: fm.dir ?? null, nameCipher: seal(dek, fm.name, nameAad(this.userId, fm.id)) }).returning();
@@ -233,29 +272,14 @@ export class PgRepository implements HealthReader {
   }
 
   /** 最近的 agent 修改（新到旧），附带该文档当前是否仍是这次写入的版本（可还原） */
-  async listAgentChanges(limit = 30) {
-    const rows = await this.db.select({ c: agentChange, slug: member.slug, cur: doc.contentSha256 }).from(agentChange)
-      .innerJoin(member, eq(member.id, agentChange.memberId))
-      .leftJoin(doc, and(eq(doc.memberId, agentChange.memberId), eq(doc.kind, agentChange.kind), eq(doc.key, agentChange.key)))
-      .where(eq(agentChange.userId, this.userId)).orderBy(desc(agentChange.createdAt)).limit(limit);
-    return rows.map(({ c, slug, cur }) => ({
-      id: c.id, member: slug, tokenName: c.tokenName, tool: c.tool, kind: c.kind, key: c.key, createdAt: c.createdAt, revertedAt: c.revertedAt,
-      revertible: !c.revertedAt && cur === c.newSha256,
-    }));
+  listAgentChanges(limit = 30) {
+    return listAgentChanges(this.db, this.userId, limit);
   }
 
-  /** 还原一次 agent 写入：文档必须仍是那次写入后的版本（之后又被改过则拒绝，先还原更新的那次） */
   async revertAgentChange(id: string) {
     await this.db.transaction(async (tx) => {
       await this.lock(tx);
-      const [ch] = await tx.select().from(agentChange).where(and(eq(agentChange.id, id), eq(agentChange.userId, this.userId))).for("update");
-      if (!ch) throw new NotFound();
-      const where = and(eq(doc.memberId, ch.memberId), eq(doc.kind, ch.kind), eq(doc.key, ch.key));
-      const [cur] = await tx.select({ sha: doc.contentSha256 }).from(doc).where(where).for("update");
-      if (ch.revertedAt || cur?.sha !== ch.newSha256) throw new RevertConflict();
-      if (ch.prevCiphertext && ch.prevSha256) await tx.update(doc).set({ ciphertext: ch.prevCiphertext, contentSha256: ch.prevSha256, updatedAt: new Date() }).where(where);
-      else await tx.delete(doc).where(where);
-      await tx.update(agentChange).set({ revertedAt: new Date() }).where(eq(agentChange.id, id));
+      await revertChange(tx, this.userId, id);
     });
   }
 
@@ -264,6 +288,10 @@ export class PgRepository implements HealthReader {
   removeAttachment(slug: string, relPath: string) { return this.files.remove(slug, relPath); }
   getAttachment(slug: string, relPath: string) { return this.files.get(slug, relPath); }
   listAttachments() { return this.files.list(); }
+  putHouseholdAttachment(relPath: string, data: Buffer, mime: string) { return this.files.putHousehold(relPath, data, mime); }
+  removeHouseholdAttachment(relPath: string) { return this.files.removeHousehold(relPath); }
+  getHouseholdAttachment(relPath: string) { return this.files.getHousehold(relPath); }
+  listHouseholdAttachments() { return this.files.listHousehold(); }
   purgeAttachmentFiles() { return this.files.purgeFiles(); }
 }
 
@@ -271,23 +299,8 @@ export class PgRepository implements HealthReader {
 function validateImport(raw: RawVault) {
   const errors = buildSnapshot(raw, { root: "import" }).issues.filter((i) => i.level === "error");
   if (errors.length) throw new ImportRejected(errors);
+  for (const d of raw.householdDocs ?? []) assertHouseholdDocSize(d);
   for (const d of Object.values(raw.docs).flat()) {
     if (!DOC_KINDS.includes(d.kind)) throw new ImportRejected([{ file: d.key, message: `未知类型 ${d.kind}` }]);
   }
-}
-
-/** 导入一份文档：内容没变跳过；云端比本地新且未 force 记为冲突；否则更新或新建 */
-async function importDoc(tx: Tx, { dek, memberId, d, prev, force }: { dek: Buffer; memberId: string; d: RawDoc; prev?: typeof doc.$inferSelect; force: boolean }) {
-  const content = docContent(d);
-  const hash = sha256(content);
-  if (prev?.contentSha256 === hash) return "unchanged" as const;
-  const localTime = d.updatedAt ? new Date(d.updatedAt) : new Date();
-  if (prev && !force && prev.updatedAt > localTime) return "conflict" as const;
-  const row = { contentSha256: hash, ciphertext: seal(dek, content, docAad(memberId, d.kind, d.key)), updatedAt: localTime };
-  if (prev) {
-    await tx.update(doc).set(row).where(eq(doc.id, prev.id));
-    return "updated" as const;
-  }
-  await tx.insert(doc).values({ id: randomId(), memberId, kind: d.kind, key: d.key, ...row });
-  return "created" as const;
 }

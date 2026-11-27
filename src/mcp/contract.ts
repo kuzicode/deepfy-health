@@ -103,4 +103,9 @@ export const CONTRACT = `# Deepfy 健康档案 · Agent 数据说明
 
 ## 只读 token
 没有写入工具时，请用户在 Deepfy 网页上记录，或在「Agent 接入」页把这个 token 改为「可写入」。
+
+## 我家的菜谱（Kitchen）
+用 list_recipes 查找菜谱，get_recipe 读取食材、步骤和封面。首次录入只需菜名和正文，无需建成员档案。
+修改时传 slug 和改动的字段，未传正文时原文不动；替换步骤时遗漏的原有双链保留在文末。未知 YAML 字段和已有封面也会保留。共享菜谱不得写入成员病史。
+上传漫画封面前先请用户确认图片，再调用 upload_recipe_image；用户可以在 Agent 接入页还原旧封面。
 `;

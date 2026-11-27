@@ -1,13 +1,13 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { buildSnapshot } from "@/core/bundle";
 import { latestReadings } from "@/core/analysis";
 import { loadVault, readVaultRaw } from "@/core/vault";
 import { createDb, type DB } from "@/db/client";
-import { doc, member, user } from "@/db/schema";
+import { attachment, doc, member, user } from "@/db/schema";
 import { newDek, randomId } from "./crypto";
 import { gcOrphanAttachments } from "./attachments";
 import { ImportRejected, KeyTaken, NotFound, PgRepository } from "./pg-repository";
@@ -38,11 +38,14 @@ describe.skipIf(!URL)("PgRepository（需要 KZ_TEST_DATABASE_URL）", () => {
   });
 
   it("导入示例 vault 后，云端快照与本地一致", async () => {
+    const rel = "菜单/assets/番茄炖牛腩.png";
+    await a.putHouseholdAttachment(rel, fs.readFileSync(path.join(SAMPLE, rel)), "image/png");
     const res = await a.importRaw(readVaultRaw(SAMPLE));
     expect(res.created).toBeGreaterThan(10);
     const local = loadVault(SAMPLE);
     const cloud = await a.snapshot();
     expect(cloud.issues).toEqual([]);
+    expect(cloud.recipes).toEqual(local.recipes);
     expect(cloud.members.map((m) => m.id)).toEqual(local.members.map((m) => m.id));
     const kz = (s: typeof local) => latestReadings(s.members[0], s.catalog).map((r) => [r.code, r.value, r.flag]);
     expect(kz(cloud)).toEqual(kz(local));
@@ -85,6 +88,9 @@ describe.skipIf(!URL)("PgRepository（需要 KZ_TEST_DATABASE_URL）", () => {
 
   it("用户之间互相隔离", async () => {
     expect((await b.snapshot()).members).toEqual([]);
+    expect(await b.listRecipes()).toEqual([]);
+    expect(await b.getRecipe("番茄炖牛腩")).toBeUndefined();
+    await expect(b.getHouseholdAttachment("菜单/assets/番茄炖牛腩.png")).rejects.toBeInstanceOf(NotFound);
     expect(await b.getMember("kz")).toBeUndefined();
     await expect(b.getAttachment("kz", "attachments/x.pdf")).rejects.toBeInstanceOf(NotFound);
   });
@@ -92,8 +98,9 @@ describe.skipIf(!URL)("PgRepository（需要 KZ_TEST_DATABASE_URL）", () => {
   it("附件加密落盘，可还原；非法路径被拒绝", async () => {
     const pdf = Buffer.from("%PDF-1.4 体检报告 ALT 61");
     await a.putAttachment("kz", "attachments/report.pdf", pdf, "application/pdf");
-    const files = fs.readdirSync(process.env.KZ_ATTACHMENT_DIR!);
-    expect(fs.readFileSync(path.join(process.env.KZ_ATTACHMENT_DIR!, files[0]), "utf8")).not.toContain("体检报告");
+    const [file] = await db.select({ key: attachment.storageKey }).from(attachment)
+      .innerJoin(member, eq(member.id, attachment.memberId)).where(and(eq(member.userId, userA), eq(attachment.relPath, "attachments/report.pdf")));
+    expect(fs.readFileSync(path.join(process.env.KZ_ATTACHMENT_DIR!, file.key), "utf8")).not.toContain("体检报告");
     expect((await a.getAttachment("kz", "attachments/report.pdf")).data.equals(pdf)).toBe(true);
     await expect(a.putAttachment("kz", "attachments/../../etc/passwd", pdf, "x")).rejects.toThrow("不合法");
     await expect(a.putAttachment("kz", "profile.md", pdf, "x")).rejects.toThrow("不合法");

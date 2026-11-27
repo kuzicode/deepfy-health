@@ -7,5 +7,5 @@ const perDay = createLimiter(60, 86_400_000);
 export const GET = (req: Request) =>
   withRepo(req, async (repo, userId) => {
     if (!perDay(userId)) return rateLimited();
-    return json({ vault: await repo.exportRaw(), attachments: await repo.listAttachments() });
+    return json({ vault: await repo.exportRaw(), attachments: await repo.listAttachments(), householdAttachments: await repo.listHouseholdAttachments() });
   }, { heavy: true });
