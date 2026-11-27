@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-11-09
+last_updated: 2026-11-28
 status: active
 ---
 
@@ -7,7 +7,7 @@ status: active
 
 [简体中文](self-hosting.md)
 
-This is the recommended way to run Deepfy Health: on your own computer or home server, with your data staying local. You get the same dashboard and records as the hosted app, with no domain, HTTPS, email service or third-party sign-in needed. The code ships with no user data. You're welcome to help build it: see [CONTRIBUTING.md](../.github/CONTRIBUTING.md).
+This is the recommended way to run Deepfy: on your own computer or home server, with your data staying local. You get the same health records and family recipes as the hosted app, with no domain, HTTPS, email service or third-party sign-in needed. The code ships with no user data. You're welcome to help build it: see [CONTRIBUTING.md](../.github/CONTRIBUTING.md).
 
 ## Quick start
 
@@ -21,7 +21,7 @@ docker compose up -d
 
 The first run builds the image, which takes a few minutes. Then open http://localhost:3100 and create your admin account.
 
-`selfhost-init.sh` creates `.env`, which holds the master key that encrypts all health data. **Keep a separate copy of `.env`, away from your database backups. Without the master key, your data can't be recovered.**
+`selfhost-init.sh` creates `.env`, which holds the master key that protects each account’s data key. The account key encrypts health records, recipe contents and attachments. **Keep a separate copy of `.env`, away from your database backups. Without the master key, your data can't be recovered.**
 
 ## Use it on your local network
 
@@ -70,7 +70,13 @@ docker compose cp backups/attachments/. app:/data/attachments/
 docker compose restart app
 ```
 
-## Upgrade
+## Upgrade or change the clone directory
+
+Compose uses the project name to locate the existing database (`pgdata`) and attachment (`attachments`) volumes. Check the old project name with `docker compose ls` before upgrading.
+
+- **Upgrade in place.** Keep the original `.env` and run the commands below in the existing directory. With the default project name, keeping the directory name also keeps the volumes.
+- **Change the clone directory.** On the same machine and Docker engine, copy the original `.env` into the new directory, keeping its keys and passwords. Before starting Compose, set `COMPOSE_PROJECT_NAME=<original-directory-name>` in that file. For example, use `COMPOSE_PROJECT_NAME=deepfy-health` for an original directory named `deepfy-health`.
+- If you previously used `-p` or a custom project name, set `COMPOSE_PROJECT_NAME` to that **actual old name** in either case. Using a different name mounts empty volumes and makes the existing data appear missing.
 
 ```bash
 git pull

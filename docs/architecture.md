@@ -1,9 +1,9 @@
 ---
-last_updated: 2026-11-09
+last_updated: 2026-11-28
 status: active
 ---
 
-# deepfy-health — 架构
+# Deepfy 家庭知识库 — 架构
 
 > 规则见 `AGENTS.md`；路线图见 `docs/ROADMAP.md`。
 
@@ -17,7 +17,7 @@ status: active
 - 语言：next-intl（`src/i18n/`，文案在 `messages/zh.json`、`en.json`）。官网由 URL 决定（proxy 设置 `x-kz-locale` 头）；App 由 cookie `kz_locale` 决定，默认取 Accept-Language。用户写的内容（笔记、健康计划）不翻译；指标英文名在内置字典 `name_en`。
 - 邮件语言：打开 App 时把界面语言同步到 `user.locale`（空值按中文）。提醒邮件读它；验证码跟当前请求；邀请用 `waitlist.locale`；暂停页读它，没有再看浏览器语言。每周汇总只发管理员，保持中文。
 - 设计：Mint Glass，token 在 `app/styles/tokens.css`，通用样式在 `base.css`；官网 `app/site/site.css`（`s-`/`belt-`/`kc-` 前缀），App `app/(app)/app.css`（`a-` 前缀），登录页 `app/login/login.css`。字体用 Fontsource 自托管。品牌标志「影像环」：组件 `src/ui/Logo.tsx`（< 32px 自动用单环小尺寸版），图标走 Next 文件约定（`app/icon.svg`、`apple-icon.png`、`favicon.ico`、`opengraph-image.png`、`manifest.ts`），原始素材与规范在 `public/brand/`、`docs/brand/logo-kit.md`；邮件模板 `src/server/mail.ts` 引用 `/brand/deepfy-horizontal.png`（这些路径在 `proxy.ts` 中公开）。
-- 登录：`/login` 单卡片、先邮箱后分流（参考 ChatGPT）：Google 或输入邮箱 → `POST /api/login-lookup` 返回 `password` / `otp`（仅 Google 注册过）/ `create` / `closed`（白名单制下不在名单内，转到申请表），前端进入对应步骤（`app/login/LoginView.tsx`）。Google 新用户回到 `?error=signup_disabled` 后先勾选同意再创建。手机号、微信登录待定（见 plan backlog）。网页编辑（快速建档、快速记录、档案编辑）走 server action → `PgRepository.applyChanges`：在当前数据上合并单点改动，用 `buildSnapshot` 只校验被改文件，通过后只写改动的文档；日志照片经 `putAttachment` 加密存储，前端先压缩去 EXIF，服务端按魔数只收 jpg/png/webp，经 `/m/[id]/files/*`（需登录）查看。MCP 只读端点 `/mcp`（Streamable HTTP 无状态，Bearer token，`src/mcp/`）。设置 / 修改密码复用 emailOTP `forget-password` + `resetPassword`（无 credential 账号时 better-auth 会新建），入口在登录页验证码步骤与 `/settings`。
+- 登录：`/login` 单卡片、先邮箱后分流（参考 ChatGPT）：Google 或输入邮箱 → `POST /api/login-lookup` 返回 `password` / `otp`（仅 Google 注册过）/ `create` / `closed`（白名单制下不在名单内，转到申请表），前端进入对应步骤（`app/login/LoginView.tsx`）。Google 新用户回到 `?error=signup_disabled` 后先勾选同意再创建。手机号、微信登录待定（见 plan backlog）。网页编辑（快速建档、快速记录、档案编辑）走 server action → `PgRepository.applyChanges`：在当前数据上合并单点改动，用 `buildSnapshot` 只校验被改文件，通过后只写改动的文档；日志照片经 `putAttachment` 加密存储，前端先压缩去 EXIF，服务端按魔数只收 jpg/png/webp，经 `/m/[id]/files/*`（需登录）查看。MCP 读写端点 `/mcp`（Streamable HTTP 无状态，Bearer token，`src/mcp/`）。设置 / 修改密码复用 emailOTP `forget-password` + `resetPassword`（无 credential 账号时 better-auth 会新建），入口在登录页验证码步骤与 `/settings`。
 
 ## 两种运行模式
 
@@ -46,7 +46,7 @@ status: active
 ## 数据流
 
 ```
-Obsidian vault (Personal/<Dir>/Health/*.md)
+Obsidian vault (Personal/<Dir>/Health/ + Personal/菜单/)
    │ readVaultRaw ─┐                      ┌─ PgRepository.exportRaw ◀─ Postgres (doc.ciphertext …)
    ▼               ▼                      ▼
               RawVault（frontmatter 原样 + 正文）
@@ -59,13 +59,14 @@ Obsidian vault (Personal/<Dir>/Health/*.md)
 - `src/core/vault.ts`：读写本地 vault；`src/core/serialize.ts`：RawVault → vault 文件（kzh pull、网站导出）。
 - `src/core/regimen.ts`：用药 / 补剂的状态分组、当天安排、写入检查、趋势图区间；写入构造在 `src/mcp/regimen-write.ts`（网页与 MCP 共用），agent 规则在 `src/mcp/regimen-tools.ts`。
 - `src/server/pg-repository.ts`：云端读写；`importRaw` 整批校验通过才写入。
-- 网站只依赖 `HealthReader`（`snapshot`、`getMember`），由 `app/_components/repo.ts#getReader` 按模式选择实现。
+- 家庭首页从 `snapshot()` 读取成员、提醒所需数据和最近更新的菜谱。App 布局用 `listMemberStubs()` 读取成员摘要，渲染菜谱导航时无需加载全家的健康文档。菜谱列表和详情分别走 `listRecipes()`、`getRecipe(slug)`。读接口统一在 `HealthReader`，由 `src/ui/repo.ts#getReader` 按模式选择实现。
 
 ## 存储与加密
 
 - 表：better-auth 的 `user / session / account / verification`；`user_key`（包裹后的 DEK）、`household`（家庭名、自定义指标，明文）、`member`（姓名加密，`position` 是用户拖动设置的显示顺序）、`doc`（档案 / 记录 / 笔记 / 用药 / 健康计划（care_plan），整份 JSON 加密）、`attachment`（元数据，文件密文在 `KZ_ATTACHMENT_DIR`）、`api_token`（校验用 sha256；明文用账号 DEK 加密存于 `token_cipher`，供「Agent 接入」页再次复制配置；`scope` 只读 / 可写入）、`agent_change`（agent 写入记录：写入前密文 + 前后 sha，可一键还原，保留 90 天）。
-- AES-256-GCM，格式 `v1:nonce:ct:tag`；每个账号一把 DEK，由 `KZ_MASTER_KEY` 包裹。AAD 绑定所属对象（`doc:<memberId>:<kind>:<key>`、`member:<userId>:<slug>`、`att:<memberId>:<path>`、`dek:<userId>`），密文挪到别处无法解密。
-- 服务端加密存储，不是端到端：服务器在请求时于内存中解密，用于展示、分析与将来的 MCP。
+- 家庭级菜谱独立于成员。数据库用 `household_doc` 保存账号、类型、文档键和加密的 frontmatter 与正文，用 `household_attachment` 保存封面元数据，图片密文在附件卷中。文档键通常来自菜名，文档键和附件路径属于明文元数据。本地映射为 `Personal/菜单/<slug>.md` 与 `Personal/菜单/assets/`，支持导出和 `kzh push/pull`。
+- AES-256-GCM，格式 `v1:nonce:ct:tag`；每个账号一把 DEK，由 `KZ_MASTER_KEY` 包裹。AAD 绑定所属对象（`doc:<memberId>:<kind>:<key>`、`member:<userId>:<slug>`、`att:<memberId>:<path>`、`dek:<userId>`、`hdoc:<userId>:<kind>:<key>`、`hatt:<userId>:<relPath>`），密文挪到别处无法解密。
+- 服务端加密存储，不是端到端：服务器在请求时于内存中解密，用于网页展示和经授权的 MCP 读写。
 
 ## 鉴权
 
@@ -86,6 +87,7 @@ Obsidian vault (Personal/<Dir>/Health/*.md)
 | `/avatars/*` | 预设头像图片（DiceBear Thumbs CC0「暖柔健康」18 张，自托管；`src/avatars.ts` 登记；`user.image = "preset:<id>"`）；家人头像存在档案 `profile.avatar`（建档时默认挑家里没人用的、概览点头像可换；只是外观，MCP 不开放写入），没选的「本人」用账号头像、其他人按成员 id 自动分配（`memberAvatars`，不存库）；官网用父域 cookie `dfy_av`（只含头像 id，App 写入、退出时清）显示登录态，不用于鉴权 |
 | 官网 `deepfy.si/{zh,en}`、`/{zh,en}/docs` | 首页、文档（`app/site/[locale]`；nginx 缓存 60 秒）；本地预览 `/site/zh` |
 | `/`、`/m/[id]/*` | 家庭总览与成员页 |
+| `/kitchen`、`/kitchen/[slug]` | 我家的菜谱与做法详情；云端可编辑，本地 vault 只读 |
 | `/settings`、`/settings/export` | 账号、token、导出 zip、删除账号 |
 | `/reminders`、`/feedback` | 邮件提醒设置、意见反馈（头像菜单） |
 | `/agents`、`/mcp` | Agent 接入（token 管理）、MCP 端点 |

@@ -1,5 +1,5 @@
 ---
-last_updated: 2026-11-09
+last_updated: 2026-11-28
 status: active
 ---
 
@@ -7,7 +7,7 @@ status: active
 
 [English](self-hosting.en.md)
 
-这是推荐的使用方式：跑在自己的电脑或家里的服务器上，数据留在本地。看板和档案功能和官方托管一样，不需要域名、HTTPS、邮箱服务或第三方登录。代码不带任何用户数据。欢迎一起维护，见 [CONTRIBUTING.md](../.github/CONTRIBUTING.md)。
+这是推荐的使用方式：跑在自己的电脑或家里的服务器上，数据留在本地。健康档案和家庭菜谱功能和官方托管一样，不需要域名、HTTPS、邮箱服务或第三方登录。代码不带任何用户数据。欢迎一起维护，见 [CONTRIBUTING.md](../.github/CONTRIBUTING.md)。
 
 ## 快速开始
 
@@ -21,7 +21,7 @@ docker compose up -d
 
 第一次要构建镜像，需要几分钟。完成后打开 http://localhost:3100 ，创建管理员账号，就可以开始用了。
 
-`selfhost-init.sh` 会生成 `.env`，里面的主密钥用来加密全部健康数据。**请把 `.env` 另外保存一份，不要和数据库备份放在一起。丢了主密钥，数据无法恢复。**
+`selfhost-init.sh` 会生成 `.env`，里面的主密钥保护每个账号的数据密钥，后者用于加密健康档案、菜谱和附件内容。**请把 `.env` 另外保存一份，不要和数据库备份放在一起。丢了主密钥，数据无法恢复。**
 
 ## 在局域网里使用
 
@@ -70,7 +70,13 @@ docker compose cp backups/attachments/. app:/data/attachments/
 docker compose restart app
 ```
 
-## 升级
+## 升级与更换克隆目录
+
+Compose 通过项目名找到现有的数据库卷 `pgdata` 和附件卷 `attachments`。升级前可用 `docker compose ls` 核对旧项目名。
+
+- **原地升级**。保留原来的 `.env`，在原目录运行下方命令。若一向使用默认项目名，目录名相同就会复用原卷。
+- **更换克隆目录**。在同一台机器、同一 Docker 引擎上，把原来的 `.env` 连同原密钥和密码复制到新目录。首次启动前，在其中设置 `COMPOSE_PROJECT_NAME=<原目录名>`。例如旧目录为 `deepfy-health`，就写 `COMPOSE_PROJECT_NAME=deepfy-health`。
+- 如果以前通过 `-p` 或其他方式指定了项目名，两种升级方式都要在 `.env` 中填写**实际旧项目名**。换成其他名称会挂载空卷，看起来像数据丢失。
 
 ```bash
 git pull

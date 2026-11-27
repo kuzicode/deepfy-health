@@ -12,6 +12,7 @@ import { Interactions } from "@/ui/Interactions";
 import { getReader } from "@/ui/repo";
 import "./app.css";
 import "./forms.css";
+import "./kitchen.css";
 import { reorderMembersAction } from "./actions";
 
 async function shellMembers(): Promise<ShellMember[]> {

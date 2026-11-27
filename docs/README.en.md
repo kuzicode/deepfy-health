@@ -1,12 +1,11 @@
 <div align="center">
 
-<h1><a href="https://deepfy.si"><img src="brand/icon-256.png" width="40" align="top" alt=""></a>&nbsp;Deepfy Health</h1>
+<h1><a href="https://deepfy.si"><img src="brand/icon-256.png" width="40" align="top" alt=""></a>&nbsp;Deepfy</h1>
 
-### Built for your health. Read by your agents.
+### An agent-first family knowledge base
 
-**Checkups, lab results, medications and daily readings, in one structured record for your whole family.**<br>
-See trends, keep track of rechecks, and get email reminders before they're due.<br>
-Over MCP, your own agent can read the record and, with your OK, update it for you.
+**Keep family health records and home-cooked recipes together on the web.**<br>
+Connect your own agent over MCP, and sync Markdown files and attachments with a local Obsidian vault.
 
 [![Release](https://img.shields.io/github/v/release/kuzicode/deepfy-health?include_prereleases&label=release&color=111111)](https://github.com/kuzicode/deepfy-health/releases) [![Stars](https://img.shields.io/github/stars/kuzicode/deepfy-health?style=flat&color=111111)](https://github.com/kuzicode/deepfy-health/stargazers) [![License](https://img.shields.io/badge/license-MIT-111111)](../LICENSE) ![Status](https://img.shields.io/badge/status-pre--release-C2410C)<br>
 ![Next.js](https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white) ![MCP](https://img.shields.io/badge/MCP-0F766E)
@@ -26,18 +25,19 @@ Over MCP, your own agent can read the record and, with your OK, update it for yo
 > [!IMPORTANT]
 > **Pre-release software under active development.** Features, APIs and data formats may change.
 >
-> Deepfy Health is for reference only and doesn't replace medical advice. **Never post real health information in issues, pull requests or screenshots.**
+> Health analyses are for reference only and don’t replace medical advice. **Never post real health information in issues, pull requests or screenshots.**
 
-## Is Deepfy Health for you?
+## Is Deepfy for you?
 
-Health records end up scattered across PDFs, photos and hospital apps, and an AI agent can't make sense of a file it has never seen. Deepfy Health turns them into one structured record that you and your agent can both use.
+Start with a family member’s checkups, medications and recheck dates. Or save a dish with its ingredients, method and photo for whoever cooks it next.
 
 - **Keep the whole family in one place**: a profile, results and trends, medications and supplements for each person.
+- **Family Recipes**. Search by dish or ingredient at `/kitchen`, or ask your agent to save a method. Each recipe is a Markdown file in your vault’s `Personal/菜单/` folder.
 - **Hand a report to your agent**: it reads the report and enters the results. Every change is recorded, and you can undo it.
 - **Know what's coming up**: overdue checkups, rechecks and supplement end dates appear on the overview and in email reminders.
 - **Keep your data portable**: export your account at any time, and import it into your own instance.
 
-Your health content is encrypted per account on the server. This isn't end-to-end encryption, and some lookup metadata, such as report dates and titles, isn't encrypted yet. See the [architecture notes](architecture.md).
+Health records, recipe contents and attachments are encrypted per account on the server. This isn't end-to-end encryption, and some lookup metadata, such as report dates and titles, isn't encrypted yet. See the [architecture notes](architecture.md).
 
 ## Quick start
 
@@ -83,7 +83,7 @@ Local development needs no production accounts or keys.
 
 ## Two modes
 
-- **Cloud mode** (`DATABASE_URL` is set): accounts sign in, and health content is encrypted per account in Postgres.
+- **Cloud mode** (`DATABASE_URL` is set): accounts sign in, and records and recipe contents are encrypted per account in Postgres.
 - **Local vault mode**: reads a folder of Markdown files directly, such as an Obsidian vault. This is mainly for development and backups.
 
 To sync a local vault with an instance:
@@ -99,7 +99,7 @@ Run `pnpm kzh --help` for all commands.
 
 ## Self-hosting
 
-This is the recommended way to run Deepfy Health. The code ships with no user data, and you can import your account export from the hosted app. See the [self-hosting guide](self-hosting.en.md).
+This is the recommended way to run Deepfy. The code ships with no user data, and you can import your account export from the hosted app. See the [self-hosting guide](self-hosting.en.md).
 
 ## Contributing
 

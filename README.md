@@ -1,12 +1,11 @@
 <div align="center">
 
-<h1><a href="https://deepfy.si"><img src="docs/brand/icon-256.png" width="40" align="top" alt=""></a>&nbsp;Deepfy Health</h1>
+<h1><a href="https://deepfy.si"><img src="docs/brand/icon-256.png" width="40" align="top" alt=""></a>&nbsp;Deepfy</h1>
 
-### 构建你的健康云档案，让 Agent 读懂你。
+### Agent-first 的家庭知识库
 
-**体检、化验、用药和日常指标，整理成全家人的结构化健康档案。**<br>
-看趋势、记复查，到期前收到邮件提醒。<br>
-通过 MCP，你自己的 agent 可以读取档案，并在你同意后帮你更新。
+**全家的健康档案、厨房里的家常菜，都能在网页里翻到。**<br>
+通过 MCP，让自己的 Agent 帮忙整理。通过本地 Obsidian 同步，把 Markdown 和附件带走。
 
 [![Release](https://img.shields.io/github/v/release/kuzicode/deepfy-health?include_prereleases&label=release&color=111111)](https://github.com/kuzicode/deepfy-health/releases) [![Stars](https://img.shields.io/github/stars/kuzicode/deepfy-health?style=flat&color=111111)](https://github.com/kuzicode/deepfy-health/stargazers) [![License](https://img.shields.io/badge/license-MIT-111111)](LICENSE) ![Status](https://img.shields.io/badge/status-pre--release-C2410C)<br>
 ![Next.js](https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white) ![MCP](https://img.shields.io/badge/MCP-0F766E)
@@ -26,18 +25,19 @@
 > [!IMPORTANT]
 > **持续开发中的测试版，不是正式版本。** 功能、接口和数据格式都可能变化。
 >
-> Deepfy Health 仅供参考，不能替代医生诊断。**不要在 Issue、PR 或截图里贴任何真实健康信息。**
+> 健康分析仅供参考，不能替代医生诊断。**不要在 Issue、PR 或截图里贴任何真实健康信息。**
 
 ## 适合你吗？
 
-健康资料往往散落在 PDF、照片和各家医院的 App 里，AI agent 也读不到它没见过的文件。Deepfy Health 把它们整理成一份结构化档案，你和你的 agent 都能用。
+你可以先给家人建档，记下历次检查、用药和复查日期。也可以先收一道家常菜，把食材用量、做法和照片留给下次掌勺的人。
 
 - **全家人放在一处**：每个人都有基本档案、检查结果和趋势、用药和补剂。
+- **我家的菜谱**：在 `/kitchen` 按菜名或食材找菜，也可以让 Agent 记录做法。菜谱在 Obsidian 中是 `Personal/菜单/` 里的 Markdown 文件。
 - **把报告交给 agent**：它读完报告，录入结果。每次修改都有记录，可以还原。
 - **知道接下来要做什么**：逾期的体检、复查和补剂到期日会显示在概览页，也会发邮件提醒。
 - **数据可以带走**：随时导出账号数据，再导入你自己部署的实例。
 
-健康内容在服务器上按账号加密。这不是端到端加密，报告日期和标题等检索用的元数据目前也还没有加密，详见[架构说明](docs/architecture.md)。
+健康档案、菜谱内容和附件在服务器上按账号加密。这不是端到端加密，报告日期和标题等检索用的元数据目前也还没有加密，详见[架构说明](docs/architecture.md)。
 
 ## 快速开始
 
@@ -83,7 +83,7 @@ pnpm test:db
 
 ## 两种模式
 
-- **云端模式**（设置了 `DATABASE_URL`）：账号登录，健康内容按账号加密后存进 Postgres。
+- **云端模式**（设置了 `DATABASE_URL`）：账号登录，档案和菜谱内容按账号加密后存进 Postgres。
 - **本地 vault 模式**：直接读 Markdown 目录，可以是 Obsidian vault，主要用于开发和备份。
 
 把本地 vault 同步到实例：

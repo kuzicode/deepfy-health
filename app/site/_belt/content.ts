@@ -14,6 +14,7 @@ export const TOKENS: CardTokens[] = [
   { original: 31200, distilled: 860, url: "deepfy://mcp tools/call list_members" },
   { original: 26400, distilled: 940, url: "deepfy://mom/overview/conditions" },
   { original: 18700, distilled: 610, url: "deepfy://family/overview/schedule" },
+  { original: 1840, distilled: 195, url: "deepfy://family/kitchen/番茄炖牛腩" },
 ];
 
 type Flag = "H" | "L" | "A" | "N";
@@ -26,6 +27,7 @@ export interface BeltCopy {
   trend: { kicker: string; name: string; delta: string; range: string; years: [string, string, string] };
   family: { kicker: string; title: string; rows: [string, string, string, string, boolean][]; foot: string };
   condition: { kicker: string; who: string; title: string; rows: [string, string, CheckStatus][]; status: Record<CheckStatus, string>; ask: string };
+  kitchen: { kicker: string; title: string; note: string; tool: string; tomatoes: string; beef: string; method: string };
   schedule: { kicker: string; title: string; rows: [string, string, string, string][]; done: string; mail: string };
 }
 
@@ -59,6 +61,10 @@ export const COPY: Record<Locale, BeltCopy> = {
       rows: [["血压", "本周", "covered"], ["肝功能", "2026-04", "covered"], ["血脂", "2025-03", "due"], ["腹部超声", "—", "missing"]],
       status: { covered: "已覆盖", due: "已过期", missing: "未查过" },
       ask: "Agent 会追问：最近血压多少？在吃什么药？",
+    },
+    kitchen: {
+      kicker: "我家的菜谱", title: "番茄炖牛腩", note: "两颗番茄就够了", tool: "save_recipe · 可一键还原",
+      tomatoes: "番茄", beef: "牛腩", method: "1. 先炒软一颗番茄。\n2. 加牛腩和水，炖到酥软。\n3. 另一颗切大块，最后下锅。",
     },
     schedule: {
       kicker: "接下来", title: "到期前，邮件先提醒你",
@@ -96,6 +102,10 @@ export const COPY: Record<Locale, BeltCopy> = {
       status: { covered: "Covered", due: "Overdue", missing: "Never" },
       ask: "Your agent asks: recent readings? current meds?",
     },
+    kitchen: {
+      kicker: "Family Recipes", title: "Tomato beef stew", note: "Just two tomatoes", tool: "save_recipe · undo anytime",
+      tomatoes: "Tomatoes", beef: "Beef brisket", method: "1. Soften one tomato in the pot.\n2. Add beef and water. Simmer until tender.\n3. Add the second tomato in chunks.",
+    },
     schedule: {
       kicker: "Coming up", title: "An email before anything is due",
       rows: [["Mom", "Recheck lipids", "11-20", "in 16 days"], ["Lin Xia", "Recheck ALT, TG", "01-15", "in 72 days"], ["Dad", "Annual checkup", "2027-05", "postponed"]],
@@ -129,6 +139,32 @@ const SCHEDULE_CODE = `"schedule": [
 ]
 → update_schedule { "action": "done" }`;
 
+function insightCode(insight: BeltCopy["insight"]) {
+  return `---
+code: ALT
+updated: 2026-10-20
+status: watch
+summary: ${insight.title}
+recheck: 2027-01-15
+---
+${insight.blocks.map(([heading]) => `## ${heading}`).join("\n")}`;
+}
+
+function kitchenCode(kitchen: BeltCopy["kitchen"]) {
+  return `---
+type: recipe
+title: ${kitchen.title}
+category: 炖菜
+servings: 2
+ingredients:
+  - { name: ${kitchen.tomatoes}, amount: "2" }
+  - { name: ${kitchen.beef}, amount: "400 g" }
+---
+
+## ${kitchen.note}
+${kitchen.method}`;
+}
+
 /** 每张卡片扫描后给 agent 的结构化数据（与 Deepfy 的 vault / MCP 格式一致） */
 export function codes(locale: Locale): string[] {
   const c = COPY[locale];
@@ -161,17 +197,7 @@ indicators:
   - { code: US_LIVER, value: "${zh ? "轻度脂肪肝" : "mild fatty liver"}" }
   # … 97 more
 ---`,
-    `---
-code: ALT
-updated: 2026-10-20
-status: watch
-summary: ${zh ? "轻度升高，较前两年持续下降" : "mildly high, falling since 2024"}
-recheck: 2027-01-15
----
-## ${zh ? "解读" : "What it means"}
-## ${zh ? "饮食" : "Diet"}
-## ${zh ? "作息与运动" : "Sleep & exercise"}
-## ${zh ? "何时就医" : "When to see a doctor"}`,
+    insightCode(c.insight),
     TREND_CODE,
     `[
   { "id": "lin-xia", "name": "${c.family.rows[0][1]}",
@@ -200,5 +226,6 @@ recheck: 2027-01-15
 "follow_up": "Ask for recent BP readings
   and current medication"`,
     SCHEDULE_CODE,
+    kitchenCode(c.kitchen),
   ];
 }

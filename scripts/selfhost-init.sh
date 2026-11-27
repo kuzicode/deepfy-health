@@ -1,5 +1,5 @@
 #!/bin/sh
-# 自托管初始化：生成 .env（密钥只在这个文件里）。只需运行一次。
+# Deepfy 自托管配置
 # 用法：sh scripts/selfhost-init.sh
 set -eu
 cd "$(dirname "$0")/.."

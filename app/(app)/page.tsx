@@ -11,6 +11,9 @@ import { indicatorName } from "@/ui/i18n";
 import { cloudMode } from "@/db/client";
 import { NewMemberForm } from "@/ui/forms/NewMemberForm";
 import { getReader } from "@/ui/repo";
+import type { Recipe } from "@/core/recipe";
+import { RecipeCard } from "@/ui/kitchen/RecipeCard";
+import { recipeCard } from "@/ui/kitchen/recipe-card";
 import { Sortable } from "@/ui/Sortable";
 import { createMemberAction, reorderMembersAction } from "./actions";
 
@@ -57,6 +60,27 @@ function MemberGrid({ items, label }: { items: { id: string; node: React.ReactNo
   return <div className="a-grid">{items.map((x) => <div key={x.id} className="a-card-item">{x.node}</div>)}</div>;
 }
 
+function FeaturedRecipes({ recipes, hasMembers, t }: { recipes: Recipe[]; hasMembers: boolean; t: T }) {
+  if (!recipes.length) return hasMembers && cloudMode() ? <RecipeInvite prompt={t("home.collectRecipe")} t={t} /> : null;
+  return (
+    <section className="a-section a-kitchen">
+      <SectionHead title={t("kitchen.title")} action={{ href: "/kitchen", label: t("home.allRecipes", { n: recipes.length }) }} />
+      <div className="a-recipe-grid">
+        {recipes.slice(0, 3).map((recipe) => <RecipeCard key={recipe.slug} card={recipeCard(recipe)} heading="h3" />)}
+      </div>
+    </section>
+  );
+}
+
+function RecipeInvite({ prompt, t }: { prompt: string; t: T }) {
+  return (
+    <p className="a-recipe-invite">
+      {prompt}
+      <Link href="/kitchen">{t("home.toKitchen")} →</Link>
+    </p>
+  );
+}
+
 export default async function Home() {
   const s = await (await getReader()).snapshot();
   const t = await getTranslations("app");
@@ -86,6 +110,7 @@ export default async function Home() {
             <h2>{t("newMember.title")}</h2>
             <p className="muted">{t("newMember.sub")}</p>
             <NewMemberForm action={createMemberAction} today={today} suggested={suggested} />
+            <RecipeInvite prompt={t("home.orRecipe", { n: s.recipes.length })} t={t} />
             <p className="muted small">{t("home.emptyHint")} <Link href="/settings" style={{ color: "var(--brand)" }}>{t("home.toSettings")} →</Link></p>
           </div>
         ) : (
@@ -108,6 +133,7 @@ export default async function Home() {
           <ReminderRows items={all} names={names} />
         </section>
       )}
+      <FeaturedRecipes recipes={s.recipes} hasMembers={s.members.length > 0} t={t} />
       <footer className="a-foot">{common("disclaimer")}</footer>
     </>
   );

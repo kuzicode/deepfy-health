@@ -47,6 +47,7 @@ export async function saveRecipeAction(form: FormData): Promise<{ slug: string }
       slug = change.key;
       return [change];
     }, { scope: "household", coverUpload: cover?.upload });
+    revalidatePath("/");
     revalidatePath("/kitchen");
     revalidatePath(`/kitchen/${encodeURIComponent(slug)}`);
     return { slug };
@@ -66,5 +67,6 @@ export async function deleteRecipeAction(slug: string) {
   }
   revalidatePath(`/kitchen/${encodeURIComponent(slug)}`);
   revalidatePath("/kitchen");
+  revalidatePath("/");
   redirect("/kitchen");
 }

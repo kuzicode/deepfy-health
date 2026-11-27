@@ -75,7 +75,7 @@ const artByCategory = {
   炒菜: "wok", 炖菜: "pot", 蒸菜: "steamer", 汤羹: "bowl", 凉拌: "plate", 主食: "bowl", 早餐: "plate", 饮品: "cup",
 } as const;
 
-function DishArt({ category }: Pick<Cover, "category">) {
+export function DishArt({ category }: Pick<Cover, "category">) {
   return (
     <svg className="a-dish-art" viewBox="0 0 260 160" aria-hidden="true">
       <ellipse cx="131" cy="130" rx="63" ry="6" fill="var(--kitchen-ink-line)" />

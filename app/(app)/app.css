@@ -39,6 +39,9 @@
 .a-root[lang="zh"] .a-section-head h2 { font-weight: 500; font-size: 19px; }
 .a-section-head a { font: 500 13px/1 var(--sans); color: var(--brand); }
 
+.a-recipe-invite { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 12px; padding: 12px 16px; border-radius: var(--r-sm); background: var(--kitchen-paper); border: 1px solid var(--kitchen-ink-line); color: var(--kitchen-pencil); }
+.a-recipe-invite a { color: var(--kitchen-warm); text-decoration: underline; text-underline-offset: .2em; }
+
 .a-panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
 .a-pad { padding: 22px 24px; }
 .a-empty { padding: 28px 24px; color: var(--muted); }

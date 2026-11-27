@@ -1,9 +1,9 @@
 ---
-last_updated: 2026-11-09
+last_updated: 2026-11-28
 status: active
 ---
 
-# Deepfy Health — 路线图
+# Deepfy 家庭知识库 — 路线图
 
 > 想认领就在对应 Issue 里说一声。已发布的内容见 `CHANGELOG.md`，踩坑记录见 `docs/issues.md`。跨文件的改动先在 Issue 或 PR 描述里写清问题、方案、影响文件和验收（WF1）。
 
@@ -17,6 +17,12 @@ status: active
 | 网页导入 | 现在导入自托管实例要用 `kzh push`，可以在设置页直接上传导出的 zip（注意大小限制、校验和账号隔离） |
 | 趋势图时间轴 | X 轴现在按类目等距，改成按真实时间比例 |
 | 登录后回到原页面 | 未登录入口登录后回到原目标页，现在回 App 首页 |
+
+## 家庭知识库进度
+
+- 家庭菜谱已支持网页与 MCP 录入、封面和 Obsidian 同步。`household_doc` 和 `household_attachment` 存放家庭文档与附件元数据，菜谱无需绑定成员。
+- 家庭首页并列展示成员健康卡、近期提醒和最近更新的三道菜。中英文官网加入菜谱示例，`/kitchen` 提供完整列表。App 导航使用 `listMemberStubs()` 读取成员摘要。
+- 后续计划包括结合成员健康情况查看菜谱、在界面中按栏目授权 Agent，以及新增保险栏目。
 
 ## 进行中和计划
 
@@ -35,5 +41,5 @@ status: active
 
 ## 技术债基线
 
-- lint 12 个警告（2026-11-09），多为单函数复杂度 11–18（`computeFlag`、`latestReadings`、`checkupPlan`、`mergeChange`、`applyChanges`、`addRecordTool`、`TrendChart` 等），改到时顺手拆，不要增加。
+- lint 6 个警告（2026-11-28）：`computeFlag`、`latestReadings`、`checkupPlan`、`addRecordTool`、`TrendChart` 的圈复杂度，以及 PgRepository 测试的函数长度。
 - knip 未用导出 1（`inviteHtml`）；jscpd 14 处小克隆，基本都是测试夹具（2026-11-09）。

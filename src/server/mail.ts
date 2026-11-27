@@ -7,7 +7,7 @@ import type { Digest } from "./feedback";
 
 type OtpType = "sign-in" | "email-verification" | "forget-password" | "change-email";
 
-const BRAND: Record<Locale, string> = { zh: "Deepfy 健康档案", en: "Deepfy Health Record" };
+const BRAND: Record<Locale, string> = { zh: "Deepfy 家庭知识库", en: "Deepfy Family" };
 
 const SUBJECT: Record<Locale, Record<OtpType, string>> = {
   zh: {

@@ -75,7 +75,7 @@ describe("邮件内容", () => {
       expect(m.subject).toContain("123456");
     }
     const zh = otpMail("123456", "sign-in");
-    expect(zh.subject).toBe("123456 是你的 Deepfy 健康档案登录验证码");
+    expect(zh.subject).toBe("123456 是你的 Deepfy 家庭知识库登录验证码");
     expect(zh.html).toContain('lang="zh-CN"');
     expect(zh.html).not.toContain("Your code");
   });

@@ -32,7 +32,8 @@
 .s-avatar:has(img) { background: var(--surface-2); box-shadow: 0 0 0 1px var(--line-strong); }
 
 /* ---------- 首屏 ---------- */
-.s-hero { position: relative; height: 100vh; height: 100svh; min-height: 640px; overflow: hidden; }
+.s-hero { display: grid; grid-template-rows: minmax(max-content, calc(var(--top) - 80px)) minmax(calc(var(--ch) + 120px), 1fr); min-height: max(640px, 100svh); overflow: hidden; }
+.s-hero-belt { position: relative; --top: 80px; }
 .s-hero-copy { display: grid; grid-template-columns: 1.15fr 1fr; gap: clamp(32px, 4vw, 72px); padding: 104px var(--pad-r) 0 var(--pad-l); position: relative; z-index: 3; }
 .s-hero h1 { font: 400 clamp(32px, 3.3vw, 62px)/1.06 var(--serif); letter-spacing: -0.025em; color: var(--ink); margin: 14px 0 0; }
 .s-hero h1 em { font-style: italic; }
@@ -151,6 +152,17 @@
 .kc-sched time small { display: block; margin-top: 0.5cqw; font: 400 1.35cqw/1 var(--sans); color: var(--muted); }
 .kc-sched .btn-mini { justify-self: end; padding: 0.8cqw 1.3cqw; border-radius: 99px; background: var(--brand); color: #f0fdfa; font: 500 1.45cqw/1 var(--sans); white-space: nowrap; }
 .kc-sched .mail { margin-top: 1.6cqw; align-self: flex-start; background: #0f766e; color: #f0fdfa; }
+
+/* 我家的菜谱：暖纸上的一道菜和手绘小碗 */
+.kc-kitchen { justify-content: space-between; gap: 2cqw; background: var(--kitchen-paper); color: var(--kitchen-pencil); }
+.kc-kitchen .kc-brand, .kc-kitchen .kc-pill { color: var(--kitchen-warm); }
+.kc-recipe-panel { display: grid; grid-template-columns: 1fr 1fr; align-items: center; flex: 1; min-height: 0; max-height: 38cqw; padding: 2cqw 4cqw; border: .3cqw solid var(--kitchen-pencil); border-radius: 2cqw; background: radial-gradient(var(--kitchen-ink-line) .14cqw, transparent .17cqw) 0 0 / 1.2cqw 1.2cqw var(--kitchen-print); }
+.kc-recipe-panel .kc-title { margin: 0; font-size: 5.4cqw; }
+.kc-recipe-panel p { margin: 1.6cqw 0 0; font: 400 2.3cqw/1.4 var(--serif); }
+.kc-recipe-panel svg { width: 100%; max-height: 26cqw; }
+.kc-recipe-tool { display: flex; align-items: center; gap: 1cqw; color: var(--kitchen-warm); font: 500 1.8cqw/1.4 var(--mono); }
+.kc-recipe-tool svg { width: 2cqw; height: 2cqw; }
+
 
 /* 8 Agent 接入 */
 

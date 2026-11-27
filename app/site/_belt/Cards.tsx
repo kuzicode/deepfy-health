@@ -1,8 +1,9 @@
 import { Check, Mail } from "lucide-react";
+import { DishArt } from "@/ui/kitchen/RecipeCover";
 import { Logo } from "@/ui/Logo";
 import type { BeltCopy } from "./content";
 
-// 传送带卡片：每张对应 Deepfy 一个真实功能（agent 对话录入 → 报告 → 解读 → 趋势 → 全家 → 已知状况 → 接下来 → 接入）。
+// 传送带卡片：每张对应 Deepfy 一个真实功能（agent 对话录入 → 报告 → 解读 → 趋势 → 全家 → 已知状况 → 接下来 → 菜谱）。
 // 内部尺寸一律用 cqw；手机上卡片高度只有宽度的 ~64%，内容高度要控制在这之内。
 
 const Top = ({ label }: { label: string }) => (
@@ -162,4 +163,21 @@ function Schedule({ c }: { c: BeltCopy }) {
   );
 }
 
-export const CARDS = [Chat, Report, Insight, Trend, Family, Condition, Schedule];
+function Kitchen({ c }: { c: BeltCopy }) {
+  const { kicker, title, note, tool } = c.kitchen;
+  return (
+    <div className="kc kc-kitchen">
+      <Top label={kicker} />
+      <div className="kc-recipe-panel">
+        <div>
+          <h3 className="kc-title">{title}</h3>
+          <p>{note}</p>
+        </div>
+        <DishArt category="汤羹" />
+      </div>
+      <span className="kc-recipe-tool"><Check aria-hidden="true" />{tool}</span>
+    </div>
+  );
+}
+
+export const CARDS = [Chat, Report, Insight, Trend, Family, Condition, Schedule, Kitchen];
