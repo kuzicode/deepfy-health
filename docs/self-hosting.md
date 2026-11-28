@@ -7,11 +7,11 @@ status: active
 
 [English](self-hosting.en.md)
 
-这是推荐的使用方式：跑在自己的电脑或家里的服务器上，数据留在本地。健康档案和家庭菜谱功能和官方托管一样，不需要域名、HTTPS、邮箱服务或第三方登录。代码不带任何用户数据。欢迎一起维护，见 [CONTRIBUTING.md](../.github/CONTRIBUTING.md)。
+推荐将 Deepfy 部署到自己的电脑、NAS 或云服务器。健康档案、菜谱、保单与附件都保存在部署机器上。需要从外网访问时，可按下文配置 HTTPS。
 
-## 快速开始
+## 本机或 NAS 三条命令启动
 
-需要 Docker（Compose v2）。Windows 请在 WSL 里运行。
+准备好 Git、OpenSSL 和 Docker（Compose v2）。Windows 请在 WSL 里运行。
 
 ```bash
 git clone https://github.com/kuzicode/deepfy-family.git && cd deepfy-family
@@ -25,11 +25,40 @@ docker compose up -d
 
 ## 在局域网里使用
 
-1. 先在本机打开 http://localhost:3100 完成首次设置。
+1. 先在本机打开 http://localhost:3100 完成首次设置。没有浏览器的 NAS 可用下节的 SSH 隧道。
 2. 编辑 `.env`，去掉 `KZ_BIND=0.0.0.0` 前面的 `#`，然后运行 `docker compose up -d`。
 3. 其他设备打开 `http://这台机器的局域网 IP:3100`。
 
 这种方式没有加密传输，只在可信的内网使用，不要做端口转发暴露到公网。
+
+## 云服务器长期部署与 HTTPS
+
+1. 在自己的服务器执行相同的三条启动命令，保留默认的回环地址绑定。对外开放前，在电脑上运行 `ssh -L 3100:127.0.0.1:3100 user@your-server` 建立隧道，再用电脑浏览器打开 `http://localhost:3100` 创建首个管理员。没有浏览器的 NAS 也可用这个方法。
+2. 将自己的域名解析到服务器，在生成的 `.env` 中设置 `BETTER_AUTH_URL=https://deepfy.example.org`（替换为自己的域名），再运行 `docker compose up -d` 使配置生效。
+3. 在同一台宿主机运行 Nginx 或 Caddy。为代理开放 80、443 端口，3100 继续只绑定回环地址。使用 Nginx 时，在已配置域名证书的 HTTPS server 块内加入以下配置。
+
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:3100;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Real-IP $remote_addr;
+    client_max_body_size 32m;
+    proxy_buffering off;
+}
+```
+
+使用 Caddy 时，将示例域名换成自己的域名，Caddy 即可自动申请证书。
+
+```caddyfile
+deepfy.example.org {
+    reverse_proxy 127.0.0.1:3100 {
+        header_up X-Real-IP {remote_host}
+    }
+}
+```
+
+上述配置假设客户端直连代理。保留原始 `Host`，并通过 `X-Forwarded-Proto` 传递 HTTPS 协议，使登录请求与配置的外部地址一致。Caddy 默认传递这两项。用连接来源地址覆盖 `X-Real-IP`，登录限速才能按真实客户端区分。配置完成后即可通过自己的 HTTPS 地址登录。
 
 ## 给家人添加账号
 
@@ -49,25 +78,44 @@ docker compose run --rm migrate pnpm admin reset-password 你的邮箱
 
 ## 接入 agent
 
-在 **Agent 接入** 页面创建 token，把生成的提示词发给 agent。MCP 地址是 `http://你打开网页用的地址:3100/mcp`。
+在 **Agent 接入** 页面创建 token，把生成的提示词发给 agent。可按需要选择读写权限与栏目范围（全部、仅健康或仅菜谱）。Agent 与服务在同一台机器时使用 `http://localhost:3100/mcp`。在其他设备上，请改用服务器的局域网地址，或自己的 HTTPS 地址，如 `https://deepfy.example.org/mcp`。
 
 ## 备份和恢复
 
-备份数据库和附件。`.env` 按上面的说明单独保存：
+将下例保存为服务器上的 `backup.sh`，把 `/opt/deepfy-family` 替换为实际克隆目录。脚本会短暂停止应用，配套保存数据库与附件卷，退出时重新启动应用。成功的备份保存在 `~/deepfy-backups/` 下以时间命名的目录里。
 
-```bash
-mkdir -p backups
-docker compose exec -T db pg_dump -U kzh -Fc kzh > backups/db.dump
-docker compose cp app:/data/attachments backups/attachments
+```sh
+#!/bin/sh
+set -eu
+umask 077
+cd /opt/deepfy-family
+backup_dir="$HOME/deepfy-backups"
+mkdir -p "$backup_dir"
+snapshot="$backup_dir/$(date +%Y%m%d-%H%M%S)"
+mkdir "$snapshot.partial"
+trap 'docker compose start app' EXIT
+docker compose stop app
+docker compose exec -T db pg_dump -U kzh -Fc kzh > "$snapshot.partial/db.dump"
+docker compose run --rm --no-deps -T app tar -C /data/attachments -cf - . > "$snapshot.partial/attachments.tar"
+mv "$snapshot.partial" "$snapshot"
 ```
 
-在新机器或清空后恢复（先放回原来的 `.env`）：
+先运行一次 `sh backup.sh`。如需按服务器时间每天 03:00 备份，使用可运行 Docker 的账号执行 `crontab -e`，加入以下两行，按实际安装位置调整脚本路径与 Docker 命令搜索路径。
+
+```cron
+PATH=/usr/local/bin:/usr/bin:/bin
+0 3 * * * /bin/sh /opt/deepfy-family/backup.sh
+```
+
+将成功的备份另存到其他磁盘，原始 `.env` 与这些备份分开保管。恢复时，在具有空数据卷的同版本新实例中先放回原始 `.env`，再将 `snapshot` 指向一份完整备份的目录。
 
 ```bash
-docker compose up -d
-docker compose exec -T db pg_restore -U kzh -d kzh --clean --if-exists < backups/db.dump
-docker compose cp backups/attachments/. app:/data/attachments/
-docker compose restart app
+snapshot=/path/to/snapshot
+docker compose up -d --wait db
+docker compose build app
+docker compose exec -T db pg_restore -U kzh -d kzh --clean --if-exists --single-transaction < "$snapshot/db.dump" &&
+  docker compose run --rm --no-deps -T app tar -C /data/attachments -xf - < "$snapshot/attachments.tar" &&
+  docker compose up -d
 ```
 
 ## 升级与更换克隆目录
@@ -88,24 +136,22 @@ docker compose up -d --build
 ## 从官方托管搬过来
 
 1. 在官方托管登录，打开 **设置 → 导出**，下载 zip。zip 是解密后的明文，用完请删除。
-2. 在自己实例的 **Agent 接入** 页面创建一个「本地同步」权限的 token。
-3. 在本机（需要 Node 22 和 pnpm）执行：
+2. 在自己实例的 **Agent 接入** 页面创建一个「本地同步」权限的 token，栏目范围选「全部」。
+3. 在本机的 Bash 中执行以下命令（需要 Node 22 和 pnpm），按提示粘贴 token。远程实例请把 `http://localhost:3100` 换成自己的 HTTPS 地址。
 
 ```bash
 pnpm install
 unzip deepfy-family-*.zip -d my-export
 export HEALTH_VAULT_DIR=$PWD/my-export
 pnpm kzh validate
-pnpm kzh login --server http://你的地址:3100 --token <token>
+read -rs -p 'Sync token: ' sync_token
+echo
+pnpm kzh login --server http://localhost:3100 --token "$sync_token"
 pnpm kzh push --dry-run
 pnpm kzh push
 ```
 
 密码、agent token、提醒设置和 agent 修改记录不会带过来。
-
-## 通过 HTTPS 访问（可选）
-
-想从外网访问时，自己配 HTTPS 反向代理转发到 `127.0.0.1:3100`（不要设 `KZ_BIND`），传递原始 `Host`，把 `X-Real-IP` 设为真实客户端 IP，并在 `.env` 里设 `BETTER_AUTH_URL=https://你的域名`。首次设置请先在本机完成。
 
 ## 从旧版自托管升级
 

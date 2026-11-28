@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Deepfy · Family Knowledge Base",
-    "description": "Keep family health records and recipes together. Connect your own AI agent over MCP and take your notes back to Obsidian."
+    "description": "Manage health records, recipes and insurance policies on your own server. Connect your AI assistant over MCP or sync a Markdown copy to Obsidian."
   },
   "common": {
     "enterApp": "Open app",
@@ -21,50 +21,50 @@
       "docs": "Docs"
     },
     "hero": {
-      "title1": "Build your family knowledge base,",
-      "title2": "built for you and your AI agents.",
-      "cta": "Get started",
-      "counter": "Agent-ready data ← Family notes",
+      "title1": "Build your own knowledge base",
+      "title2": "so your agent gets to know you.",
+      "cta": "Self-host on your server",
+      "counter": "Agent-ready data ← Your notes",
       "saved": "{pct}% fewer",
       "mcpCopy": "Copy MCP setup prompt",
       "mcpCopied": "Copied — send it to your agent",
-      "mcpHint": "MCP is live · get a token under Agents after signing in",
-      "mcpPrompt": "Please add \"Deepfy Family Knowledge Base\" as an MCP server so you can read (and, after I confirm, write to) my family’s records and recipes.\n\n- Name: deepfy\n- Type: remote MCP (Streamable HTTP)\n- URL: {url}\n- Header: Authorization: Bearer YOUR_DEEPFY_TOKEN\n\nI create the token by signing in at {app} and opening Agents (it also offers a full prompt with the token filled in). Replace YOUR_DEEPFY_TOKEN with my token; if I haven't given you one yet, remind me to create one first, then finish the setup.\n\nAdd it the way your client supports (CLI command or mcpServers in the config file). Then call list_members to confirm the connection and read deepfy://contract for the data guide and write rules. The token is a password: only put it in the MCP config, never commit it to a git repository or send it anywhere else.",
-      "lead1": "Start with health records and family recipes, with more of home life to follow.",
-      "lead2": "Organize both on the web. Your agent can read the latest changes, and you can take a Markdown copy home to Obsidian."
+      "mcpHint": "Open source · Self-host in three commands with Docker. The hosted instance is for friends and family only.",
+      "mcpPrompt": "Help me connect my own Deepfy instance to this client. Name the remote MCP server deepfy, use Streamable HTTP and set the header to Authorization: Bearer YOUR_DEEPFY_TOKEN.\n\nThe local example endpoint is {url}. Check the instance address with me first. If Deepfy runs on a different machine, replace the example with my server’s address, such as https://deepfy.example.org/mcp.\n\nGuide me through signing in to my instance ({app} for a local installation), creating a token under Agents and replacing YOUR_DEEPFY_TOKEN in the client’s MCP configuration. Keep the token in that configuration and out of Git. Once connected, read deepfy://contract for the data and write rules. Ask me before writing.",
+      "lead1": "Start with your health records and build your library over time.",
+      "lead2": "Organize your notes on the web so your agent can read the latest entry. Deepfy is open source. Run it on your own server and sync your notes to Obsidian as Markdown."
     },
     "flow": {
       "eyebrow": "How it works",
-      "title": "A place for a checkup and a family recipe",
+      "title": "A place for your reports and recipes",
       "lead": "Give your agent a lab report or a cooking note. The details will be there at your next checkup or the next time you cook.",
       "s1t": "Hand it to your agent",
       "s1": "Your agent can pick out readings and ranges from a report or turn a spoken recipe into ingredients and steps. You confirm before it saves.",
-      "s2t": "Open your family library",
-      "s2": "Look up results by person or a recipe by name. Your browser and your agent read the same collection, including your latest edits.",
-      "s3t": "Tracking & email reminders",
-      "s3": "Rechecks and annual checkups are scheduled for you, with an email 7 days before and on the day. Mark items Done, or Skipped when your doctor says so.",
+      "s2t": "Browse your library",
+      "s2": "Look up results by person or a recipe by name. Edits you make on the web are available to your agent the next time you ask.",
+      "s3t": "See what’s coming up",
+      "s3": "See rechecks and annual checkups on your schedule. Mark a visit done, or skipped if your doctor says you can skip it.",
       "s1v": "101 items · 4 need attention",
       "s2v": "ALT · last 3 years",
       "enc": "Encrypted",
-      "mailFrom": "Deepfy reminder",
+      "mailFrom": "Upcoming visits",
       "m1": "Mom · Lipid recheck",
       "m1d": "20 Nov · in 16 days",
       "m2": "Lin Xia · ALT recheck",
       "m2d": "15 Jan",
-      "mailPause": "Too many? Pause with one click"
+      "mailPause": "View full schedule"
     },
     "agents": {
       "eyebrow": "Agent access",
       "title": "Works with the assistants you already use",
-      "lead": "Connect Claude Code, Codex or another MCP client. It can look up lab trends and recipes, then log a symptom, import a report or revise a cooking step with your confirmation.",
-      "note": "MCP is live: sign in, create a token under Agents and send the generated prompt to your agent — it sets itself up. Each token can be read-only or allowed to write, and every agent write can be undone in one click.",
+      "lead": "Connect Claude Code, Codex or another MCP client. It can look up lab trends and recipes and, with your confirmation, log a symptom, enter a report or revise a cooking step.",
+      "note": "Create a token under Agents, choose the sections and permissions it needs, then use the generated setup prompt. You can review and undo each write.",
       "soon": "Live",
       "docs": "See setup steps →"
     },
     "security": {
       "eyebrow": "Privacy",
-      "title": "Your family’s records stay in your hands",
-      "lead": "We use it only to serve you. Never sold, never used for ads.",
+      "title": "Keep your records on your server",
+      "lead": "When you self-host, you control the database, attachments and encryption keys.",
       "c1t": "Encrypted at rest",
       "c1": "Health records, recipe contents and attachments are encrypted on the server with AES-256-GCM.",
       "c2t": "A key per account",
@@ -72,13 +72,13 @@
       "c3t": "Plainly stated",
       "c3": "This is server-side encryption, not end-to-end: to display and analyze your data, the server decrypts it in memory.",
       "c4t": "Export or delete anytime",
-      "c4": "Export everything in one click; deleting your account removes records and attachments.",
+      "c4": "Export everything in one click. Deleting your account removes its records and attachments.",
       "cipherTitle": "A sample of the stored ciphertext"
     },
     "family": {
-      "eyebrow": "Family",
-      "title": "A record for each person, a cookbook for the family",
-      "lead": "Each person has their own results, medications and reminders. Recipes belong to the household, so you can find a dish without choosing a person first.",
+      "eyebrow": "Profiles",
+      "title": "Individual profiles, one cookbook",
+      "lead": "Each person has their own readings, medications and reminders. Look up a recipe by name, or select a person to see how it fits their dietary needs.",
       "p1": "Me",
       "p1m": "34 · 3 need attention",
       "p2": "Mom",
@@ -91,13 +91,13 @@
     },
     "final": {
       "title": "Start with a report or a dish you know by heart",
-      "lead": "Save something you’ll want again. Health records and recipes are the first two parts of a growing family library.",
-      "cta": "Get started"
+      "lead": "Once Deepfy is running, save the results of your latest checkup or the recipe you want to cook again.",
+      "cta": "Read self-hosting docs"
     },
     "foot": {
       "rights": "© 2026 Deepfy",
       "label": "Site links",
-      "tagline": "Family health records and home cooking, in a library you can take with you.",
+      "tagline": "Health records, recipes and policies on your own server.",
       "releases": "Releases",
       "feedback": "Feedback"
     },
@@ -105,28 +105,29 @@
       "metaTitle": "Docs",
       "eyebrow": "Docs",
       "title": "Get started with Deepfy",
-      "lead": "Start with one person’s record or a dish you make often, then connect your usual AI assistant.",
+      "lead": "Run Deepfy on your server or computer with Docker, then connect your AI assistant.",
       "toc": "On this page",
       "start": {
-        "title": "Quick start",
+        "title": "Get started",
         "steps": [
           {
-            "t": "Request access and sign up",
-            "d": "On the sign-in page, switch to Early bird access and submit your email. You'll get an invitation once it's approved. Then go back to Sign in, sign up with that email or Google, and agree to the Terms and Privacy Policy. If you'd rather not use the cloud, see Self-hosting below."
+            "t": "Finish setup and create your admin account",
+            "d": "Start Deepfy as described above. On your first visit, set the email and password for your admin account."
           },
           {
             "t": "Choose where to begin",
-            "d": "For a health profile, enter a nickname, relationship and birth date or approximate age. Or open Family Recipes and start with a dish name and its method."
+            "d": "Start a health profile with a nickname and birth date or approximate age. Or open Family Recipes and save a dish name and its method."
           },
           {
-            "t": "Add your first report",
-            "d": "Hand your checkup or lab report to a connected agent (see Connect an agent below) and it will enter it item by item. There's no report entry form on the web yet; from the top of Overview you can log notes and daily readings (symptoms, photos, weight, blood pressure…)."
+            "t": "Add a report or recipe with your agent",
+            "d": "Connect your agent over MCP using the next section. Give it a report or cooking notes, review the details and confirm before it saves."
           },
           {
-            "t": "Understand the results",
-            "d": "Overview sums up what's out of range and what to recheck next; Markers shows how each item changes over time."
+            "t": "Review results and reminders",
+            "d": "Open Markers for past readings and reference ranges. Overview shows which results need attention and when your next recheck is due."
           }
-        ]
+        ],
+        "note": "The author runs app.deepfy.si for personal use and shares access only with friends and family. For your own use, deploy Deepfy on your server or computer."
       },
       "agents": {
         "title": "Connect an agent (MCP)",
@@ -134,7 +135,7 @@
         "steps": [
           {
             "t": "Create a token",
-            "d": "Open Agents in the app and create a token, read-only or with write access. Use one token per agent so you can see usage and revoke each separately; the free plan allows 3."
+            "d": "Open Agents on your instance and create a token. Choose all sections, health only or recipes only, then decide whether to allow writes. A separate token for each agent lets you revoke access individually."
           },
           {
             "t": "Hand it to your agent",
@@ -142,18 +143,18 @@
           },
           {
             "t": "Check the connection",
-            "d": "Ask your agent to call list_members. A successful response confirms the connection, even if the list is empty because you haven’t added anyone yet."
+            "d": "Ask your agent to read deepfy://contract. Receiving the data guide confirms the connection, even if you have yet to add any records or recipes."
           }
         ],
         "promptTitle": "One-line setup",
-        "promptHint": "Send this to your agent (no token included). It will ask you to create a token, then finish the setup itself.",
+        "promptHint": "Copy the prompt to your agent, then enter your instance URL and token as directed.",
         "snippetsTitle": "Manual setup",
-        "snippetHint": "Replace {token} with your token. Most other agents accept the generic \"HTTP + custom header\" format (Gemini CLI uses the httpUrl field).",
+        "snippetHint": "Replace the local example address with your server’s address, keep the /mcp path and replace {token} with your token. Gemini CLI uses the httpUrl field.",
         "generic": "Generic JSON (mcpServers)",
         "canTitle": "What a connected agent can do",
         "can": [
-          "Read profiles, checkup and lab results, marker trends and the recheck plan.",
-          "Find recipes and read their ingredients and steps. With write access and your confirmation, save a new dish or revise its method.",
+          "Health access covers profiles, marker trends and recheck plans. With access to all sections, your agent can also check a recipe against a selected person’s health records.",
+          "Recipe-only access lets your agent look up ingredients and methods. With write permission and your confirmation, it can also save or update recipes.",
           "Import reports, log symptoms and notes, update profiles and schedule rechecks (needs a write token).",
           "Record medication and supplements, read strength and use-by dates from package photos, and suggest common supplements from the profile (suggestions take effect only after you agree).",
           "Every write is listed under Agents and can be reverted in one click.",
@@ -165,11 +166,11 @@
         "items": [
           {
             "t": "Family",
-            "d": "The home page brings together family health cards, upcoming reminders and recently updated recipes. Open a card to see a person’s record or a dish’s method."
+            "d": "The home page shows profiles, upcoming reminders and recently updated recipes. Open a card for the details."
           },
           {
             "t": "Family Recipes",
-            "d": "Find recipes by dish, ingredient or category. Add a recipe and cover on the web, or ask your agent to save it."
+            "d": "Find recipes by dish, ingredient or category, or add a recipe and cover photo. Select a person to see how a dish fits their recorded dietary needs."
           },
           {
             "t": "Overview",
@@ -185,7 +186,7 @@
           },
           {
             "t": "Rechecks & reminders",
-            "d": "Out-of-range items go into a recheck plan: mark them Done, or Skipped when your doctor says no need. We email you before they're due; pause under Reminders in the avatar menu."
+            "d": "See upcoming rechecks on your schedule. Mark one done after the visit, or skipped if your doctor says you can skip it."
           },
           {
             "t": "Medication",
@@ -197,51 +198,51 @@
           },
           {
             "t": "Settings",
-            "d": "See your usage, export everything (ZIP with attachments), or delete your account."
+            "d": "Export your data and attachments in a ZIP file, or delete your account."
           },
           {
-            "t": "Feedback",
-            "d": "Sign in and choose Feedback in the avatar menu — a few lines is enough. Your sign-in email is attached so we can reply. We read every one."
+            "t": "Insurance",
+            "d": "See all policies in one place and keep each person’s policy details up to date. Add a renewal date to see it on the schedule."
           }
         ]
       },
       "privacy": {
         "title": "Data & privacy",
         "items": [
-          "Each account has its own key. Records, recipe contents and attachments are encrypted at rest with AES-256-GCM and decrypted on the server for display.",
-          "Export everything from Settings at any time; deleting your account deletes the data and attachments too.",
-          "The hosted app is an invite-only early bird program, free for now, with up to 6 family members, 100 MB of attachments and 3 agent tokens — see the Terms. Self-host if you need more space or want to hold your own data.",
-          "All analysis is for reference only and is not a substitute for medical advice."
+          "When you self-host, your server stores your data and attachments. If you connect an agent, the content it reads is processed by its model provider.",
+          "Health records, recipe contents and attachments are encrypted at rest with AES-256-GCM using a separate key for each account. Your server decrypts them in memory for display and processing.",
+          "Export a ZIP with your data and attachments from Settings at any time. Deleting your account removes both.",
+          "Health analysis is for reference only and is not a substitute for medical advice.",
+          "Access to the hosted instance at app.deepfy.si is limited to the author’s friends and family."
         ]
       },
-      "more": "Anything else? Sign in and send Feedback from the avatar menu.",
+      "more": "The exported ZIP contains decrypted records. Store it somewhere private.",
       "copyMd": "Copy as Markdown",
       "copied": "Copied — paste it to your agent",
-      "copyHint": "Copy this guide to your agent for help signing up, starting your family library and connecting it.",
-      "preface": "Below is the guide for Deepfy Family Knowledge Base ({site}). Read it first, then walk me through it step by step: requesting early bird access and signing up, starting a health record or recipe, and connecting Deepfy to you as an MCP server. Tell me one next step at a time; when I need to do something on the website or give you a token, wait for my reply. Treat the token like a password and keep it only in the MCP config.",
-      "links": "Links",
+      "copyHint": "Give this guide to your agent for help deploying Deepfy, creating your account and setting up MCP.",
+      "preface": "Read this Deepfy guide ({site}) and walk me through deploying it with Docker on my server or computer, creating the admin account and configuring MCP for my instance. Give me one step at a time and wait for me to finish it. Have me enter the token in my client.",
       "selfHost": {
-        "title": "Self-hosting",
-        "lead": "The recommended way to run it: on your own computer or home server, with your data staying local. You only need Docker: no domain, HTTPS or email service. You're welcome to help build the project too.",
+        "title": "Self-host on your server",
+        "lead": "Run these three commands on your computer or server with Docker Compose installed. By default, Deepfy is accessible only on that machine.",
         "step1": "Get the code and initialize it",
-        "step1d": "The script creates .env, which holds the master key that encrypts your data.",
+        "step1d": "The initialization script creates .env with the master key that protects each account’s data key.",
         "step2": "Start it",
         "step3": "Create your admin account",
-        "step3d": "Open http://localhost:3100 and create your admin account. The first start builds the image, which takes a few minutes.",
+        "step3d": "The first build can take a few minutes. On the same computer, open http://localhost:3100 to create your admin account. For initial setup on a remote server, follow the full guide below.",
         "keyT": "Keep the master key safe.",
         "keyD": "Your data can't be decrypted without KZ_MASTER_KEY in .env, so store a separate copy.",
-        "netT": "On your local network.",
-        "netD": "Turn on KZ_BIND=0.0.0.0 in .env and other devices can use this machine's IP. Traffic isn't encrypted, so don't expose it to the internet. Add family accounts on the Admin page.",
+        "netT": "Connect from other devices.",
+        "netD": "After initial setup, set KZ_BIND=0.0.0.0 in .env and rerun docker compose up -d for access on a trusted LAN. On a public server, keep the default loopback binding and use an HTTPS reverse proxy.",
         "agentT": "Connect an agent.",
-        "agentD": "The MCP address is http://your-address:3100/mcp. Create a token on your instance's Agents page.",
-        "more": "For backups, upgrades, forgotten passwords and moving data from the hosted app, see the full guide",
-        "moreLink": "docs/self-hosting.md"
+        "agentD": "Create a token under Agents on your instance. Append /mcp to your instance URL to get the MCP endpoint.",
+        "more": "For LAN access, HTTPS on a cloud server, backups and recovery, see",
+        "moreLink": "docs/self-hosting.en.md"
       }
     },
     "why": {
       "eyebrow": "Why Deepfy",
       "title": "Pick up where the last conversation ended",
-      "lead": "When you ask about a recheck date or how you made the tomato stew, your agent can look it up in the same family library.",
+      "lead": "When you ask about your next recheck or how you made the tomato stew, your agent can look it up in the same library.",
       "without": "Agent on its own",
       "with": "Agent + Deepfy",
       "rows": {
@@ -268,7 +269,7 @@
         "remind": {
           "k": "Proactive",
           "no": "Never reminds you a recheck is due",
-          "yes": "Email reminders before things are due; mark Done or Skipped in one click"
+          "yes": "Shows upcoming rechecks and lets you mark them done or skipped"
         },
         "control": {
           "k": "Control",
@@ -286,10 +287,10 @@
       "note": "Example people are fictional; agent advice is for reference only and is not a substitute for medical advice.",
       "items": {
         "diet": {
-          "tag": "Family Recipes",
-          "q": "Let’s save our tomato beef stew. We have two tomatoes and someone likes theirs chunky. When should they go in?",
+          "tag": "Recipes",
+          "q": "I like chunks of tomato in my beef stew. I have two tomatoes. When should each one go in?",
           "a": "<b>Add them in two batches.</b> Soften the first for the sauce. Cut the second into chunks and add it once the beef is tender. Shall I save that in the recipe?",
-          "r": "Family Recipes · ingredients and method"
+          "r": "Recipe · ingredients and method"
         },
         "trip": {
           "tag": "Travel",
@@ -298,7 +299,7 @@
           "r": "Blood count · ECG · History"
         },
         "family": {
-          "tag": "Family rechecks",
+          "tag": "Recheck dates",
           "q": "When is Mom's next recheck, and what for?",
           "a": "Lipids on <b>20 Nov</b> — her last <b>LDL was 3.9</b>, high. With her hypertension, she hasn't had a urine microalbumin test yet. Shall I add it to her plan?",
           "r": "Mom · Recheck plan · Conditions"
@@ -318,7 +319,7 @@
         "report": {
           "tag": "Add a report",
           "q": "Here's this year's checkup report (38-page PDF).",
-          "a": "All <b>101 items</b> are in, 4 need attention. The ALT recheck is set for <b>15 Jan</b>, and you'll get an email before it's due.",
+          "a": "All <b>101 items</b> are in, and 4 need attention. Your ALT recheck is on the schedule for <b>15 Jan</b>.",
           "r": "Wrote 101 items · One-click revert"
         }
       }

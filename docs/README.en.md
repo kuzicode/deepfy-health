@@ -1,11 +1,14 @@
+---
+last_updated: 2026-11-28
+---
+
 <div align="center">
 
 <h1><a href="https://deepfy.si"><img src="brand/icon-256.png" width="40" align="top" alt=""></a>&nbsp;Deepfy</h1>
 
 ### An agent-first family knowledge base
 
-**Keep family health records and home-cooked recipes together on the web.**<br>
-Connect your own agent over MCP, and sync Markdown files and attachments with a local Obsidian vault.
+Keep health records, recipes and insurance policies on your own server. Connect your agent over MCP or sync with a local Obsidian vault.
 
 [![Release](https://img.shields.io/github/v/release/kuzicode/deepfy-family?include_prereleases&label=release&color=111111)](https://github.com/kuzicode/deepfy-family/releases) [![Stars](https://img.shields.io/github/stars/kuzicode/deepfy-family?style=flat&color=111111)](https://github.com/kuzicode/deepfy-family/stargazers) [![License](https://img.shields.io/badge/license-MIT-111111)](../LICENSE) ![Status](https://img.shields.io/badge/status-pre--release-C2410C)<br>
 ![Next.js](https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white) ![MCP](https://img.shields.io/badge/MCP-0F766E)
@@ -29,30 +32,38 @@ Connect your own agent over MCP, and sync Markdown files and attachments with a 
 
 ## Is Deepfy for you?
 
-Start with a family member’s checkups, medications and recheck dates. Or save a dish with its ingredients, method and photo for whoever cooks it next.
-
-- **Keep the whole family in one place**: a profile, results and trends, medications and supplements for each person.
-- **Family Recipes**. Search by dish or ingredient at `/kitchen`, or ask your agent to save a method. Each recipe is a Markdown file in your vault’s `Personal/菜单/` folder.
-- **Hand a report to your agent**: it reads the report and enters the results. Every change is recorded, and you can undo it.
-- **Know what's coming up**: overdue checkups, rechecks and supplement end dates appear on the overview and in email reminders.
-- **Keep your data portable**: export your account at any time, and import it into your own instance.
+- **Health records.** Track each person’s results, trends, medications and supplements. Your agent can enter results from a report, and you can review and undo its changes.
+- **Recipes.** Search by dish or ingredient at `/kitchen`, or ask your agent to save a recipe. Select a person to see how a dish fits their recorded dietary needs. Each recipe syncs to a Markdown file in your vault’s `Personal/菜单/` folder.
+- **Insurance.** Review policies together at `/insurance`, edit coverage by person and receive reminders when renewals are due.
+- **Reminders.** See upcoming and overdue checkups, follow-ups and supplement end dates on the overview. Email reminders are also available on the official instance.
+- **Data export.** Export your account at any time and import it into another instance.
 
 Health records, recipe contents and attachments are encrypted per account on the server. This isn't end-to-end encryption, and some lookup metadata, such as report dates and titles, isn't encrypted yet. See the [architecture notes](architecture.md).
 
 ## Quick start
 
-**Self-host it (recommended).** Run it on your own computer or home server and keep your data there. It takes three commands and no domain, HTTPS or email service: see the [self-hosting guide](self-hosting.en.md). You're welcome to help build it too: see [Contributing](#contributing).
-
-**Need it hosted?** The hosted app at **[app.deepfy.si](https://app.deepfy.si)** is an invite-only early bird program. Request access on the sign-in page, and you'll get an email once it's approved. It's free for now, with 100 MB of attachments per account.
-
-**Connect your agent.** Create a token on the **Agents** page, then add the MCP server. For Claude Code on the hosted app (on your own instance, use its address):
+Install Git, OpenSSL and Docker with Compose v2 on your own computer or server, then run:
 
 ```sh
-claude mcp add --transport http deepfy https://app.deepfy.si/mcp \
+git clone https://github.com/kuzicode/deepfy-family.git && cd deepfy-family
+sh scripts/selfhost-init.sh
+docker compose up -d
+```
+
+Once the build finishes, open `http://localhost:3100` on that machine and create the administrator account. Back up the generated `.env` separately. You need its master key to restore encrypted data. For NAS access over a LAN, HTTPS on a cloud server and scheduled backups, see the [self-hosting guide](self-hosting.en.md).
+
+The author’s instance at `app.deepfy.si` uses an allowlist for friends and family. We recommend running your own instance.
+
+### Connect your agent
+
+On the **Agents** page, create a token and choose the sections it can access (all sections, health records only or recipes only). Tokens allow writes by default. Choose **Read-only** if the agent only needs to look things up. To connect Claude Code on the machine running Deepfy, replace the example token with yours:
+
+```sh
+claude mcp add --transport http deepfy http://localhost:3100/mcp \
   --header "Authorization: Bearer kzh_…"
 ```
 
-The **Agents** page has ready-to-copy setups for other agents. New tokens can write by default. Choose **Read-only** when you create one, or change it later.
+For other agents, copy the configuration from the **Agents** page. For a remote connection, replace the local address with your own HTTPS domain.
 
 ## Run it locally
 
@@ -86,20 +97,16 @@ Local development needs no production accounts or keys.
 - **Cloud mode** (`DATABASE_URL` is set): accounts sign in, and records and recipe contents are encrypted per account in Postgres.
 - **Local vault mode**: reads a folder of Markdown files directly, such as an Obsidian vault. This is mainly for development and backups.
 
-To sync a local vault with an instance:
+On the **Agents** page, create a token with **Local sync** permission and access to all sections. Use it to sync a local vault with your instance:
 
 ```sh
-pnpm kzh login --server https://app.deepfy.si --token kzh_xxx
+pnpm kzh login --server http://localhost:3100 --token kzh_xxx
 pnpm kzh push --dry-run      # preview what would be pushed
 pnpm kzh push                # pushes only if validation passes; skips items newer in the cloud (--force overwrites)
 pnpm kzh pull --into ./backup/Personal
 ```
 
 Run `pnpm kzh --help` for all commands.
-
-## Self-hosting
-
-This is the recommended way to run Deepfy. The code ships with no user data, and you can import your account export from the hosted app. See the [self-hosting guide](self-hosting.en.md).
 
 ## Contributing
 

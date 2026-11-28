@@ -1,7 +1,7 @@
 import { Download, Info, KeyRound, Lock, Mail } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@/i18n/config";
-import { appUrl, siteBase } from "@/site-links";
+import { siteBase } from "@/site-links";
 import { AgentBeam } from "@/ui/AgentBeam";
 import { Belt } from "../_belt/Belt";
 import { McpCopy } from "../_parts/McpCopy";
@@ -77,6 +77,8 @@ async function Security() {
 export default async function SitePage({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   const t = await getTranslations("site");
+  const docs = `${await siteBase()}/${locale}/docs`;
+  const selfHost = `${docs}#self-host`;
 
   return (
     <main>
@@ -89,9 +91,9 @@ export default async function SitePage({ params }: { params: Promise<{ locale: L
             <p className="s-lead s-lead-1">{t("hero.lead1")}</p>
             <p className="s-lead s-lead-2">{t("hero.lead2")}</p>
             <div className="s-cta-row">
-              <a className="btn btn-primary" href={appUrl("/")}>{t("hero.cta")}</a>
-              <McpCopy prompt={t("hero.mcpPrompt", { url: `${process.env.KZ_APP_URL ?? "https://app.deepfy.si"}/mcp`, app: process.env.KZ_APP_URL ?? "https://app.deepfy.si" })}
-                label={t("hero.mcpCopy")} copied={t("hero.mcpCopied")} hint={t("hero.mcpHint")} hintHref={appUrl("/agents")} />
+              <a className="btn btn-primary" href={selfHost}>{t("hero.cta")}</a>
+              <McpCopy prompt={t("hero.mcpPrompt", { url: "http://localhost:3100/mcp", app: "http://localhost:3100" })}
+                label={t("hero.mcpCopy")} copied={t("hero.mcpCopied")} hint={t("hero.mcpHint")} hintHref={selfHost} />
             </div>
           </div>
         </div>
@@ -106,7 +108,7 @@ export default async function SitePage({ params }: { params: Promise<{ locale: L
         <SiteSectionHead eyebrow={t("agents.eyebrow")} title={t("agents.title")} lead={t("agents.lead")} />
         <div className="agents-panel reveal">
           <div className="beam-box"><AgentBeam tone="dark" label="MCP" /></div>
-          <div className="note"><span>{t("agents.note")} <a href={`${await siteBase()}/${locale}/docs#agents`}>{t("agents.docs")}</a></span><span className="chip chip-mint">{t("agents.soon")}</span></div>
+          <div className="note"><span>{t("agents.note")} <a href={`${docs}#agents`}>{t("agents.docs")}</a></span><span className="chip chip-mint">{t("agents.soon")}</span></div>
         </div>
       </section>
 
@@ -132,7 +134,7 @@ export default async function SitePage({ params }: { params: Promise<{ locale: L
       <section className="s-final glass reveal">
         <h2>{t("final.title")}</h2>
         <p>{t("final.lead")}</p>
-        <a className="btn btn-primary" href={appUrl("/")}>{t("final.cta")}</a>
+        <a className="btn btn-primary" href={selfHost}>{t("final.cta")}</a>
       </section>
     </main>
   );

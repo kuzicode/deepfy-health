@@ -4,8 +4,7 @@
 
 ### Agent-first 的家庭知识库
 
-**全家的健康档案、厨房里的家常菜，都能在网页里翻到。**<br>
-通过 MCP，让自己的 Agent 帮忙整理。通过本地 Obsidian 同步，把 Markdown 和附件带走。
+在自己的服务器上整理健康档案、菜谱和保单，通过 MCP 接入你的 Agent，也能与本地 Obsidian 同步。
 
 [![Release](https://img.shields.io/github/v/release/kuzicode/deepfy-family?include_prereleases&label=release&color=111111)](https://github.com/kuzicode/deepfy-family/releases) [![Stars](https://img.shields.io/github/stars/kuzicode/deepfy-family?style=flat&color=111111)](https://github.com/kuzicode/deepfy-family/stargazers) [![License](https://img.shields.io/badge/license-MIT-111111)](LICENSE) ![Status](https://img.shields.io/badge/status-pre--release-C2410C)<br>
 ![Next.js](https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white) ![MCP](https://img.shields.io/badge/MCP-0F766E)
@@ -29,30 +28,38 @@
 
 ## 适合你吗？
 
-你可以先给家人建档，记下历次检查、用药和复查日期。也可以先收一道家常菜，把食材用量、做法和照片留给下次掌勺的人。
-
-- **全家人放在一处**：每个人都有基本档案、检查结果和趋势、用药和补剂。
-- **我家的菜谱**：在 `/kitchen` 按菜名或食材找菜，也可以让 Agent 记录做法。菜谱在 Obsidian 中是 `Personal/菜单/` 里的 Markdown 文件。
-- **把报告交给 agent**：它读完报告，录入结果。每次修改都有记录，可以还原。
-- **知道接下来要做什么**：逾期的体检、复查和补剂到期日会显示在概览页，也会发邮件提醒。
-- **数据可以带走**：随时导出账号数据，再导入你自己部署的实例。
+- **健康档案**　按成员查看检查结果、指标趋势、用药和补剂。把报告交给 Agent，它可以录入结果，修改有记录，也可以还原。
+- **菜谱**　在 `/kitchen` 按菜名或食材找菜，也可以让 Agent 记录做法。选定成员后，可结合已有健康记录查看饮食适配提示。同步到 Obsidian 时，每道菜保存在 `Personal/菜单/` 的 Markdown 文件中。
+- **保险**　在 `/insurance` 总览保单，按成员维护保险配置。续保日期会进入日程和提醒。
+- **提醒**　在概览页查看体检、复查和补剂到期日。官方实例另提供可选的邮件提醒。
+- **数据导出**　随时导出账号数据，再导入自己的实例。
 
 健康档案、菜谱内容和附件在服务器上按账号加密。这不是端到端加密，报告日期和标题等检索用的元数据目前也还没有加密，详见[架构说明](docs/architecture.md)。
 
 ## 快速开始
 
-**自托管（推荐）。** 跑在自己的电脑或内网服务器上，数据留在本地。三条命令就能启动，不需要域名、HTTPS 或邮箱服务，见[自托管教程](docs/self-hosting.md)。也欢迎一起维护这个项目，见[参与贡献](#参与贡献)。
-
-**需要云端托管？** 官方托管的 **[app.deepfy.si](https://app.deepfy.si)** 采用白名单制，目前开放早鸟申请。在登录页提交申请，通过后会收到邮件。目前免费，每个账号 100 MB 附件。
-
-**接入你的 agent。** 在「Agent 接入」页面创建 token，再添加 MCP 服务器。下面以 Claude Code 接入官方托管为例，自托管时换成自己的地址：
+在自己的电脑或服务器上安装 Git、OpenSSL 和 Docker（含 Compose v2），然后运行：
 
 ```sh
-claude mcp add --transport http deepfy https://app.deepfy.si/mcp \
+git clone https://github.com/kuzicode/deepfy-family.git && cd deepfy-family
+sh scripts/selfhost-init.sh
+docker compose up -d
+```
+
+构建完成后，在本机打开 `http://localhost:3100` 创建管理员账号。请单独备份初始化脚本生成的 `.env`，恢复加密数据需要其中的主密钥。NAS 局域网访问、云服务器 HTTPS 配置和定时备份见[自托管指南](docs/self-hosting.md)。
+
+`app.deepfy.si` 是作者自用的在线实例，仅向亲友开放（白名单制）。对外推荐自托管。
+
+### 接入 Agent
+
+在「Agent 接入」页创建 Token，选择可访问的栏目（全部、仅健康或仅菜谱）。新 Token 默认可写入，只用于查询时可以选「只读」。例如，在部署 Deepfy 的电脑上使用 Claude Code，把示例 Token 换成刚创建的值：
+
+```sh
+claude mcp add --transport http deepfy http://localhost:3100/mcp \
   --header "Authorization: Bearer kzh_…"
 ```
 
-其他 agent 的配置可以在「Agent 接入」页面直接复制。新建 token 默认可写入。如果只想让 agent 读取，创建时选「只读」，之后也可以改。
+其他 Agent 的配置可以在「Agent 接入」页复制。远程访问时，把本机地址换成自己的 HTTPS 域名。
 
 ## 本地运行
 
@@ -86,20 +93,16 @@ pnpm test:db
 - **云端模式**（设置了 `DATABASE_URL`）：账号登录，档案和菜谱内容按账号加密后存进 Postgres。
 - **本地 vault 模式**：直接读 Markdown 目录，可以是 Obsidian vault，主要用于开发和备份。
 
-把本地 vault 同步到实例：
+在「Agent 接入」页创建有「本地同步」权限且可访问全部栏目的 Token，用它把本地 vault 同步到自己的实例：
 
 ```sh
-pnpm kzh login --server https://app.deepfy.si --token kzh_xxx
+pnpm kzh login --server http://localhost:3100 --token kzh_xxx
 pnpm kzh push --dry-run      # 先看会推多少
 pnpm kzh push                # 校验通过才推；云端更新的条目默认跳过（--force 覆盖）
 pnpm kzh pull --into ./backup/Personal
 ```
 
 `pnpm kzh --help` 查看全部命令。
-
-## 自托管
-
-这是推荐的使用方式。代码不带任何用户数据，也可以导入从官方托管导出的账号数据，见[自托管教程](docs/self-hosting.md)。
 
 ## 参与贡献
 
