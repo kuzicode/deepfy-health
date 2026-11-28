@@ -29,7 +29,7 @@ export async function siteBase() {
 
 /** 对外链接：开源仓库与 Releases（用户反馈仍走 App 内「意见反馈」，避免把健康信息贴到公开页面）；作者主页。以后加社交账号也放这里 */
 export const SOCIAL = {
-  github: "https://github.com/kuzicode/deepfy-health",
-  releases: "https://github.com/kuzicode/deepfy-health/releases",
+  github: "https://github.com/kuzicode/deepfy-family",
+  releases: "https://github.com/kuzicode/deepfy-family/releases",
   author: { label: "@kuzicode", href: "https://github.com/kuzicode" },
 } as const;

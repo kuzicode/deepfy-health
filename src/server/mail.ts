@@ -74,7 +74,7 @@ const COPY = {
     invite: {
       subject: `You're in: your ${BRAND.en} early bird access is ready`,
       title: "Your early bird access is ready",
-      preheader: "Your Deepfy Health Record is ready to use",
+      preheader: "Your Deepfy Family workspace is ready to use",
       body: (email: string) => `The early bird request from ${email} has been approved. Sign in with this email to set up records for you and your family and connect them to your agent.`,
       cta: "Get started",
       text: (email: string, url: string) => `${BRAND.en}\n\nThe early bird request from ${email} has been approved. Sign in to get started: ${url}`,

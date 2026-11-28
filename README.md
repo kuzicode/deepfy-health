@@ -7,10 +7,10 @@
 **全家的健康档案、厨房里的家常菜，都能在网页里翻到。**<br>
 通过 MCP，让自己的 Agent 帮忙整理。通过本地 Obsidian 同步，把 Markdown 和附件带走。
 
-[![Release](https://img.shields.io/github/v/release/kuzicode/deepfy-health?include_prereleases&label=release&color=111111)](https://github.com/kuzicode/deepfy-health/releases) [![Stars](https://img.shields.io/github/stars/kuzicode/deepfy-health?style=flat&color=111111)](https://github.com/kuzicode/deepfy-health/stargazers) [![License](https://img.shields.io/badge/license-MIT-111111)](LICENSE) ![Status](https://img.shields.io/badge/status-pre--release-C2410C)<br>
+[![Release](https://img.shields.io/github/v/release/kuzicode/deepfy-family?include_prereleases&label=release&color=111111)](https://github.com/kuzicode/deepfy-family/releases) [![Stars](https://img.shields.io/github/stars/kuzicode/deepfy-family?style=flat&color=111111)](https://github.com/kuzicode/deepfy-family/stargazers) [![License](https://img.shields.io/badge/license-MIT-111111)](LICENSE) ![Status](https://img.shields.io/badge/status-pre--release-C2410C)<br>
 ![Next.js](https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white) ![MCP](https://img.shields.io/badge/MCP-0F766E)
 
-**[官网](https://deepfy.si)** &nbsp;·&nbsp; **[文档](https://deepfy.si/zh/docs)** &nbsp;·&nbsp; **[版本发布](https://github.com/kuzicode/deepfy-health/releases)** &nbsp;·&nbsp; **[路线图](docs/ROADMAP.md)** &nbsp;·&nbsp; **[参与贡献](.github/CONTRIBUTING.md)** &nbsp;·&nbsp; **[English](docs/README.en.md)**
+**[官网](https://deepfy.si)** &nbsp;·&nbsp; **[文档](https://deepfy.si/zh/docs)** &nbsp;·&nbsp; **[版本发布](https://github.com/kuzicode/deepfy-family/releases)** &nbsp;·&nbsp; **[路线图](docs/ROADMAP.md)** &nbsp;·&nbsp; **[参与贡献](.github/CONTRIBUTING.md)** &nbsp;·&nbsp; **[English](docs/README.en.md)**
 
 <br>
 

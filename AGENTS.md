@@ -1,14 +1,14 @@
 ---
-last_updated: 2026-11-09
+last_updated: 2026-11-28
 status: active
 owner: kuzicode
 harness_version: 8
 harness_profile: open-source
 ---
 
-# deepfy-health — Agent Guidelines
+# deepfy-family — Agent Guidelines
 
-Deepfy 健康档案（app.deepfy.si，官网 deepfy.si）：agent-first 的家庭健康档案。云端 Postgres 为主数据源（健康内容按账号加密存储）；用户自己的 agent（Claude Code、Codex…）经 MCP（`/mcp`）读写档案，网页负责展示与人工编辑；本地 Obsidian vault 用 `kzh push / pull` 推拉作为备份 / 离线入口。推荐自托管（本地或内网，`KZ_EDITION=self`）；官方实例是白名单制早鸟（`hosted`）。线上专属功能都要经过 `src/server/edition.ts`。
+Deepfy 家庭知识库（app.deepfy.si，官网 deepfy.si）：agent-first 的家庭知识库（以健康档案为底座，拓展「我家的菜谱」与成员保险配置）。云端 Postgres 为主数据源（按账号加密存储）；用户自己的 agent（Claude Code、Codex…）经 MCP（`/mcp`）读写档案，网页负责可视化展示与人工编辑；本地 Obsidian vault 用 `kzh push / pull` 推拉作为备份 / 离线入口。推荐自托管（本地或内网，`KZ_EDITION=self`）；官方实例是白名单制早鸟（`hosted`）。线上专属功能都要经过 `src/server/edition.ts`。
 
 技术栈：TypeScript、pnpm、Next.js 16 App Router、better-auth、Drizzle + Postgres 16、zod、Recharts、vitest、Docker Compose + nginx
 

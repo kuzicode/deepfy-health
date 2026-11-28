@@ -51,7 +51,7 @@ export async function GET() {
     return new Response(toStream(zipChunks(entries()), release), {
       headers: {
         "content-type": "application/zip",
-        "content-disposition": `attachment; filename="deepfy-health-${date}.zip"`,
+        "content-disposition": `attachment; filename="deepfy-family-${date}.zip"`,
         "cache-control": "no-store",
       },
     });

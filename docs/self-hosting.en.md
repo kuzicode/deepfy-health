@@ -14,7 +14,7 @@ This is the recommended way to run Deepfy: on your own computer or home server, 
 You need Docker with Compose v2. On Windows, run this inside WSL.
 
 ```bash
-git clone https://github.com/kuzicode/deepfy-health.git && cd deepfy-health
+git clone https://github.com/kuzicode/deepfy-family.git && cd deepfy-family
 sh scripts/selfhost-init.sh
 docker compose up -d
 ```
@@ -93,7 +93,7 @@ The database is updated automatically on startup.
 
 ```bash
 pnpm install
-unzip deepfy-health-*.zip -d my-export
+unzip deepfy-family-*.zip -d my-export
 export HEALTH_VAULT_DIR=$PWD/my-export
 pnpm kzh validate
 pnpm kzh login --server http://your-address:3100 --token <token>

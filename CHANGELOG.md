@@ -2,7 +2,16 @@
 
 从新到旧。每次部署到生产前在这里追加一条；细节与原因见 `docs/issues.md`。
 
-从 0.18.5 起，每条对应同版本号的 tag 和 [GitHub Release](https://github.com/kuzicode/deepfy-health/releases)；更早的版本没有 tag，发布说明见 `docs/release-history.md`。
+从 0.18.5 起，每条对应同版本号的 tag 和 [GitHub Release](https://github.com/kuzicode/deepfy-family/releases)；更早的版本没有 tag，发布说明见 `docs/release-history.md`。
+
+## 0.23.0 · 2026-11-28 · 升级为 Deepfy Family 家庭知识库：我家的菜谱、按需健康适配与保险配置
+
+- **品牌与仓库升级**：仓库正式更名为 `deepfy-family`，产品升级为「Deepfy · 家庭知识库」，以健康档案为底座拓展全家生活知识；旧仓库链接自动跳转，既有自托管部署可通过 `COMPOSE_PROJECT_NAME` 保持原数据卷不断链。
+- **我家的菜谱（`/kitchen`）**：新增家庭级加密存储（迁移 `0012`：`household_doc` 与 `household_attachment`）、Mint Glass 暖纸漫画食谱卡片墙、手绘风分类插画占位、手机做饭优先详情页（含可勾选食材清单）及无损渐进编辑表单；仅需菜名与做法即可录入，无健康档案的空账号也可直接开录第一道菜。
+- **Agent 菜谱协作与本地双向同步**：MCP 新增 `list_recipes`、`get_recipe`、`save_recipe` 与 `upload_recipe_image`（魔数校验 + 内容哈希命名 + 一键还原）；`kzh push / pull` 同步菜谱正文、封面图与 Obsidian `菜单库.base` 视图，支持断传保护、大小写碰撞预检与全量 SHA-256 校验后再落盘。
+- **选定成员健康 × 菜谱适配与 Token 分域授权**：菜谱页默认零体检解密，点选成员后按需展示「已知约束（附来源日期）/ 饮食契合 / 资料缺失」提示，绝不回写共享菜谱；MCP 新增单成员 `get_diet_context`；`/agents` 支持为 Token 指定分域（全栏目 / 仅菜谱 / 仅健康），单域 Token 访问全量同步接口返回 403。
+- **成员保险配置（`/insurance`）**：零迁移无损接入 `<成员>/保险配置.md`（自动解析既有 8 列 Markdown 保单表），续保日期自动进入日程与脱敏邮件提醒，新增全家保单总览、云端编辑与 MCP `get_insurance`。
+- **本地 Vault 适配与安全加固**：支持自定义目录索引文件（如 `20-家庭/家庭.md` 与 `PERSONAL_INDEX_FILE`），静音 `菜单`/`生活`/`分类` 非成员目录警告；禁用 `gray-matter` 可执行 `---js` frontmatter（ISS-022）；孤儿附件 GC 联合扫描成员表与家庭表（ISS-023）。
 
 ## 0.22.0 · 2026-11-09 · 自托管版
 

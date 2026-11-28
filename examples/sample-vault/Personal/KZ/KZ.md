@@ -7,7 +7,7 @@ summary: 小K 的个人主页：健康、工作、兴趣、保险
 
 ## 板块
 
-- [[KZ/Health/Health|健康档案]]：体检指标、用药补剂、调养方案（deepfy-health）
+- [[KZ/Health/Health|健康档案]]：体检指标、用药补剂、调养方案（deepfy-family）
 - [[KZ/兴趣爱好|兴趣爱好]]
 - [[KZ/保险配置|保险配置]]
 

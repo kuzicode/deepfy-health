@@ -28,7 +28,7 @@ const ZH = (
 const EN = (
   <>
     <h2>1. The service</h2>
-    <p>Deepfy Health Record (the “Service”) helps you record and organize health information for yourself and your family — profiles, checkup and lab results, medication and supplement plans — with trends and reference notes.</p>
+    <p>Deepfy Family (the “Service”) helps you record and organize family knowledge — health profiles, checkup and lab results, medication plans, family recipes, and insurance notes — with trends and reference views.</p>
     <p>Deepfy is open source and you can run it on your own server; a self-hosted instance is the responsibility of whoever runs it and is not covered by these terms. These terms apply to the hosted app at app.deepfy.si, an invite-only early bird program you can sign up for once your request is approved. Using it is like renting server space from us to store and organize your own information. You are responsible for its content, accuracy and use.</p>
     <h2>2. Not medical advice</h2>
     <p>Analyses, notes and suggestions are for reference only and do not replace diagnosis or treatment by a licensed physician. Follow your doctor on starting, stopping or adjusting any medication. Supplement suggestions and precautions from an agent you connect come from the AI service you chose, not from the Service or a doctor; use your own judgment and consult a doctor where needed before starting. Seek care immediately in an emergency.</p>

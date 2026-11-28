@@ -12,7 +12,7 @@ command -v openssl >/dev/null 2>&1 || { echo "需要 openssl，请先安装。" 
 
 umask 077
 cat > .env <<ENV
-# Deepfy Health 自托管配置，由 scripts/selfhost-init.sh 生成
+# Deepfy 自托管配置，由 scripts/selfhost-init.sh 生成
 KZ_EDITION=self
 POSTGRES_PASSWORD=$(openssl rand -hex 24)
 

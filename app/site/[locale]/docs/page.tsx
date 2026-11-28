@@ -39,10 +39,10 @@ function docsMarkdown(t: T, o: { locale: string; prompt: string; mcpUrl: string;
 }
 
 /** 自托管的命令：只跑在本机或内网，不需要域名和 HTTPS。和 docs/self-hosting.md 保持一致 */
-const SELF_HOST_SETUP = `git clone https://github.com/kuzicode/deepfy-health.git && cd deepfy-health
+const SELF_HOST_SETUP = `git clone https://github.com/kuzicode/deepfy-family.git && cd deepfy-family
 sh scripts/selfhost-init.sh`;
 const SELF_HOST_START = "docker compose up -d";
-const SELF_HOST_GUIDE = "https://github.com/kuzicode/deepfy-health/blob/main/docs/self-hosting.md";
+const SELF_HOST_GUIDE = "https://github.com/kuzicode/deepfy-family/blob/main/docs/self-hosting.md";
 
 function SelfHostSection({ t }: { t: Awaited<ReturnType<typeof getTranslations<"site.docs">>> }) {
   return (

@@ -36,7 +36,7 @@ export function memberTemplates(m: MemberTemplateInput): Record<string, string> 
 
 ## 板块
 
-- ${link(`${base}/Health/Health`, "健康档案")}：体检指标、用药补剂、健康计划（deepfy-health）
+- ${link(`${base}/Health/Health`, "健康档案")}：体检指标、用药补剂、健康计划（deepfy-family）
 - ${link(`${base}/兴趣爱好`, "兴趣爱好")}
 - ${link(`${base}/保险配置`, "保险配置")}
 

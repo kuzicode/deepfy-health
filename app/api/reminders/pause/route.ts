@@ -19,7 +19,7 @@ const COPY = {
   en: {
     title: "Pause reminder emails",
     invalid: "This link is invalid or has expired. You can sign in and change this under Reminders.",
-    ask: "Pause recheck reminder emails from Deepfy Health Record? You can turn them back on any time under Reminders.",
+    ask: "Pause reminder emails from Deepfy Family? You can turn them back on any time under Reminders.",
     button: "Pause reminders",
     failed: "Couldn't pause reminders. The account may have been deleted. You can sign in and change this under Reminders.",
     done: "Reminder emails are paused. You can sign in and turn them back on any time under Reminders.",
